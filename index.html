@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription Événement - Jeunes</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Admin Hidden Button -->
+    <div class="admin-trigger" onclick="openAdminLogin()"></div>
+
+    <!-- Background Elements -->
+    <div class="bg-gradient"></div>
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h1 class="brand-name">EventJeunes</h1>
+            <p class="tagline">Rejoins l'aventure !</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card glass">
+            <div class="form-header">
+                <h2>Inscription</h2>
+                <p>Remplis tes infos pour réserver ta place</p>
+            </div>
+
+            <form id="registrationForm" novalidate>
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input 
+                            type="text" 
+                            id="nom" 
+                            name="nom" 
+                            placeholder="Ton nom de famille"
+                            required
+                        >
+                    </div>
+                    <span class="error-message" id="nomError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input 
+                            type="text" 
+                            id="prenom" 
+                            name="prenom" 
+                            placeholder="Ton prénom"
+                            required
+                        >
+                    </div>
+                    <span class="error-message" id="prenomError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            placeholder="ton@email.com"
+                            required
+                        >
+                    </div>
+                    <span class="error-message" id="emailError"></span>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">S'inscrire</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <div class="btn-loader">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-card glass hidden" id="successCard">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Inscription réussie !</h2>
+            <p>Ta place est réservée. À très bientôt !</p>
+            <button class="btn-secondary" onclick="resetForm()">
+                <i class="fas fa-plus"></i>
+                Nouvelle inscription
+            </button>
+        </div>
+
+        <!-- Certificate Offer Modal -->
+        <div class="modal hidden" id="certificateModal">
+            <div class="modal-overlay" onclick="closeCertificateModal()"></div>
+            <div class="modal-content glass">
+                <button class="modal-close" onclick="closeCertificateModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <i class="fas fa-award" style="color: #f59e0b;"></i>
+                    <h3>Obtenir un Certificat ?</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                        Félicitations pour ton inscription ! Souhaites-tu recevoir un <strong>certificat de participation</strong> officiel ?
+                    </p>
+                    <div class="certificate-preview" style="background: var(--bg-light); padding: 20px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+                        <i class="fas fa-certificate" style="font-size: 48px; color: #f59e0b; margin-bottom: 12px;"></i>
+                        <h4 style="margin-bottom: 8px;">Certificat EventJeunes 2026</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Certificat personnalisé avec ton nom</p>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 12px;">
+                            500 Gds
+                        </div>
+                    </div>
+                    <button class="btn-submit" onclick="goToCertificatePayment()" style="margin-bottom: 12px;">
+                        <i class="fas fa-check"></i>
+                        Oui, je veux le certificat
+                    </button>
+                    <button class="btn-secondary" onclick="closeCertificateModal()" style="width: 100%;">
+                        Non, merci
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donation Section -->
+        <div class="donation-section glass" id="donationSection">
+            <div class="donation-header">
+                <i class="fas fa-heart"></i>
+                <h3>Soutenir EventJeunes</h3>
+            </div>
+            <p class="donation-text">
+                Tu veux contribuer à la réussite de cet événement ? Fais un don et aide-nous à créer une expérience inoubliable pour tous les jeunes.
+            </p>
+            <div class="donation-buttons">
+                <button class="btn-donate btn-donate-primary" onclick="openDonationModal()">
+                    <i class="fas fa-gift"></i>
+                    Faire un don
+                </button>
+                <button class="btn-donate btn-donate-secondary" onclick="window.location.href='donation.html'">
+                    <i class="fas fa-arrow-right"></i>
+                    Voir les donateurs
+                </button>
+            </div>
+        </div>
+
+        <!-- Donation Modal -->
+        <div class="modal hidden" id="donationModal">
+            <div class="modal-overlay" onclick="closeDonationModal()"></div>
+            <div class="modal-content glass modal-large">
+                <button class="modal-close" onclick="closeDonationModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <i class="fas fa-hand-holding-heart" style="color: #ec4899;"></i>
+                    <h3>Faire un Don</h3>
+                </div>
+                <form id="donationForm">
+                    <div class="form-group">
+                        <label>Type de don</label>
+                        <div class="donation-type">
+                            <label class="radio-label">
+                                <input type="radio" name="donationType" value="anonymous" checked onchange="toggleDonationFields()">
+                                <span class="radio-custom"></span>
+                                <span>Anonyme</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="donationType" value="named" onchange="toggleDonationFields()">
+                                <span class="radio-custom"></span>
+                                <span>Avec mon nom</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="donorFields" class="hidden">
+                        <div class="form-group">
+                            <label for="donorNom">Nom</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" id="donorNom" placeholder="Ton nom">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="donorPrenom">Prénom</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" id="donorPrenom" placeholder="Ton prénom">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Montant du don</label>
+                        <div class="amount-buttons">
+                            <button type="button" class="amount-btn" onclick="selectAmount(250)">250 Gds</button>
+                            <button type="button" class="amount-btn" onclick="selectAmount(500)">500 Gds</button>
+                            <button type="button" class="amount-btn" onclick="selectAmount(1000)">1000 Gds</button>
+                            <button type="button" class="amount-btn" onclick="selectAmount(2000)">2000 Gds</button>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">Ou entre ton propre montant:</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-money-bill input-icon"></i>
+                                <input type="number" id="customAmount" placeholder="Ex: 1500" min="50" style="padding-left: 44px;" oninput="selectCustomAmount(this.value)">
+                                <span style="position: absolute; right: 16px; color: var(--text-muted);">Gds</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="donationAmount" required>
+                        <span class="error-message" id="amountError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mode de paiement</label>
+                        <div class="payment-methods">
+                            <div class="payment-method" data-method="moncash" onclick="selectDonationMethod('moncash')">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Moncash</span>
+                            </div>
+                            <div class="payment-method" data-method="natcash" onclick="selectDonationMethod('natcash')">
+                                <i class="fas fa-wallet"></i>
+                                <span>Natcash</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="donationMethod" required>
+                        <span class="error-message" id="donationMethodError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donorPhone">Ton numéro de téléphone</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="donorPhone" placeholder="+509 34 56 7890" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Preuve de paiement (capture d'écran)</label>
+                        <div class="file-upload" id="donationFileUpload" onclick="document.getElementById('donationFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Clique pour télécharger la capture</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);">JPG, PNG (max 5MB)</p>
+                            <img id="donationPreviewImage" class="preview-image hidden" alt="Preview">
+                        </div>
+                        <input type="file" id="donationFile" name="donationFile" accept="image/jpeg,image/png,image/jpg" style="display: none;" required onchange="handleDonationFile(this)">
+                        <span class="error-message" id="donationFileError"></span>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="donationSubmitBtn">
+                        <span class="btn-text">Envoyer mon don</span>
+                        <i class="fas fa-heart"></i>
+                        <div class="btn-loader">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2026 EventJeunes - Tous droits réservés</p>
+        </footer>
+    </main>
+
+    <!-- Admin Login Modal -->
+    <div class="modal hidden" id="adminModal">
+        <div class="modal-overlay" onclick="closeAdminLogin()"></div>
+        <div class="modal-content glass">
+            <button class="modal-close" onclick="closeAdminLogin()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <i class="fas fa-lock"></i>
+                <h3>Accès Admin</h3>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminEmail">Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="adminEmail" placeholder="admin@example.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Mot de passe</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="adminPassword" placeholder="••••••" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">
+                    <span class="btn-text">Se connecter</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast hidden" id="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - EventJeunes</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-gradient"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <span class="brand">EventJeunes</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-section="participants" onclick="showSection('participants')">
+                <i class="fas fa-users"></i>
+                <span>Participants</span>
+            </a>
+            <a href="#" class="nav-item" data-section="donations" onclick="showSection('donations')">
+                <i class="fas fa-heart"></i>
+                <span>Donations</span>
+                <span class="badge badge-warning" id="pendingDonationsBadge" style="margin-left: auto; font-size: 0.7rem; padding: 2px 6px;">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="emails">
+                <i class="fas fa-envelope"></i>
+                <span>Emails</span>
+            </a>
+            <a href="#" class="nav-item" data-section="qrcodes">
+                <i class="fas fa-qrcode"></i>
+                <span>QR Codes</span>
+            </a>
+            <a href="#" class="nav-item" data-section="stats">
+                <i class="fas fa-chart-bar"></i>
+                <span>Statistiques</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="admin-info" id="adminInfo" style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">
+                <i class="fas fa-user-shield" style="color: var(--primary); margin-right: 8px;"></i>
+                <span id="adminEmailDisplay">Admin</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <h1>Tableau de bord</h1>
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Rechercher...">
+                </div>
+                <button class="btn-refresh" onclick="loadParticipants()" title="Actualiser">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card glass">
+                <div class="stat-icon" style="background: #4f46e5;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalParticipants">0</span>
+                    <span class="stat-label">Participants</span>
+                </div>
+            </div>
+            
+            <div class="stat-card glass">
+                <div class="stat-icon" style="background: #10b981;">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="todayRegistrations">0</span>
+                    <span class="stat-label">Aujourd'hui</span>
+                </div>
+            </div>
+            
+            <div class="stat-card glass">
+                <div class="stat-icon" style="background: #06b6d4;">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="qrGenerated">0</span>
+                    <span class="stat-label">QR Générés</span>
+                </div>
+            </div>
+            
+            <div class="stat-card glass">
+                <div class="stat-icon" style="background: #ec4899;">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="emailsSent">0</span>
+                    <span class="stat-label">Emails Envoyés</span>
+                </div>
+            </div>
+            
+            <div class="stat-card glass">
+                <div class="stat-icon" style="background: #f59e0b;">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="paymentsVerified">0</span>
+                    <span class="stat-label">Paiements OK</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Participants Section -->
+        <section class="section active" id="participantsSection">
+            <div class="section-header">
+                <h2>Liste des Participants</h2>
+                <div class="section-actions">
+                    <button class="btn-action btn-primary" onclick="generateAllQR()">
+                        <i class="fas fa-qrcode"></i>
+                        Générer tous les QR
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="sendAllEmails()">
+                        <i class="fas fa-paper-plane"></i>
+                        Envoyer tous les emails
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container glass">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Paiement</th>
+                            <th>QR Code</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantsTable">
+                        <!-- Données injectées par JS -->
+                    </tbody>
+                </table>
+                
+                <div class="empty-state hidden" id="emptyState">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun participant pour le moment</p>
+                </div>
+                
+                <div class="loading-state" id="loadingState">
+                    <div class="spinner"></div>
+                    <p>Chargement...</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Donations Section -->
+        <section class="section" id="donationsSection">
+            <div class="section-header">
+                <h2>Gestion des Donations</h2>
+                <div class="section-actions">
+                    <button class="btn-action btn-secondary" onclick="loadDonations()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Donation Stats -->
+            <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #ec4899;">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalDonations">0</span>
+                        <span class="stat-label">Total Dons</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #10b981;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="verifiedDonations">0</span>
+                        <span class="stat-label">Vérifiés</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #f59e0b;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="pendingDonations">0</span>
+                        <span class="stat-label">En attente</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #4f46e5;">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalDonationAmount">0</span>
+                        <span class="stat-label">Montant Total</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-container glass">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Donateur</th>
+                            <th>Montant</th>
+                            <th>Mode</th>
+                            <th>Téléphone</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donationsTable">
+                        <!-- Données injectées par JS -->
+                    </tbody>
+                </table>
+                
+                <div class="empty-state hidden" id="emptyDonationsState">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucune donation pour le moment</p>
+                </div>
+                
+                <div class="loading-state hidden" id="loadingDonations">
+                    <div class="spinner"></div>
+                    <p>Chargement...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- QR Code Modal -->
+    <div class="modal hidden" id="qrModal">
+        <div class="modal-overlay" onclick="closeQRModal()"></div>
+        <div class="modal-content glass">
+            <button class="modal-close" onclick="closeQRModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h3>QR Code</h3>
+            </div>
+            <div class="qr-display">
+                <canvas id="qrCanvas"></canvas>
+                <p class="qr-info" id="qrInfo"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-action btn-primary" onclick="downloadQR()">
+                    <i class="fas fa-download"></i>
+                    Télécharger
+                </button>
+                <button class="btn-action btn-secondary" onclick="closeQRModal()">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Email Preview Modal -->
+    <div class="modal hidden" id="emailModal">
+        <div class="modal-overlay" onclick="closeEmailModal()"></div>
+        <div class="modal-content glass modal-large">
+            <button class="modal-close" onclick="closeEmailModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h3>Prévisualisation Email</h3>
+            </div>
+            <div class="email-preview" id="emailPreview">
+                <!-- Preview injectée par JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-action btn-primary" onclick="confirmSendEmail()">
+                    <i class="fas fa-paper-plane"></i>
+                    Envoyer
+                </button>
+                <button class="btn-action btn-secondary" onclick="closeEmailModal()">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Proof Modal -->
+    <div class="modal hidden" id="paymentModal">
+        <div class="modal-overlay" onclick="closePaymentModal()"></div>
+        <div class="modal-content glass modal-large">
+            <button class="modal-close" onclick="closePaymentModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h3>Vérification du Paiement</h3>
+            </div>
+            <div class="payment-details">
+                <div class="payment-info-row">
+                    <span>Participant:</span>
+                    <strong id="paymentParticipantName">-</strong>
+                </div>
+                <div class="payment-info-row">
+                    <span>Montant:</span>
+                    <strong id="paymentAmount">500 Gds</strong>
+                </div>
+                <div class="payment-info-row">
+                    <span>Mode:</span>
+                    <strong id="paymentMethod">-</strong>
+                </div>
+                <div class="payment-info-row">
+                    <span>Téléphone:</span>
+                    <strong id="paymentPhone">-</strong>
+                </div>
+                <div class="payment-proof-image">
+                    <p>Preuve de paiement:</p>
+                    <img id="paymentProofImage" src="" alt="Preuve de paiement" style="max-width: 100%; border-radius: 8px; margin-top: 12px;">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-action btn-danger" onclick="rejectPayment()">
+                    <i class="fas fa-times"></i>
+                    Refuser
+                </button>
+                <button class="btn-action btn-success" onclick="verifyPayment()">
+                    <i class="fas fa-check"></i>
+                    Vérifier & Envoyer QR
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Donation Verification Modal -->
+    <div class="modal hidden" id="donationVerifyModal">
+        <div class="modal-overlay" onclick="closeDonationVerifyModal()"></div>
+        <div class="modal-content glass modal-large">
+            <button class="modal-close" onclick="closeDonationVerifyModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h3>Vérifier la Donation</h3>
+            </div>
+            <div class="payment-details">
+                <div class="payment-info-row">
+                    <span>Donateur:</span>
+                    <strong id="donationVerifyName">-</strong>
+                </div>
+                <div class="payment-info-row">
+                    <span>Montant:</span>
+                    <strong id="donationVerifyAmount">-</strong>
+                </div>
+                <div class="payment-info-row">
+                    <span>Mode:</span>
+                    <strong id="donationVerifyMethod">-</strong>
+                </div>
+                <div class="payment-info-row">
+                    <span>Téléphone:</span>
+                    <strong id="donationVerifyPhone">-</strong>
+                </div>
+                <div class="payment-proof-image">
+                    <p>Preuve de paiement:</p>
+                    <img id="donationVerifyImage" src="" alt="Preuve" style="max-width: 100%; border-radius: 8px; margin-top: 12px;">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-action btn-danger" onclick="rejectDonation()">
+                    <i class="fas fa-times"></i>
+                    Refuser
+                </button>
+                <button class="btn-action btn-success" onclick="verifyDonation()">
+                    <i class="fas fa-check"></i>
+                    Vérifier
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
