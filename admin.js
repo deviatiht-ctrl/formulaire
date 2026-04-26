@@ -64,10 +64,14 @@ async function loadParticipants() {
     showLoading(true);
     
     try {
-        if (typeof getAllParticipants === 'function' && supabase) {
+        // Vérifier que Supabase est connecté
+        const supabaseConnected = (typeof supabase !== 'undefined' && supabase !== null) || 
+                                   (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
+        
+        if (typeof getAllParticipants === 'function' && supabaseConnected) {
             participants = await getAllParticipants();
         } else {
-            throw new Error('Supabase non connecté');
+            throw new Error('Supabase non connecté - Vérifie la console pour les erreurs');
         }
         
         renderParticipants(participants);
@@ -585,10 +589,14 @@ async function loadDonations() {
     donationsTable?.classList.add('hidden');
     
     try {
-        if (typeof getAllDonations === 'function' && supabase) {
+        // Vérifier que Supabase est connecté
+        const supabaseConnected = (typeof supabase !== 'undefined' && supabase !== null) || 
+                                   (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
+        
+        if (typeof getAllDonations === 'function' && supabaseConnected) {
             donations = await getAllDonations();
         } else {
-            throw new Error('Supabase non connecté');
+            throw new Error('Supabase non connecté - Vérifie la console pour les erreurs');
         }
         
         renderDonations();
@@ -761,9 +769,15 @@ async function deleteDonation(id) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette donation ?')) return;
     
     try {
-        if (typeof supabase !== 'undefined' && supabase) {
-            const { error } = await supabase.from('donations').delete().eq('id', id);
+        // Vérifier que Supabase est connecté
+        const supabaseInstance = (typeof supabase !== 'undefined' && supabase) ? supabase : 
+                                (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) ? window.supabaseClient : null;
+        
+        if (supabaseInstance) {
+            const { error } = await supabaseInstance.from('donations').delete().eq('id', id);
             if (error) throw error;
+        } else {
+            throw new Error('Supabase non connecté');
         }
         
         donations = donations.filter(d => d.id !== id);

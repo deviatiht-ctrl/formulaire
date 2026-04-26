@@ -509,10 +509,13 @@ adminLoginForm.addEventListener('submit', async (e) => {
         // Vérifier avec la base de données Supabase
         let admin = null;
         
-        if (typeof adminLogin === 'function' && supabase) {
+        // Vérifier que Supabase est connecté
+        const supabaseConnected = typeof supabase !== 'undefined' && supabase !== null;
+        
+        if (typeof adminLogin === 'function' && supabaseConnected) {
             admin = await adminLogin(email, password);
         } else {
-            throw new Error('Supabase non connecté - Impossible de vérifier les credentials');
+            throw new Error('Supabase non connecté - Vérifie ta connexion internet et les credentials Supabase');
         }
         
         if (admin) {

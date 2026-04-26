@@ -8,10 +8,14 @@ let currentFilter = 'all';
 // Récupérer les donations
 async function loadDonations() {
     try {
-        if (typeof getAllDonations === 'function' && supabase) {
+        // Vérifier que Supabase est connecté
+        const supabaseConnected = (typeof supabase !== 'undefined' && supabase !== null) || 
+                                   (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
+        
+        if (typeof getAllDonations === 'function' && supabaseConnected) {
             allDonations = await getAllDonations();
         } else {
-            throw new Error('Supabase non connecté');
+            throw new Error('Supabase non connecté - Vérifie la console pour les erreurs');
         }
         
         // Ne montrer que les donations vérifiées publiquement

@@ -3,18 +3,21 @@
 // ============================================
 // Remplace ces valeurs par tes propres credentials Supabase
 
-const SUPABASE_URL = 'https://votre-project.supabase.co';
-const SUPABASE_ANON_KEY = 'votre-cle-anon-key';
+const SUPABASE_URL = 'https://silpnglpfzeoqkqvwdsn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbHBuZ2xwZnplb3FrcXZ3ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjAxNjMsImV4cCI6MjA5MjYzNjE2M30.DKkAvKjh6AyQfIrc3aAG3GVp-6B7lrGd7Bf_CMNkk9o';
 
 // Initialisation Supabase
 let supabase;
 
 try {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Make it globally available
+    window.supabaseClient = supabase;
     console.log('✅ Supabase connecté');
 } catch (error) {
     console.error('❌ Erreur connexion Supabase:', error);
     supabase = null;
+    window.supabaseClient = null;
 }
 
 // ============================================
