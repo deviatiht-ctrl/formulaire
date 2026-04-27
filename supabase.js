@@ -244,6 +244,41 @@ async function emailExists(email) {
 }
 
 // ============================================
+// FONCTIONS EMAIL (via Edge Function + Resend)
+// ============================================
+
+async function sendEmail(payload) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient.functions.invoke('send-email', {
+        body: payload
+    });
+    if (error) throw error;
+    return data;
+}
+
+async function sendRegistrationEmail(participant) {
+    return sendEmail({
+        type: 'registration',
+        to: participant.email,
+        prenom: participant.prenom,
+        nom: participant.nom,
+    });
+}
+
+async function sendConfirmationEmail(participant, zoomConfig) {
+    return sendEmail({
+        type: 'confirmation',
+        to: participant.email,
+        prenom: participant.prenom,
+        nom: participant.nom,
+        access_code: participant.access_code,
+        zoom_link:  zoomConfig.link,
+        zoom_id:    zoomConfig.meetingId,
+        zoom_pass:  zoomConfig.password,
+    });
+}
+
+// ============================================
 // FONCTIONS ACCESS CODE
 // ============================================
 

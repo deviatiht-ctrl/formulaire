@@ -666,24 +666,50 @@ async function assignCode(participantId) {
         renderConfirmesSection();
         renderParticipants(participants);
         showToast(`Code ${code} assigné à ${p.prenom}`, 'success');
-    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+        // Auto-send confirmation email with zoom
+        const zoom = getZoomConfig();
+        if (typeof sendConfirmationEmail === 'function') {
+            sendConfirmationEmail(p, zoom)
+                .then(() => showToast(`Email envoyé à ${p.email}`, 'success'))
+                .catch(e => showToast('Email non envoyé: ' + e.message, 'warning'));
+        }
+    } catch(e) {
+        if (e.message && e.message.includes('access_code')) {
+            showToast('⚠️ Colonne access_code manquante — Kouri access_code.sql nan Supabase SQL Editor', 'error');
+        } else {
+            showToast('Erreur: ' + e.message, 'error');
+        }
+    }
 }
 
 async function generateAllCodes() {
     const confirmed = participants.filter(p => p.statut_paiement === 'verifie' && !p.access_code);
     if (confirmed.length === 0) { showToast('Tous les confirmés ont déjà un code', 'info'); return; }
     let count = 0;
+    const zoom = getZoomConfig();
     for (const p of confirmed) {
         const code = generateCode();
         try {
             await saveAccessCode(p.id, code);
             p.access_code = code;
             count++;
-        } catch(e) { console.warn('Erreur code pour', p.email, e.message); }
+            // Auto-send email (fire & forget)
+            if (typeof sendConfirmationEmail === 'function') {
+                sendConfirmationEmail(p, zoom).catch(e => console.warn('Email:', e.message));
+            }
+        } catch(e) {
+            if (e.message && e.message.includes('access_code')) {
+                showToast('⚠️ Kouri access_code.sql nan Supabase SQL Editor dabò !', 'error');
+                break;
+            }
+            console.warn('Erreur code pour', p.email, e.message);
+        }
     }
-    renderConfirmesSection();
-    renderParticipants(participants);
-    showToast(`${count} codes générés !`, 'success');
+    if (count > 0) {
+        renderConfirmesSection();
+        renderParticipants(participants);
+        showToast(`${count} codes générés + emails envoyés !`, 'success');
+    }
 }
 
 function buildZoomEmailBody(p, zoom) {
