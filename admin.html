@@ -394,7 +394,7 @@
                 <h3>QR Code</h3>
             </div>
             <div class="qr-display" style="text-align:center; padding: 16px 0;">
-                <canvas id="qrCanvas" style="border-radius:8px; max-width:100%;"></canvas>
+                <img id="qrImage" src="" alt="QR Code" style="border-radius:8px; max-width:280px; width:100%; display:block; margin:0 auto; border:1px solid #e5e7eb;">
                 <p class="qr-info" id="qrInfo" style="margin-top:12px; font-size:0.85rem; color:var(--text-secondary, #aaa);"></p>
             </div>
             <div class="modal-actions">
@@ -417,7 +417,12 @@
                 <i class="fas fa-times"></i>
             </button>
             <div class="modal-header">
-                <h3>Prévisualisation Email</h3>
+                <h3>Envoyer Email de Confirmation</h3>
+            </div>
+            <div style="padding: 0 4px 12px; font-size:0.85rem; color:var(--text-secondary);">
+                <i class="fas fa-user" style="margin-right:6px; color:var(--primary);"></i>
+                <strong>Destinataire:</strong>
+                <span id="emailRecipient" style="margin-left:6px; font-weight:600; color:var(--text-primary);"></span>
             </div>
             <div class="email-preview" id="emailPreview">
                 <!-- Preview injectée par JS -->
@@ -425,7 +430,7 @@
             <div class="modal-actions">
                 <button class="btn-action btn-primary" onclick="confirmSendEmail()">
                     <i class="fas fa-paper-plane"></i>
-                    Envoyer
+                    Ouvrir Gmail
                 </button>
                 <button class="btn-action btn-secondary" onclick="closeEmailModal()">
                     Annuler

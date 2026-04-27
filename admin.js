@@ -227,94 +227,56 @@ searchInput.addEventListener('input', async (e) => {
 });
 
 // ===== QR CODE SYSTEM =====
+// Utilise l'API gratuite api.qrserver.com (pas besoin de librairie)
 
-function buildQRData(participant) {
-    return JSON.stringify({
+function getQRUrl(participant) {
+    const data = JSON.stringify({
         id: participant.id,
         nom: participant.nom,
         prenom: participant.prenom,
         email: participant.email,
         event: 'Rasin Ayiti 2026'
     });
-}
-
-async function drawQROnCanvas(canvas, qrData) {
-    if (typeof QRCode === 'undefined') {
-        throw new Error('Bibliothèque QRCode non chargée - vérifier la connexion internet');
-    }
-    return new Promise((resolve, reject) => {
-        QRCode.toCanvas(canvas, qrData, {
-            width: 256,
-            margin: 2,
-            color: { dark: '#4f46e5', light: '#ffffff' }
-        }, (err) => {
-            if (err) {
-                // Fallback sans couleur
-                QRCode.toCanvas(canvas, qrData, { width: 256, margin: 2 }, (err2) => {
-                    if (err2) reject(err2);
-                    else resolve();
-                });
-            } else {
-                resolve();
-            }
-        });
-    });
+    return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=10&color=4f46e5&bgcolor=ffffff&data=${encodeURIComponent(data)}`;
 }
 
 async function generateQRCode(participant) {
-    const canvas = document.createElement('canvas');
-    await drawQROnCanvas(canvas, buildQRData(participant));
-    return canvas.toDataURL('image/png');
+    return getQRUrl(participant);
 }
 
 async function showQRModal(participantId) {
-    // Support id comme number ou string
     const participant = participants.find(p => p.id == participantId);
-    
-    if (!participant) {
-        showToast('Participant non trouvé', 'error');
-        return;
-    }
+    if (!participant) { showToast('Participant non trouvé', 'error'); return; }
     
     currentQRParticipant = participant;
     
     const qrInfo = document.getElementById('qrInfo');
-    if (qrInfo) qrInfo.textContent = `${participant.prenom} ${participant.nom} - ${participant.email}`;
+    if (qrInfo) qrInfo.textContent = `${participant.prenom} ${participant.nom} \u2014 ${participant.email}`;
     
-    // Afficher le modal d'abord
+    // Générer URL du QR
+    const qrUrl = getQRUrl(participant);
+    
+    // Afficher dans l'image du modal
+    const qrImg = document.getElementById('qrImage');
+    if (qrImg) {
+        qrImg.src = qrUrl;
+        qrImg.alt = `QR Code - ${participant.prenom} ${participant.nom}`;
+    }
+    
+    // Sauvegarder l'URL dans Supabase si pas encore fait
+    if (!participant.qr_code && typeof updateQRCode === 'function' && window.supabaseClient) {
+        try {
+            await updateQRCode(participant.id, qrUrl);
+            participant.qr_code = qrUrl;
+            renderParticipants(participants);
+            updateStats();
+        } catch (e) {
+            console.warn('⚠️ QR non sauvegardé:', e.message);
+        }
+    }
+    
     const modal = document.getElementById('qrModal');
     if (modal) modal.classList.remove('hidden');
-    
-    const canvas = document.getElementById('qrCanvas');
-    if (!canvas) {
-        showToast('Erreur: canvas QR non trouvé', 'error');
-        return;
-    }
-    
-    try {
-        const qrData = buildQRData(participant);
-        
-        // Dessiner directement sur le canvas du modal
-        await drawQROnCanvas(canvas, qrData);
-        
-        // Sauvegarder dans Supabase si pas encore sauvegardé
-        if (!participant.qr_code && typeof updateQRCode === 'function' && window.supabaseClient) {
-            try {
-                const dataUrl = canvas.toDataURL('image/png');
-                await updateQRCode(participant.id, dataUrl);
-                participant.qr_code = dataUrl;
-                renderParticipants(participants);
-                updateStats();
-            } catch (saveErr) {
-                console.warn('⚠️ QR généré mais non sauvegardé:', saveErr.message);
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Erreur génération QR:', error);
-        showToast('Erreur QR: ' + error.message, 'error');
-        if (modal) modal.classList.add('hidden');
-    }
 }
 
 function closeQRModal() {
@@ -324,13 +286,12 @@ function closeQRModal() {
 
 function downloadQR() {
     if (!currentQRParticipant) return;
-    
-    const canvas = document.getElementById('qrCanvas');
+    const qrUrl = getQRUrl(currentQRParticipant);
     const link = document.createElement('a');
     link.download = `qr-${currentQRParticipant.prenom}-${currentQRParticipant.nom}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = qrUrl;
+    link.target = '_blank';
     link.click();
-    
     showToast('QR Code téléchargé !', 'success');
 }
 
@@ -364,101 +325,57 @@ async function generateAllQR() {
     showToast(`${generated} QR codes générés`, 'success');
 }
 
-// ===== EMAIL SYSTEM =====
+// ===== EMAIL SYSTEM (via Gmail / client email) =====
 
-function generateEmailTemplate(participant, qrCode) {
-    return `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #6366f1, #ec4899); padding: 30px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 28px;">🎉 Bienvenue ${escapeHtml(participant.prenom)} !</h1>
-                <p style="margin: 10px 0 0; font-size: 16px;">Ta place est réservée pour EventJeunes 2026</p>
-            </div>
-            
-            <div style="padding: 30px; background: #f8fafc;">
-                <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                    Bonjour <strong>${escapeHtml(participant.prenom)} ${escapeHtml(participant.nom)}</strong>,<br><br>
-                    Nous avons le plaisir de confirmer ton inscription à notre événement !
-                </p>
-                
-                <div style="background: white; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #6366f1;">
-                    <h3 style="margin: 0 0 15px; color: #6366f1;">📋 Récapitulatif</h3>
-                    <p style="margin: 5px 0; color: #666;"><strong>Nom:</strong> ${escapeHtml(participant.nom)}</p>
-                    <p style="margin: 5px 0; color: #666;"><strong>Prénom:</strong> ${escapeHtml(participant.prenom)}</p>
-                    <p style="margin: 5px 0; color: #666;"><strong>Email:</strong> ${escapeHtml(participant.email)}</p>
-                    <p style="margin: 5px 0; color: #666;"><strong>Date d'inscription:</strong> ${formatDate(participant.date_inscription)}</p>
-                </div>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <p style="font-size: 16px; color: #333; margin-bottom: 15px;">🎟️ Voici ton QR Code unique :</p>
-                    <div style="display: inline-block; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        ${qrCode ? `<img src="${qrCode}" alt="QR Code" style="max-width: 200px;">` : '<p>QR Code à venir</p>'}
-                    </div>
-                    <p style="font-size: 13px; color: #666; margin-top: 15px;">
-                        Présente ce QR Code à l'entrée de l'événement
-                    </p>
-                </div>
-                
-                <div style="background: #fef3c7; padding: 20px; border-radius: 12px; margin: 20px 0;">
-                    <h3 style="margin: 0 0 10px; color: #f59e0b;">📅 Programme</h3>
-                    <p style="margin: 0; color: #666; line-height: 1.6;">
-                        Date: À définir<br>
-                        Lieu: À définir<br>
-                        Heure: À définir
-                    </p>
-                </div>
-                
-                <p style="font-size: 14px; color: #666; text-align: center; margin-top: 30px;">
-                    À très bientôt !<br>
-                    <strong>L'équipe EventJeunes</strong>
-                </p>
-            </div>
-            
-            <div style="background: #1e293b; padding: 20px; text-align: center;">
-                <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                    &copy; 2026 EventJeunes - Tous droits réservés
-                </p>
-            </div>
-        </div>
-    `;
+function buildEmailBody(participant) {
+    const qrUrl = getQRUrl(participant);
+    return `Bonjour ${participant.prenom} ${participant.nom},
+
+Nous avons le plaisir de confirmer votre inscription au :
+
+SEMINAIRE SUR LES COMPETENCES DE VIE
+5 SECRETS POUR REUSSIR COMME JEUNE ET DEVENIR CREATEUR D'OPPORTUNITES EN HAITI
+
+Organise par : RASIN AYITI x Universite de Technologie d'Haiti (UNITECH)
+
+------- DETAILS DE L'EVENEMENT -------
+Date   : 30 Avril et 1er Mai 2026
+Heure  : 09:00 AM - 01:00 PM
+Contact: +509 46807922
+
+------- VOS INFORMATIONS -------
+Nom    : ${participant.nom}
+Prenom : ${participant.prenom}
+Email  : ${participant.email}
+Tel    : ${participant.telephone || '-'}
+
+------- VOTRE QR CODE -------
+Veuillez presenter ce lien a l'entree de l'evenement :
+${qrUrl}
+
+Apprenez a avoir du succes, creer des opportunites, depasser vos blocages.
+
+A tres bientot !
+L'equipe Rasin Ayiti`;
 }
 
-async function sendEmail(participant, qrCode) {
-    try {
-        // Avec EmailJS
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-            to_email: participant.email,
-            to_name: `${participant.prenom} ${participant.nom}`,
-            message: generateEmailTemplate(participant, qrCode),
-            reply_to: 'contact@eventjeunes.com'
-        });
-        
-        return true;
-    } catch (error) {
-        console.error('Erreur EmailJS:', error);
-        showToast('Erreur lors de l\'envoi de l\'email', 'error');
-        return false;
-    }
-}
-
-async function showEmailModal(participantId) {
-    const participant = participants.find(p => p.id === participantId);
+function showEmailModal(participantId) {
+    const participant = participants.find(p => p.id == participantId);
     if (!participant) return;
     
     currentEmailParticipant = participant;
     
-    // Générer le QR s'il n'existe pas
-    let qrCode = participant.qr_code;
-    if (!qrCode) {
-        try {
-            qrCode = await generateQRCode(participant);
-            participant.qr_code = qrCode;
-        } catch (e) {
-            qrCode = null;
-        }
+    // Afficher info participant dans le preview
+    const preview = document.getElementById('emailPreview');
+    if (preview) {
+        preview.innerHTML = `
+            <div style="font-family:monospace; font-size:0.82rem; background:#f8fafc; padding:16px; border-radius:8px; white-space:pre-wrap; border:1px solid #e5e7eb; max-height:320px; overflow-y:auto;">${escapeHtml(buildEmailBody(participant))}</div>
+        `;
     }
     
-    const preview = document.getElementById('emailPreview');
-    preview.innerHTML = generateEmailTemplate(participant, qrCode);
+    // Mettre à jour le destinataire affiché
+    const recipientEl = document.getElementById('emailRecipient');
+    if (recipientEl) recipientEl.textContent = `${participant.prenom} ${participant.nom} <${participant.email}>`;
     
     document.getElementById('emailModal').classList.remove('hidden');
 }
@@ -470,14 +387,29 @@ function closeEmailModal() {
 
 async function confirmSendEmail() {
     if (!currentEmailParticipant) return;
+    const p = currentEmailParticipant;
     
+    const subject = encodeURIComponent('Confirmation - Séminaire Compétences de Vie | Rasin Ayiti');
+    const body = encodeURIComponent(buildEmailBody(p));
+    const mailtoLink = `mailto:${p.email}?subject=${subject}&body=${body}`;
+    
+    // Ouvrir Gmail / client email
+    window.open(mailtoLink, '_blank');
+    
+    // Marquer comme envoyé
     try {
-        await sendEmail(currentEmailParticipant, currentEmailParticipant.qr_code);
-        closeEmailModal();
-        showToast('Email envoyé avec succès !', 'success');
-    } catch (error) {
-        showToast('Erreur lors de l\'envoi', 'error');
+        if (typeof markEmailSent === 'function' && window.supabaseClient) {
+            await markEmailSent(p.id);
+        }
+        p.email_envoye = true;
+        renderParticipants(participants);
+        updateStats();
+    } catch (e) {
+        console.warn('Impossible de marquer email:', e.message);
     }
+    
+    closeEmailModal();
+    showToast('Application email ouverte !', 'success');
 }
 
 async function sendAllEmails() {
