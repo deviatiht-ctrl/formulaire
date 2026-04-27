@@ -244,15 +244,101 @@ async function emailExists(email) {
 }
 
 // ============================================
-// FONCTIONS EMAIL (via Edge Function + Resend)
+// FONCTIONS EMAIL (Resend API direct)
 // ============================================
 
+const RESEND_API_KEY = 're_3fzBXEVJ_5xcYX4bahNNtizCWcFdkuymS';
+const RESEND_FROM    = 'Rasin Ayiti <onboarding@resend.dev>';
+
+function _registrationHtml(prenom, nom, email) {
+    return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
+  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:28px 32px;text-align:center;margin-bottom:24px;">
+    <h1 style="color:#fff;font-size:1.4rem;margin:0 0 4px;">RASIN AYITI × UNITECH</h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">Séminaire sur les Compétences de Vie</p>
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
+    <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${prenom} ${nom} 👋</h2>
+    <p style="color:#4b5563;line-height:1.7;font-size:0.92rem;">Nous avons bien reçu votre inscription au <strong>Séminaire sur les Compétences de Vie</strong>.</p>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:20px 0;">
+      <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;"><strong>📅 Date :</strong> 30 Avril et 1er Mai 2026</p>
+      <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;"><strong>🕘 Heure :</strong> 09:00 AM – 01:00 PM</p>
+      <p style="margin:0;font-size:0.88rem;color:#166534;"><strong>💻 Format :</strong> 100% en ligne sur Zoom</p>
+    </div>
+    <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px;margin:16px 0;">
+      <p style="margin:0;font-size:0.88rem;color:#854d0e;">⏳ <strong>Prochaine étape :</strong> Complétez votre paiement (500 Gds) pour confirmer votre place. Vous recevrez votre <strong>code d'accès Zoom</strong> après confirmation.</p>
+    </div>
+    <p style="color:#9ca3af;font-size:0.8rem;margin:0;">Email : ${email}</p>
+  </div>
+  <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>
+</div>`;
+}
+
+function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoomPass) {
+    return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
+  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:28px 32px;text-align:center;margin-bottom:24px;">
+    <h1 style="color:#fff;font-size:1.4rem;margin:0 0 4px;">RASIN AYITI × UNITECH</h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">Confirmation de Participation</p>
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:56px;height:56px;line-height:56px;font-size:1.6rem;">✅</div>
+      <h2 style="color:#1f2937;font-size:1.1rem;margin:10px 0 4px;">Paiement confirmé !</h2>
+      <p style="color:#6b7280;font-size:0.88rem;margin:0;">Bienvenue ${prenom} ${nom}</p>
+    </div>
+    <div style="background:#f0f7ff;border:2px solid #4f46e5;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
+      <p style="font-size:0.75rem;color:#4f46e5;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">Votre Code d'Accès</p>
+      <div style="font-size:2rem;font-weight:900;color:#4f46e5;letter-spacing:0.2em;font-family:monospace;">${accessCode}</div>
+      <p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">Entrez ce code sur la page d'accès participant</p>
+    </div>
+    <div style="text-align:center;margin:16px 0;">
+      <a href="https://formulaire-rho-rouge.vercel.app/access.html" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.92rem;">Accéder à ma formation →</a>
+    </div>
+    <div style="border-top:1px solid #e5e7eb;padding-top:14px;margin-top:14px;">
+      <p style="font-size:0.88rem;font-weight:700;color:#1f2937;margin:0 0 8px;">📹 Rejoindre sur Zoom</p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Lien :</strong> <a href="${zoomLink}" style="color:#4f46e5;">${zoomLink}</a></p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Meeting ID :</strong> ${zoomId}</p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0;"><strong>Mot de passe :</strong> ${zoomPass}</p>
+    </div>
+    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-top:14px;font-size:0.82rem;color:#6b7280;">
+      <p style="margin:0 0 3px;"><strong>📅</strong> 30 Avril et 1er Mai 2026 — 09:00 AM – 01:00 PM</p>
+      <p style="margin:0;"><strong>📧</strong> ${email}</p>
+    </div>
+  </div>
+  <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>
+</div>`;
+}
+
 async function sendEmail(payload) {
-    if (!supabaseClient) throw new Error('Supabase non connecté');
-    const { data, error } = await supabaseClient.functions.invoke('send-email', {
-        body: payload
+    let subject, html;
+
+    if (payload.type === 'registration') {
+        subject = '📋 Inscription reçue — Séminaire Compétences de Vie | Rasin Ayiti';
+        html = _registrationHtml(payload.prenom, payload.nom, payload.to);
+    } else if (payload.type === 'confirmation') {
+        subject = "✅ Paiement confirmé + Code d'accès Zoom — Séminaire Rasin Ayiti";
+        html = _confirmationHtml(payload.prenom, payload.nom, payload.to,
+                                  payload.access_code, payload.zoom_link,
+                                  payload.zoom_id, payload.zoom_pass);
+    } else {
+        throw new Error('Type email inconnu: ' + payload.type);
+    }
+
+    const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + RESEND_API_KEY,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            from: RESEND_FROM,
+            to: [payload.to],
+            subject,
+            html,
+        }),
     });
-    if (error) throw error;
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || data.name || 'Erreur Resend ' + res.status);
     return data;
 }
 
@@ -272,9 +358,9 @@ async function sendConfirmationEmail(participant, zoomConfig) {
         prenom: participant.prenom,
         nom: participant.nom,
         access_code: participant.access_code,
-        zoom_link:  zoomConfig.link,
-        zoom_id:    zoomConfig.meetingId,
-        zoom_pass:  zoomConfig.password,
+        zoom_link:   zoomConfig.link,
+        zoom_id:     zoomConfig.meetingId,
+        zoom_pass:   zoomConfig.password,
     });
 }
 
