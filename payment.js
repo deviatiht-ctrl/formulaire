@@ -4,8 +4,8 @@
 
 // Numéros de paiement (à personnaliser)
 const PAYMENT_NUMBERS = {
-    moncash: '+509 47 11 1111',
-    natcash: '+509 38 22 2222'
+    moncash: '+509 46807922',
+    natcash: '+509 46807922'
 };
 
 // Récupérer l'ID du participant depuis l'URL ou sessionStorage
