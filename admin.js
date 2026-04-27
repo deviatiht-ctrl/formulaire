@@ -228,106 +228,92 @@ searchInput.addEventListener('input', async (e) => {
 
 // ===== QR CODE SYSTEM =====
 
-async function generateQRCode(participant) {
-    const qrData = JSON.stringify({
+function buildQRData(participant) {
+    return JSON.stringify({
         id: participant.id,
         nom: participant.nom,
         prenom: participant.prenom,
         email: participant.email,
-        event: 'EventJeunes 2026'
+        event: 'Rasin Ayiti 2026'
     });
-    
-    try {
-        const canvas = document.createElement('canvas');
-        await QRCode.toCanvas(canvas, qrData, {
+}
+
+async function drawQROnCanvas(canvas, qrData) {
+    if (typeof QRCode === 'undefined') {
+        throw new Error('Bibliothèque QRCode non chargée - vérifier la connexion internet');
+    }
+    return new Promise((resolve, reject) => {
+        QRCode.toCanvas(canvas, qrData, {
             width: 256,
             margin: 2,
-            color: {
-                dark: '#6366f1',
-                light: '#ffffff'
+            color: { dark: '#4f46e5', light: '#ffffff' }
+        }, (err) => {
+            if (err) {
+                // Fallback sans couleur
+                QRCode.toCanvas(canvas, qrData, { width: 256, margin: 2 }, (err2) => {
+                    if (err2) reject(err2);
+                    else resolve();
+                });
+            } else {
+                resolve();
             }
         });
-        
-        return canvas.toDataURL('image/png');
-    } catch (error) {
-        console.error('Erreur QR:', error);
-        throw error;
-    }
+    });
+}
+
+async function generateQRCode(participant) {
+    const canvas = document.createElement('canvas');
+    await drawQROnCanvas(canvas, buildQRData(participant));
+    return canvas.toDataURL('image/png');
 }
 
 async function showQRModal(participantId) {
-    console.log('🔍 showQRModal appelé avec ID:', participantId);
-    
-    const participant = participants.find(p => p.id === participantId);
-    console.log('👤 Participant trouvé:', participant);
+    // Support id comme number ou string
+    const participant = participants.find(p => p.id == participantId);
     
     if (!participant) {
-        console.error('❌ Participant non trouvé');
+        showToast('Participant non trouvé', 'error');
         return;
     }
     
     currentQRParticipant = participant;
     
     const qrInfo = document.getElementById('qrInfo');
-    if (qrInfo) {
-        qrInfo.textContent = `${participant.prenom} ${participant.nom} - ${participant.email}`;
-    }
+    if (qrInfo) qrInfo.textContent = `${participant.prenom} ${participant.nom} - ${participant.email}`;
     
-    // Générer ou récupérer le QR
-    let qrCode = participant.qr_code;
-    console.log('📱 QR Code existant:', qrCode ? 'Oui' : 'Non');
+    // Afficher le modal d'abord
+    const modal = document.getElementById('qrModal');
+    if (modal) modal.classList.remove('hidden');
     
-    if (!qrCode) {
-        console.log('🎨 Génération du QR code...');
-        try {
-            qrCode = await generateQRCode(participant);
-            console.log('✅ QR généré:', qrCode.substring(0, 50) + '...');
-            
-            // Sauvegarder dans Supabase
-            if (typeof updateQRCode === 'function') {
-                await updateQRCode(participant.id, qrCode);
-                console.log('💾 QR sauvegardé dans Supabase');
-            }
-            
-            // Mettre à jour localement
-            participant.qr_code = qrCode;
-            renderParticipants(participants);
-            updateStats();
-            
-        } catch (error) {
-            console.error('❌ Erreur génération QR:', error);
-            showToast('Erreur lors de la génération du QR', 'error');
-            return;
-        }
-    }
-    
-    // Afficher le QR
     const canvas = document.getElementById('qrCanvas');
-    console.log('🖼️ Canvas trouvé:', canvas ? 'Oui' : 'Non');
-    
     if (!canvas) {
-        console.error('❌ Canvas qrCanvas non trouvé dans le DOM');
+        showToast('Erreur: canvas QR non trouvé', 'error');
         return;
     }
     
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = () => {
-        console.log('🖼️ Image chargée, dimensions:', img.width, 'x', img.height);
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-    };
-    img.onerror = (err) => {
-        console.error('❌ Erreur chargement image:', err);
-    };
-    img.src = qrCode;
-    
-    const modal = document.getElementById('qrModal');
-    console.log('📦 Modal trouvé:', modal ? 'Oui' : 'Non');
-    if (modal) {
-        modal.classList.remove('hidden');
-        console.log('✅ Modal affiché');
+    try {
+        const qrData = buildQRData(participant);
+        
+        // Dessiner directement sur le canvas du modal
+        await drawQROnCanvas(canvas, qrData);
+        
+        // Sauvegarder dans Supabase si pas encore sauvegardé
+        if (!participant.qr_code && typeof updateQRCode === 'function' && window.supabaseClient) {
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                await updateQRCode(participant.id, dataUrl);
+                participant.qr_code = dataUrl;
+                renderParticipants(participants);
+                updateStats();
+            } catch (saveErr) {
+                console.warn('⚠️ QR généré mais non sauvegardé:', saveErr.message);
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erreur génération QR:', error);
+        showToast('Erreur QR: ' + error.message, 'error');
+        if (modal) modal.classList.add('hidden');
     }
 }
 

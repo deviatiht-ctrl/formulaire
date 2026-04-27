@@ -393,9 +393,9 @@
             <div class="modal-header">
                 <h3>QR Code</h3>
             </div>
-            <div class="qr-display">
-                <canvas id="qrCanvas"></canvas>
-                <p class="qr-info" id="qrInfo"></p>
+            <div class="qr-display" style="text-align:center; padding: 16px 0;">
+                <canvas id="qrCanvas" style="border-radius:8px; max-width:100%;"></canvas>
+                <p class="qr-info" id="qrInfo" style="margin-top:12px; font-size:0.85rem; color:var(--text-secondary, #aaa);"></p>
             </div>
             <div class="modal-actions">
                 <button class="btn-action btn-primary" onclick="downloadQR()">
