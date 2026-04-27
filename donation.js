@@ -9,7 +9,7 @@ let currentFilter = 'all';
 async function loadDonations() {
     try {
         // Vérifier que Supabase est connecté
-        const supabaseConnected = (typeof supabase !== 'undefined' && supabase !== null) || 
+        const supabaseConnected = (typeof supabaseClient !== 'undefined' && supabaseClient !== null) || 
                                    (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
         
         if (typeof getAllDonations === 'function' && supabaseConnected) {

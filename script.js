@@ -506,33 +506,48 @@ adminLoginForm.addEventListener('submit', async (e) => {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
     
     try {
-        // Vérifier avec la base de données Supabase
-        let admin = null;
-        
         // Vérifier que Supabase est connecté
-        const supabaseConnected = typeof supabase !== 'undefined' && supabase !== null;
+        const supabaseInstance = (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : 
+                                (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) ? window.supabaseClient : null;
         
-        if (typeof adminLogin === 'function' && supabaseConnected) {
-            admin = await adminLogin(email, password);
-        } else {
-            throw new Error('Supabase non connecté - Vérifie ta connexion internet et les credentials Supabase');
+        if (!supabaseInstance) {
+            throw new Error('Supabase non connecté - Vérifie ta connexion internet');
         }
         
-        if (admin) {
-            // Stocker la session admin
-            sessionStorage.setItem('adminLoggedIn', 'true');
-            sessionStorage.setItem('adminEmail', admin.email);
-            sessionStorage.setItem('adminNom', admin.nom || 'Admin');
-            
-            showToast('Connexion réussie !');
-            
-            // Rediriger vers le panel admin
-            setTimeout(() => {
-                window.location.href = 'admin.html';
-            }, 500);
-        } else {
-            showToast('Email ou mot de passe incorrect', 'error');
+        // 1. Connexion avec Supabase Auth
+        const { data: authData, error: authError } = await supabaseInstance.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (authError) {
+            throw new Error('Email ou mot de passe incorrect');
         }
+        
+        // 2. Vérifier si l'utilisateur est admin
+        let admin = null;
+        if (typeof checkIsAdmin === 'function') {
+            admin = await checkIsAdmin(email);
+        }
+        
+        if (!admin) {
+            // Déconnexion car pas admin
+            await supabaseInstance.auth.signOut();
+            throw new Error('Accès refusé - Vous n\'êtes pas autorisé à accéder au panel admin');
+        }
+        
+        // C'est un admin - continuer
+        // Stocker la session admin
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        sessionStorage.setItem('adminEmail', admin.email);
+        sessionStorage.setItem('adminNom', admin.nom || 'Admin');
+        
+        showToast('Connexion réussie !');
+        
+        // Rediriger vers le panel admin
+        setTimeout(() => {
+            window.location.href = 'admin.html';
+        }, 500);
     } catch (error) {
         console.error('Erreur login:', error);
         showToast('Erreur de connexion: ' + error.message, 'error');

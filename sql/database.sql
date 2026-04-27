@@ -3,12 +3,11 @@
 -- ============================================
 
 -- ============================================
--- 1. TABLE ADMIN USERS
+-- 1. TABLE ADMIN USERS (Stocke seulement les emails admins)
 -- ============================================
 CREATE TABLE IF NOT EXISTS admin_users (
     id BIGSERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
     nom TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -16,22 +15,22 @@ CREATE TABLE IF NOT EXISTS admin_users (
 -- Index admin
 CREATE INDEX IF NOT EXISTS idx_admin_email ON admin_users(email);
 
--- Insérer admin par défaut (à modifier après première connexion)
-INSERT INTO admin_users (email, password, nom)
-VALUES ('rasinayiti@gmail.com', 'rasinayiti2026@', 'Admin Rasin')
+-- Insérer l'admin par défaut (créer ce compte dans Supabase Auth aussi!)
+INSERT INTO admin_users (email, nom)
+VALUES ('rasinayiti@gmail.com', 'Admin Rasin')
 ON CONFLICT (email) DO NOTHING;
 
 -- Activer RLS sur admin_users
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Admin users policy" ON admin_users;
-CREATE POLICY "Admin users policy" ON admin_users
-    FOR ALL TO authenticated
-    USING (true)
-    WITH CHECK (true);
+-- Politique: tout le monde peut lire la liste des admins (pour vérification login)
+DROP POLICY IF EXISTS "Allow select admins for all" ON admin_users;
+CREATE POLICY "Allow select admins for all" ON admin_users
+    FOR SELECT TO anon, authenticated
+    USING (true);
 
 -- ============================================
--- 3. TABLE PARTICIPANTS
+-- 2. TABLE PARTICIPANTS
 -- ============================================
 CREATE TABLE IF NOT EXISTS participants (
     id BIGSERIAL PRIMARY KEY,
@@ -143,11 +142,17 @@ CREATE POLICY "Allow delete donations for authenticated" ON donations
     USING (true);
 
 -- ============================================
--- 5. STORAGE BUCKET POLICIES
+-- 5. STORAGE BUCKET
 -- ============================================
 
--- Créer le bucket 'paiements' manuellement via l'interface
--- puis exécuter ces politiques:
+-- Créer le bucket 'paiements' (si il n'existe pas)
+INSERT INTO storage.buckets (id, name, public, created_at, updated_at)
+VALUES ('paiements', 'paiements', true, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
+-- 7. STORAGE BUCKET POLICIES
+-- ============================================
 
 -- Politique pour upload (tout le monde)
 DROP POLICY IF EXISTS "Allow upload for all" ON storage.objects;
@@ -168,7 +173,7 @@ CREATE POLICY "Allow delete for authenticated" ON storage.objects
     USING (bucket_id = 'paiements');
 
 -- ============================================
--- 6. CONFIGURATION SUPABASE STORAGE
+-- 8. CONFIGURATION SUPABASE STORAGE
 -- ============================================
 
 -- Instructions:
@@ -178,7 +183,7 @@ CREATE POLICY "Allow delete for authenticated" ON storage.objects
 -- 4. Créer
 
 -- ============================================
--- 7. DONNÉES DE TEST (OPTIONNEL)
+-- 9. DONNÉES DE TEST (OPTIONNEL)
 -- ============================================
 
 -- Participants test
@@ -198,7 +203,7 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- ============================================
--- 8. VUES POUR STATISTIQUES
+-- 10. VUES POUR STATISTIQUES
 -- ============================================
 
 -- Vue statistiques participants

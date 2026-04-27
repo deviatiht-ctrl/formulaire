@@ -7,16 +7,16 @@ const SUPABASE_URL = 'https://silpnglpfzeoqkqvwdsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbHBuZ2xwZnplb3FrcXZ3ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjAxNjMsImV4cCI6MjA5MjYzNjE2M30.DKkAvKjh6AyQfIrc3aAG3GVp-6B7lrGd7Bf_CMNkk9o';
 
 // Initialisation Supabase
-let supabase;
+let supabaseClient;
 
 try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // Make it globally available
-    window.supabaseClient = supabase;
+    window.supabaseClient = supabaseClient;
     console.log('✅ Supabase connecté');
 } catch (error) {
     console.error('❌ Erreur connexion Supabase:', error);
-    supabase = null;
+    supabaseClient = null;
     window.supabaseClient = null;
 }
 
@@ -30,11 +30,11 @@ try {
  * @returns {Promise<Object>}
  */
 async function saveParticipant(participant) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('participants')
         .insert([{
             nom: participant.nom,
@@ -63,17 +63,24 @@ async function saveParticipant(participant) {
  * @returns {Promise<Array>}
  */
 async function getAllParticipants() {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    console.log('📡 Requête Supabase: participants...');
+    
+    const { data, error } = await supabaseClient
         .from('participants')
         .select('*')
         .order('date_inscription', { ascending: false });
 
-    if (error) throw error;
-    return data;
+    if (error) {
+        console.error('❌ Erreur Supabase:', error);
+        throw error;
+    }
+    
+    console.log('✅ Données reçues:', data);
+    return data || []; // Retourne tableau vide si null
 }
 
 /**
@@ -82,11 +89,11 @@ async function getAllParticipants() {
  * @returns {Promise<Array>}
  */
 async function searchParticipants(searchTerm) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('participants')
         .select('*')
         .or(`nom.ilike.%${searchTerm}%,prenom.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
@@ -103,11 +110,11 @@ async function searchParticipants(searchTerm) {
  * @returns {Promise<Object>}
  */
 async function updateQRCode(id, qrCode) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('participants')
         .update({ qr_code: qrCode })
         .eq('id', id)
@@ -125,7 +132,7 @@ async function updateQRCode(id, qrCode) {
  * @returns {Promise<Object>}
  */
 async function updatePaymentStatus(id, statut, preuveUrl = null) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
@@ -136,7 +143,7 @@ async function updatePaymentStatus(id, statut, preuveUrl = null) {
     
     if (preuveUrl) updates.preuve_paiement = preuveUrl;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('participants')
         .update(updates)
         .eq('id', id)
@@ -152,11 +159,11 @@ async function updatePaymentStatus(id, statut, preuveUrl = null) {
  * @returns {Promise<Object>}
  */
 async function markEmailSent(id) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('participants')
         .update({ 
             email_envoye: true,
@@ -176,7 +183,7 @@ async function markEmailSent(id) {
  * @returns {Promise<string>} URL de l'image
  */
 async function uploadPaymentProof(file, participantId) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
@@ -185,14 +192,14 @@ async function uploadPaymentProof(file, participantId) {
     const filePath = `preuves/${fileName}`;
 
     // Upload file
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
         .from('paiements')
         .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = supabaseClient.storage
         .from('paiements')
         .getPublicUrl(filePath);
 
@@ -205,11 +212,11 @@ async function uploadPaymentProof(file, participantId) {
  * @returns {Promise<void>}
  */
 async function deleteParticipant(id) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('participants')
         .delete()
         .eq('id', id);
@@ -223,11 +230,11 @@ async function deleteParticipant(id) {
  * @returns {Promise<boolean>}
  */
 async function emailExists(email) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('participants')
         .select('id')
         .eq('email', email)
@@ -242,21 +249,19 @@ async function emailExists(email) {
 // ============================================
 
 /**
- * Vérifier les credentials admin
+ * Vérifier si un email est admin
  * @param {string} email
- * @param {string} password
- * @returns {Promise<Object|null>} - Retourne l'admin si valide, null sinon
+ * @returns {Promise<Object|null>} - Retourne l'admin si trouvé, null sinon
  */
-async function adminLogin(email, password) {
-    if (!supabase) {
+async function checkIsAdmin(email) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('admin_users')
         .select('*')
         .eq('email', email)
-        .eq('password', password)
         .single();
 
     if (error || !data) return null;
@@ -273,11 +278,11 @@ async function adminLogin(email, password) {
  * @returns {Promise<Object>}
  */
 async function saveDonation(donation) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('donations')
         .insert([{
             nom: donation.nom,
@@ -301,11 +306,11 @@ async function saveDonation(donation) {
  * @returns {Promise<Array>}
  */
 async function getAllDonations() {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('donations')
         .select('*')
         .order('date_don', { ascending: false });
@@ -321,11 +326,11 @@ async function getAllDonations() {
  * @returns {Promise<Object>}
  */
 async function updateDonationStatus(id, statut) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('donations')
         .update({ statut })
         .eq('id', id)
@@ -341,7 +346,7 @@ async function updateDonationStatus(id, statut) {
  * @returns {Promise<string>} URL de l'image
  */
 async function uploadDonationProof(file) {
-    if (!supabase) {
+    if (!supabaseClient) {
         throw new Error('Supabase non connecté');
     }
 
@@ -350,14 +355,14 @@ async function uploadDonationProof(file) {
     const filePath = `donations/${fileName}`;
 
     // Upload file
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
         .from('paiements')
         .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = supabaseClient.storage
         .from('paiements')
         .getPublicUrl(filePath);
 
@@ -367,7 +372,7 @@ async function uploadDonationProof(file) {
 // Export pour utilisation dans d'autres fichiers
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        supabase,
+        supabaseClient,
         saveParticipant,
         getAllParticipants,
         searchParticipants,
@@ -381,6 +386,6 @@ if (typeof module !== 'undefined' && module.exports) {
         getAllDonations,
         updateDonationStatus,
         uploadDonationProof,
-        adminLogin
+        checkIsAdmin
     };
 }

@@ -43,6 +43,20 @@ const donationsTable = document.getElementById('donationsTable');
 const emptyDonationsState = document.getElementById('emptyDonationsState');
 const loadingDonations = document.getElementById('loadingDonations');
 
+// ===== UTILITY FUNCTIONS =====
+
+function showLoading(show) {
+    if (loadingState) {
+        if (show) {
+            loadingState.classList.remove('hidden');
+            if (participantsTable) participantsTable.classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+        } else {
+            loadingState.classList.add('hidden');
+        }
+    }
+}
+
 // ===== AUTH CHECK =====
 function checkAuth() {
     const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
@@ -62,27 +76,130 @@ function logout() {
 
 async function loadParticipants() {
     showLoading(true);
+    console.log('🔄 Chargement des participants...');
     
     try {
         // Vérifier que Supabase est connecté
-        const supabaseConnected = (typeof supabase !== 'undefined' && supabase !== null) || 
-                                   (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
+        const hasSupabaseClient = typeof supabaseClient !== 'undefined' && supabaseClient !== null;
+        const hasWindowSupabase = typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null;
+        const supabaseConnected = hasSupabaseClient || hasWindowSupabase;
+        
+        console.log('🔍 Supabase client:', hasSupabaseClient ? 'OK' : 'Non trouvé');
+        console.log('🔍 Window supabaseClient:', hasWindowSupabase ? 'OK' : 'Non trouvé');
+        console.log('🔍 Fonction getAllParticipants:', typeof getAllParticipants === 'function' ? 'OK' : 'Non trouvée');
         
         if (typeof getAllParticipants === 'function' && supabaseConnected) {
+            console.log('📡 Appel getAllParticipants...');
             participants = await getAllParticipants();
+            console.log('✅ Participants reçus:', participants?.length || 0);
         } else {
-            throw new Error('Supabase non connecté - Vérifie la console pour les erreurs');
+            throw new Error('Supabase non connecté - Fonction ou client manquant');
         }
         
         renderParticipants(participants);
         updateStats();
         
     } catch (error) {
-        console.error('Erreur chargement:', error);
-        showToast('Erreur lors du chargement des participants', 'error');
+        console.error('❌ Erreur chargement participants:', error);
+        console.error('❌ Message:', error.message);
+        showToast('Erreur lors du chargement: ' + error.message, 'error');
     } finally {
         showLoading(false);
+        console.log('✅ Chargement terminé');
     }
+}
+
+// ===== RENDER PARTICIPANTS =====
+
+function renderParticipants(data) {
+    console.log('🎨 Rendu des participants:', data?.length || 0);
+    
+    if (!participantsTable) {
+        console.error('❌ Table participants non trouvée');
+        return;
+    }
+    
+    // Vider le tableau
+    participantsTable.innerHTML = '';
+    
+    // Afficher état vide si pas de données
+    if (!data || data.length === 0) {
+        if (emptyState) {
+            emptyState.classList.remove('hidden');
+            participantsTable.classList.add('hidden');
+        }
+        return;
+    }
+    
+    // Cacher état vide et afficher tableau
+    if (emptyState) emptyState.classList.add('hidden');
+    participantsTable.classList.remove('hidden');
+    
+    // Créer les lignes
+    data.forEach(p => {
+        const row = document.createElement('tr');
+        
+        // Statut paiement
+        let statusBadge = '';
+        if (p.statut_paiement === 'non_requis') {
+            statusBadge = '<span class="badge badge-secondary">Non requis</span>';
+        } else if (p.statut_paiement === 'en_attente') {
+            statusBadge = '<span class="badge badge-warning">En attente</span>';
+        } else if (p.statut_paiement === 'verifie') {
+            statusBadge = '<span class="badge badge-success">Vérifié</span>';
+        } else if (p.statut_paiement === 'refuse') {
+            statusBadge = '<span class="badge badge-danger">Refusé</span>';
+        }
+        
+        // Email status
+        const emailStatus = p.email_envoye 
+            ? '<span class="badge badge-success">Envoyé</span>' 
+            : '<span class="badge badge-secondary">Non envoyé</span>';
+        
+        // QR status
+        const qrStatus = p.qr_code 
+            ? '<span class="badge badge-success">Généré</span>' 
+            : '<span class="badge badge-secondary">Non généré</span>';
+        
+        // Boutons d'action
+        let actionButtons = '';
+        
+        // Bouton QR
+        if (p.qr_code) {
+            actionButtons += `<button class="btn-icon btn-view" onclick="showQRModal(${p.id})" title="Voir QR"><i class="fas fa-qrcode"></i></button>`;
+        } else if (p.statut_paiement === 'verifie') {
+            actionButtons += `<button class="btn-icon btn-generate" onclick="showQRModal(${p.id})" title="Générer QR"><i class="fas fa-plus"></i></button>`;
+        }
+        
+        // Bouton Email
+        if (p.email_envoye) {
+            actionButtons += `<button class="btn-icon btn-email" onclick="showEmailModal(${p.id})" title="Renvoyer email"><i class="fas fa-redo"></i></button>`;
+        } else if (p.qr_code) {
+            actionButtons += `<button class="btn-icon btn-email" onclick="showEmailModal(${p.id})" title="Envoyer email"><i class="fas fa-envelope"></i></button>`;
+        }
+        
+        // Bouton paiement - montre si en_attente (avec ou sans preuve)
+        if (p.statut_paiement === 'en_attente') {
+            const icon = p.preuve_paiement ? 'fa-money-check' : 'fa-clock';
+            const title = p.preuve_paiement ? 'Vérifier paiement' : 'Paiement en attente';
+            actionButtons += `<button class="btn-icon btn-payment" onclick="showPaymentModal(${p.id})" title="${title}"><i class="fas ${icon}"></i></button>`;
+        }
+        
+        // Bouton supprimer
+        actionButtons += `<button class="btn-icon btn-delete" onclick="deleteParticipant(${p.id})" title="Supprimer"><i class="fas fa-trash"></i></button>`;
+        
+        row.innerHTML = `
+            <td>${p.prenom} ${p.nom}</td>
+            <td>${p.email}</td>
+            <td>${p.telephone || '-'}</td>
+            <td>${statusBadge}</td>
+            <td>${qrStatus}</td>
+            <td>${emailStatus}</td>
+            <td class="actions">${actionButtons}</td>
+        `;
+        
+        participantsTable.appendChild(row);
+    });
 }
 
 // ===== SEARCH =====
@@ -141,23 +258,37 @@ async function generateQRCode(participant) {
 }
 
 async function showQRModal(participantId) {
+    console.log('🔍 showQRModal appelé avec ID:', participantId);
+    
     const participant = participants.find(p => p.id === participantId);
-    if (!participant) return;
+    console.log('👤 Participant trouvé:', participant);
+    
+    if (!participant) {
+        console.error('❌ Participant non trouvé');
+        return;
+    }
     
     currentQRParticipant = participant;
     
     const qrInfo = document.getElementById('qrInfo');
-    qrInfo.textContent = `${participant.prenom} ${participant.nom} - ${participant.email}`;
+    if (qrInfo) {
+        qrInfo.textContent = `${participant.prenom} ${participant.nom} - ${participant.email}`;
+    }
     
     // Générer ou récupérer le QR
     let qrCode = participant.qr_code;
+    console.log('📱 QR Code existant:', qrCode ? 'Oui' : 'Non');
+    
     if (!qrCode) {
+        console.log('🎨 Génération du QR code...');
         try {
             qrCode = await generateQRCode(participant);
+            console.log('✅ QR généré:', qrCode.substring(0, 50) + '...');
             
             // Sauvegarder dans Supabase
             if (typeof updateQRCode === 'function') {
                 await updateQRCode(participant.id, qrCode);
+                console.log('💾 QR sauvegardé dans Supabase');
             }
             
             // Mettre à jour localement
@@ -166,6 +297,7 @@ async function showQRModal(participantId) {
             updateStats();
             
         } catch (error) {
+            console.error('❌ Erreur génération QR:', error);
             showToast('Erreur lors de la génération du QR', 'error');
             return;
         }
@@ -173,16 +305,32 @@ async function showQRModal(participantId) {
     
     // Afficher le QR
     const canvas = document.getElementById('qrCanvas');
+    console.log('🖼️ Canvas trouvé:', canvas ? 'Oui' : 'Non');
+    
+    if (!canvas) {
+        console.error('❌ Canvas qrCanvas non trouvé dans le DOM');
+        return;
+    }
+    
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.onload = () => {
+        console.log('🖼️ Image chargée, dimensions:', img.width, 'x', img.height);
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
     };
+    img.onerror = (err) => {
+        console.error('❌ Erreur chargement image:', err);
+    };
     img.src = qrCode;
     
-    document.getElementById('qrModal').classList.remove('hidden');
+    const modal = document.getElementById('qrModal');
+    console.log('📦 Modal trouvé:', modal ? 'Oui' : 'Non');
+    if (modal) {
+        modal.classList.remove('hidden');
+        console.log('✅ Modal affiché');
+    }
 }
 
 function closeQRModal() {
@@ -590,7 +738,7 @@ async function loadDonations() {
     
     try {
         // Vérifier que Supabase est connecté
-        const supabaseConnected = (typeof supabase !== 'undefined' && supabase !== null) || 
+        const supabaseConnected = (typeof supabaseClient !== 'undefined' && supabaseClient !== null) || 
                                    (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
         
         if (typeof getAllDonations === 'function' && supabaseConnected) {
@@ -770,7 +918,7 @@ async function deleteDonation(id) {
     
     try {
         // Vérifier que Supabase est connecté
-        const supabaseInstance = (typeof supabase !== 'undefined' && supabase) ? supabase : 
+        const supabaseInstance = (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : 
                                 (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) ? window.supabaseClient : null;
         
         if (supabaseInstance) {
@@ -804,7 +952,36 @@ document.querySelectorAll('.nav-item').forEach(item => {
 
 // ===== INITIALISATION =====
 
+// Exposer les fonctions globalement pour les onclick
+window.renderParticipants = renderParticipants;
+window.showQRModal = showQRModal;
+window.closeQRModal = closeQRModal;
+window.downloadQR = downloadQR;
+window.showEmailModal = showEmailModal;
+window.closeEmailModal = closeEmailModal;
+window.confirmSendEmail = confirmSendEmail;
+window.showPaymentModal = showPaymentModal;
+window.closePaymentModal = closePaymentModal;
+window.verifyPayment = verifyPayment;
+window.rejectPayment = rejectPayment;
+window.deleteParticipant = deleteParticipant;
+window.generateAllQR = generateAllQR;
+window.sendAllEmails = sendAllEmails;
+window.logout = logout;
+window.showSection = showSection;
+window.filterDonations = filterDonations;
+window.openDonationVerifyModal = openDonationVerifyModal;
+window.closeDonationVerifyModal = closeDonationVerifyModal;
+window.verifyDonation = verifyDonation;
+window.rejectDonation = rejectDonation;
+window.deleteDonation = deleteDonation;
+window.refreshDonations = refreshDonations;
+
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Initialisation Admin Panel...');
+    console.log('🔍 renderParticipants défini:', typeof renderParticipants === 'function');
+    console.log('🔍 loadParticipants défini:', typeof loadParticipants === 'function');
+    
     checkAuth();
     loadParticipants();
     
