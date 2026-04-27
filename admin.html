@@ -33,15 +33,15 @@
                 <span>Donations</span>
                 <span class="badge badge-warning" id="pendingDonationsBadge" style="margin-left: auto; font-size: 0.7rem; padding: 2px 6px;">0</span>
             </a>
-            <a href="#" class="nav-item" data-section="emails">
+            <a href="#" class="nav-item" data-section="emails" onclick="showSection('emails')">
                 <i class="fas fa-envelope"></i>
                 <span>Emails</span>
             </a>
-            <a href="#" class="nav-item" data-section="qrcodes">
+            <a href="#" class="nav-item" data-section="qrcodes" onclick="showSection('qrcodes')">
                 <i class="fas fa-qrcode"></i>
                 <span>QR Codes</span>
             </a>
-            <a href="#" class="nav-item" data-section="stats">
+            <a href="#" class="nav-item" data-section="stats" onclick="showSection('stats')">
                 <i class="fas fa-chart-bar"></i>
                 <span>Statistiques</span>
             </a>
@@ -175,6 +175,131 @@
             </div>
         </section>
         
+        <!-- Emails Section -->
+        <section class="section" id="emailsSection">
+            <div class="section-header">
+                <h2>Gestion des Emails</h2>
+                <div class="section-actions">
+                    <button class="btn-action btn-primary" onclick="sendAllEmails()">
+                        <i class="fas fa-paper-plane"></i>
+                        Envoyer tous les emails
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="loadParticipants()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+            <div class="table-container glass">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>QR Code</th>
+                            <th>Email envoyé</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emailsTable">
+                    </tbody>
+                </table>
+                <div class="empty-state hidden" id="emptyEmailsState">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun participant pour le moment</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- QR Codes Section -->
+        <section class="section" id="qrcodesSection">
+            <div class="section-header">
+                <h2>Gestion des QR Codes</h2>
+                <div class="section-actions">
+                    <button class="btn-action btn-primary" onclick="generateAllQR()">
+                        <i class="fas fa-qrcode"></i>
+                        Générer tous les QR
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="loadParticipants()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+            <div class="table-container glass">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Paiement</th>
+                            <th>QR Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="qrcodesTable">
+                    </tbody>
+                </table>
+                <div class="empty-state hidden" id="emptyQRState">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun participant pour le moment</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="section" id="statsSection">
+            <div class="section-header">
+                <h2>Statistiques</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #4f46e5;"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statsTotalParticipants">0</span>
+                        <span class="stat-label">Total Participants</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #10b981;"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statsVerifiedPayments">0</span>
+                        <span class="stat-label">Paiements Vérifiés</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #06b6d4;"><i class="fas fa-qrcode"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statsQRGenerated">0</span>
+                        <span class="stat-label">QR Codes Générés</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #ec4899;"><i class="fas fa-envelope"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statsEmailsSent">0</span>
+                        <span class="stat-label">Emails Envoyés</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #f59e0b;"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statsPendingPayments">0</span>
+                        <span class="stat-label">Paiements En Attente</span>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon" style="background: #ef4444;"><i class="fas fa-times-circle"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statsRefusedPayments">0</span>
+                        <span class="stat-label">Paiements Refusés</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Donations Section -->
         <section class="section" id="donationsSection">
             <div class="section-header">

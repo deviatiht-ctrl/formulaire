@@ -186,10 +186,11 @@ function renderParticipants(data) {
         }
         
         // Bouton supprimer
-        actionButtons += `<button class="btn-icon btn-delete" onclick="deleteParticipant(${p.id})" title="Supprimer"><i class="fas fa-trash"></i></button>`;
+        actionButtons += `<button class="btn-icon btn-delete" onclick="deleteParticipantItem(${p.id})" title="Supprimer"><i class="fas fa-trash"></i></button>`;
         
         row.innerHTML = `
-            <td>${p.prenom} ${p.nom}</td>
+            <td>${p.nom || '-'}</td>
+            <td>${p.prenom || '-'}</td>
             <td>${p.email}</td>
             <td>${p.telephone || '-'}</td>
             <td>${statusBadge}</td>
@@ -724,10 +725,98 @@ function showSection(sectionName) {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelector(`[data-section="${sectionName}"]`)?.classList.add('active');
     
-    // Charger les données si nécessaire
+    // Charger les données selon la section
     if (sectionName === 'donations') {
         loadDonations();
+    } else if (sectionName === 'emails') {
+        renderEmailsSection();
+    } else if (sectionName === 'qrcodes') {
+        renderQRCodesSection();
+    } else if (sectionName === 'stats') {
+        renderStatsSection();
     }
+}
+
+function renderEmailsSection() {
+    const tbody = document.getElementById('emailsTable');
+    const emptyEl = document.getElementById('emptyEmailsState');
+    if (!tbody) return;
+    
+    if (!participants || participants.length === 0) {
+        tbody.innerHTML = '';
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add('hidden');
+    
+    tbody.innerHTML = participants.map(p => {
+        const qrStatus = p.qr_code
+            ? '<span class="badge badge-success">Généré</span>'
+            : '<span class="badge badge-secondary">Non généré</span>';
+        const emailStatus = p.email_envoye
+            ? '<span class="badge badge-success">Envoyé</span>'
+            : '<span class="badge badge-warning">Non envoyé</span>';
+        const canSend = p.qr_code;
+        return `<tr>
+            <td>${p.nom || '-'}</td>
+            <td>${p.prenom || '-'}</td>
+            <td>${p.email}</td>
+            <td>${qrStatus}</td>
+            <td>${emailStatus}</td>
+            <td class="actions">
+                ${canSend ? `<button class="btn-icon btn-email" onclick="showEmailModal(${p.id})" title="Envoyer email"><i class="fas fa-envelope"></i></button>` : '<span style="color:var(--text-muted);font-size:0.8rem;">Générer QR d\'abord</span>'}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function renderQRCodesSection() {
+    const tbody = document.getElementById('qrcodesTable');
+    const emptyEl = document.getElementById('emptyQRState');
+    if (!tbody) return;
+    
+    if (!participants || participants.length === 0) {
+        tbody.innerHTML = '';
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add('hidden');
+    
+    tbody.innerHTML = participants.map(p => {
+        let statusBadge = '';
+        if (p.statut_paiement === 'non_requis') statusBadge = '<span class="badge badge-secondary">Non requis</span>';
+        else if (p.statut_paiement === 'en_attente') statusBadge = '<span class="badge badge-warning">En attente</span>';
+        else if (p.statut_paiement === 'verifie') statusBadge = '<span class="badge badge-success">Vérifié</span>';
+        else if (p.statut_paiement === 'refuse') statusBadge = '<span class="badge badge-danger">Refusé</span>';
+        
+        const qrStatus = p.qr_code
+            ? '<span class="badge badge-success">Généré</span>'
+            : '<span class="badge badge-secondary">Non généré</span>';
+        
+        return `<tr>
+            <td>${p.nom || '-'}</td>
+            <td>${p.prenom || '-'}</td>
+            <td>${p.email}</td>
+            <td>${statusBadge}</td>
+            <td>${qrStatus}</td>
+            <td class="actions">
+                ${p.qr_code
+                    ? `<button class="btn-icon btn-view" onclick="showQRModal(${p.id})" title="Voir QR"><i class="fas fa-eye"></i></button>`
+                    : `<button class="btn-icon btn-generate" onclick="showQRModal(${p.id})" title="Générer QR"><i class="fas fa-qrcode"></i></button>`
+                }
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function renderStatsSection() {
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    set('statsTotalParticipants', participants.length);
+    set('statsVerifiedPayments', participants.filter(p => p.statut_paiement === 'verifie').length);
+    set('statsQRGenerated', participants.filter(p => p.qr_code).length);
+    set('statsEmailsSent', participants.filter(p => p.email_envoye).length);
+    set('statsPendingPayments', participants.filter(p => p.statut_paiement === 'en_attente').length);
+    set('statsRefusedPayments', participants.filter(p => p.statut_paiement === 'refuse').length);
 }
 
 // ===== DONATIONS MANAGEMENT =====
@@ -964,18 +1053,18 @@ window.showPaymentModal = showPaymentModal;
 window.closePaymentModal = closePaymentModal;
 window.verifyPayment = verifyPayment;
 window.rejectPayment = rejectPayment;
-window.deleteParticipant = deleteParticipant;
+window.deleteParticipantItem = deleteParticipantItem;
 window.generateAllQR = generateAllQR;
 window.sendAllEmails = sendAllEmails;
 window.logout = logout;
 window.showSection = showSection;
-window.filterDonations = filterDonations;
-window.openDonationVerifyModal = openDonationVerifyModal;
+window.showDonationVerifyModal = showDonationVerifyModal;
 window.closeDonationVerifyModal = closeDonationVerifyModal;
 window.verifyDonation = verifyDonation;
 window.rejectDonation = rejectDonation;
 window.deleteDonation = deleteDonation;
-window.refreshDonations = refreshDonations;
+window.loadDonations = loadDonations;
+window.loadParticipants = loadParticipants;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation Admin Panel...');
