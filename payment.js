@@ -57,6 +57,8 @@ function checkStatus() {
 
 // Sélectionner méthode de paiement
 function selectMethod(method) {
+    if (method === 'natcash') return; // Natcash indisponible
+    
     // Reset all
     document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
     

@@ -484,7 +484,7 @@ function updateStats() {
 // ===== PAYMENT VERIFICATION =====
 
 function showPaymentModal(participantId) {
-    const participant = participants.find(p => p.id === participantId);
+    const participant = participants.find(p => p.id == participantId);
     if (!participant) return;
     
     currentPaymentParticipant = participant;
@@ -643,6 +643,8 @@ function showSection(sectionName) {
     // Charger les données selon la section
     if (sectionName === 'donations') {
         loadDonations();
+    } else if (sectionName === 'paiements') {
+        renderPaymentsSection();
     } else if (sectionName === 'emails') {
         renderEmailsSection();
     } else if (sectionName === 'qrcodes') {
@@ -650,6 +652,98 @@ function showSection(sectionName) {
     } else if (sectionName === 'stats') {
         renderStatsSection();
     }
+}
+
+function renderPaymentsSection() {
+    const grid = document.getElementById('paymentsGrid');
+    const emptyEl = document.getElementById('emptyPaymentsState');
+    if (!grid) return;
+
+    // Tous les participants avec preuve de paiement ou statut en_attente
+    const withPayment = participants.filter(p =>
+        p.preuve_paiement || p.statut_paiement === 'en_attente' || p.statut_paiement === 'verifie' || p.statut_paiement === 'refuse'
+    );
+
+    // Mettre à jour badge nav
+    const pending = participants.filter(p => p.statut_paiement === 'en_attente').length;
+    const badge = document.getElementById('pendingPaymentsBadge');
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
+
+    if (withPayment.length === 0) {
+        grid.innerHTML = '';
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add('hidden');
+
+    grid.innerHTML = withPayment.map(p => {
+        let statusBadge = '', statusColor = '#6b7280';
+        if (p.statut_paiement === 'en_attente') { statusBadge = '⏳ En attente'; statusColor = '#f59e0b'; }
+        else if (p.statut_paiement === 'verifie') { statusBadge = '✅ Vérifié'; statusColor = '#10b981'; }
+        else if (p.statut_paiement === 'refuse') { statusBadge = '❌ Refusé'; statusColor = '#ef4444'; }
+        else { statusBadge = '—'; }
+
+        const proofHtml = p.preuve_paiement
+            ? `<a href="${p.preuve_paiement}" target="_blank">
+                <img src="${p.preuve_paiement}" alt="Preuve" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;cursor:zoom-in;">
+               </a>`
+            : `<div style="width:100%;height:120px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;"><i class="fas fa-image" style="font-size:2rem;"></i></div>`;
+
+        const actions = p.statut_paiement === 'en_attente'
+            ? `<button class="btn-action btn-success" style="flex:1;" onclick="quickVerify(${p.id})">
+                   <i class="fas fa-check"></i> Vérifier
+               </button>
+               <button class="btn-action btn-danger" style="flex:1;" onclick="quickReject(${p.id})">
+                   <i class="fas fa-times"></i> Refuser
+               </button>`
+            : `<button class="btn-action btn-secondary" style="flex:1;" onclick="showPaymentModal(${p.id})">
+                   <i class="fas fa-eye"></i> Détails
+               </button>`;
+
+        return `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div style="padding:14px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div style="font-weight:700;font-size:0.95rem;">${p.prenom} ${p.nom}</div>
+                    <div style="font-size:0.78rem;color:#6b7280;">${p.email}</div>
+                    ${p.telephone ? `<div style="font-size:0.78rem;color:#6b7280;"><i class="fas fa-phone" style="margin-right:4px;"></i>${p.telephone}</div>` : ''}
+                </div>
+                <span style="background:${statusColor}22;color:${statusColor};padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;white-space:nowrap;">${statusBadge}</span>
+            </div>
+            <div style="padding:12px 16px;">
+                ${proofHtml}
+                ${p.mode_paiement ? `<div style="margin-top:8px;font-size:0.8rem;color:#6b7280;"><i class="fas fa-mobile-alt" style="margin-right:4px;"></i>${p.mode_paiement.toUpperCase()} &mdash; ${formatDate(p.date_inscription)}</div>` : ''}
+            </div>
+            <div style="padding:0 16px 14px;display:flex;gap:8px;">
+                ${actions}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function quickVerify(participantId) {
+    const p = participants.find(x => x.id == participantId);
+    if (!p || !confirm(`Vérifier le paiement de ${p.prenom} ${p.nom} ?`)) return;
+    try {
+        if (typeof updatePaymentStatus === 'function') await updatePaymentStatus(p.id, 'verifie');
+        p.statut_paiement = 'verifie';
+        renderPaymentsSection();
+        renderParticipants(participants);
+        updateStats();
+        showToast(`Paiement de ${p.prenom} ${p.nom} vérifié !`, 'success');
+    } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
+}
+
+async function quickReject(participantId) {
+    const p = participants.find(x => x.id == participantId);
+    if (!p || !confirm(`Refuser le paiement de ${p.prenom} ${p.nom} ?`)) return;
+    try {
+        if (typeof updatePaymentStatus === 'function') await updatePaymentStatus(p.id, 'refuse');
+        p.statut_paiement = 'refuse';
+        renderPaymentsSection();
+        renderParticipants(participants);
+        updateStats();
+        showToast(`Paiement refusé`, 'warning');
+    } catch (e) { showToast('Erreur: ' + e.message, 'error'); }
 }
 
 function renderEmailsSection() {
@@ -976,6 +1070,9 @@ window.rejectDonation = rejectDonation;
 window.deleteDonation = deleteDonation;
 window.loadDonations = loadDonations;
 window.loadParticipants = loadParticipants;
+window.renderPaymentsSection = renderPaymentsSection;
+window.quickVerify = quickVerify;
+window.quickReject = quickReject;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation Admin Panel...');
