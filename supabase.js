@@ -2,9 +2,6 @@
 // SUPABASE CONFIGURATION
 // ============================================
 
-// Éviter redéclaration si le fichier est chargé plusieurs fois
-if (typeof window.supabaseClient === 'undefined') {
-
 const SUPABASE_URL = 'https://silpnglpfzeoqkqvwdsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbHBuZ2xwZnplb3FrcXZ3ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjAxNjMsImV4cCI6MjA5MjYzNjE2M30.DKkAvKjh6AyQfIrc3aAG3GVp-6B7lrGd7Bf_CMNkk9o';
 
@@ -392,4 +389,3 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 }
 
-} // fin du bloc if (typeof window.supabaseClient === 'undefined')

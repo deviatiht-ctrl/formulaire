@@ -79,22 +79,19 @@ async function loadParticipants() {
     console.log('🔄 Chargement des participants...');
     
     try {
-        // Vérifier que Supabase est connecté
-        const hasSupabaseClient = typeof supabaseClient !== 'undefined' && supabaseClient !== null;
-        const hasWindowSupabase = typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null;
-        const supabaseConnected = hasSupabaseClient || hasWindowSupabase;
+        console.log('🔍 window.supabaseClient:', window.supabaseClient ? 'OK' : 'Non trouvé');
+        console.log('🔍 getAllParticipants:', typeof getAllParticipants === 'function' ? 'OK' : 'Non trouvée');
         
-        console.log('🔍 Supabase client:', hasSupabaseClient ? 'OK' : 'Non trouvé');
-        console.log('🔍 Window supabaseClient:', hasWindowSupabase ? 'OK' : 'Non trouvé');
-        console.log('🔍 Fonction getAllParticipants:', typeof getAllParticipants === 'function' ? 'OK' : 'Non trouvée');
-        
-        if (typeof getAllParticipants === 'function' && supabaseConnected) {
-            console.log('📡 Appel getAllParticipants...');
-            participants = await getAllParticipants();
-            console.log('✅ Participants reçus:', participants?.length || 0);
-        } else {
-            throw new Error('Supabase non connecté - Fonction ou client manquant');
+        if (typeof getAllParticipants !== 'function') {
+            throw new Error('Fonction getAllParticipants manquante - vérifier supabase.js');
         }
+        if (!window.supabaseClient) {
+            throw new Error('Supabase non connecté - vérifier les credentials');
+        }
+        
+        console.log('📡 Appel getAllParticipants...');
+        participants = await getAllParticipants();
+        console.log('✅ Participants reçus:', participants?.length || 0);
         
         renderParticipants(participants);
         updateStats();
@@ -826,14 +823,10 @@ async function loadDonations() {
     donationsTable?.classList.add('hidden');
     
     try {
-        // Vérifier que Supabase est connecté
-        const supabaseConnected = (typeof supabaseClient !== 'undefined' && supabaseClient !== null) || 
-                                   (typeof window.supabaseClient !== 'undefined' && window.supabaseClient !== null);
-        
-        if (typeof getAllDonations === 'function' && supabaseConnected) {
+        if (typeof getAllDonations === 'function' && window.supabaseClient) {
             donations = await getAllDonations();
         } else {
-            throw new Error('Supabase non connecté - Vérifie la console pour les erreurs');
+            throw new Error('Supabase non connecté');
         }
         
         renderDonations();
