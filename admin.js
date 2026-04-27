@@ -95,6 +95,8 @@ async function loadParticipants() {
         
         renderParticipants(participants);
         updateStats();
+        const cb = document.getElementById('confirmesCountBadge');
+        if (cb) cb.textContent = participants.filter(p => p.statut_paiement === 'verifie').length;
         
     } catch (error) {
         console.error('❌ Erreur chargement participants:', error);
@@ -624,6 +626,169 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
+// ===== ZOOM CONFIG (stocké en localStorage) =====
+
+function getZoomConfig() {
+    return {
+        link:     localStorage.getItem('zoomLink')     || 'https://zoom.us/j/VOTRE_MEETING_ID',
+        meetingId:localStorage.getItem('zoomMeetingId')|| 'À configurer',
+        password: localStorage.getItem('zoomPassword') || 'À configurer'
+    };
+}
+
+function saveZoomConfig() {
+    const link = document.getElementById('adminZoomLink').value.trim();
+    const id   = document.getElementById('adminZoomId').value.trim();
+    const pass = document.getElementById('adminZoomPass').value.trim();
+    if (!link) { showToast('Entrez le lien Zoom', 'error'); return; }
+    localStorage.setItem('zoomLink',      link);
+    localStorage.setItem('zoomMeetingId', id);
+    localStorage.setItem('zoomPassword',  pass);
+    showToast('Configuration Zoom enregistrée !', 'success');
+}
+
+// ===== CONFIRMÉS SECTION =====
+
+function generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'RA';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+}
+
+async function assignCode(participantId) {
+    const p = participants.find(x => x.id == participantId);
+    if (!p) return;
+    const code = generateCode();
+    try {
+        await saveAccessCode(p.id, code);
+        p.access_code = code;
+        renderConfirmesSection();
+        renderParticipants(participants);
+        showToast(`Code ${code} assigné à ${p.prenom}`, 'success');
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+}
+
+async function generateAllCodes() {
+    const confirmed = participants.filter(p => p.statut_paiement === 'verifie' && !p.access_code);
+    if (confirmed.length === 0) { showToast('Tous les confirmés ont déjà un code', 'info'); return; }
+    let count = 0;
+    for (const p of confirmed) {
+        const code = generateCode();
+        try {
+            await saveAccessCode(p.id, code);
+            p.access_code = code;
+            count++;
+        } catch(e) { console.warn('Erreur code pour', p.email, e.message); }
+    }
+    renderConfirmesSection();
+    renderParticipants(participants);
+    showToast(`${count} codes générés !`, 'success');
+}
+
+function buildZoomEmailBody(p, zoom) {
+    return `Bonjour ${p.prenom} ${p.nom},
+
+Votre inscription au Séminaire sur les Compétences de Vie a été CONFIRMÉE !
+
+------- VOTRE CODE D'ACCÈS -------
+Code : ${p.access_code || '(en cours de génération)'}
+
+Rendez-vous sur : ${window.location.origin}/access.html
+Entrez votre code pour accéder à la formation et télécharger votre certificat.
+
+------- REJOINDRE LA FORMATION -------
+Lien Zoom  : ${zoom.link}
+Meeting ID : ${zoom.meetingId}
+Mot de passe: ${zoom.password}
+
+------- DÉTAILS DE L'ÉVÉNEMENT -------
+Date    : 30 Avril et 1er Mai 2026
+Heure   : 09:00 AM - 01:00 PM
+Contact : +509 46807922
+
+Organisé par : RASIN AYITI × UNITECH
+
+À très bientôt !
+L'équipe Rasin Ayiti`;
+}
+
+function sendIndividualZoomEmail(participantId) {
+    const p = participants.find(x => x.id == participantId);
+    if (!p) return;
+    if (!p.access_code) { showToast('Générez d\'abord un code pour ce participant', 'warning'); return; }
+    const zoom = getZoomConfig();
+    const subject = encodeURIComponent('✅ Confirmation + Code d\'accès — Séminaire Rasin Ayiti');
+    const body = encodeURIComponent(buildZoomEmailBody(p, zoom));
+    window.open(`mailto:${p.email}?subject=${subject}&body=${body}`, '_blank');
+    showToast('Gmail ouvert pour ' + p.prenom, 'success');
+}
+
+function sendGroupZoomEmail() {
+    const confirmed = participants.filter(p => p.statut_paiement === 'verifie');
+    if (confirmed.length === 0) { showToast('Aucun participant confirmé', 'warning'); return; }
+    const withoutCode = confirmed.filter(p => !p.access_code);
+    if (withoutCode.length > 0) {
+        showToast(`${withoutCode.length} participant(s) sans code — Générez d'abord tous les codes`, 'warning');
+        return;
+    }
+    const zoom = getZoomConfig();
+    const emails = confirmed.map(p => p.email).join(',');
+    const subject = encodeURIComponent('✅ Confirmation + Accès Zoom — Séminaire Rasin Ayiti');
+    const body = encodeURIComponent(`Bonjour,\n\nVoici les informations pour rejoindre le Séminaire :\n\nLien Zoom  : ${zoom.link}\nMeeting ID : ${zoom.meetingId}\nMot de passe: ${zoom.password}\n\nRendez-vous sur : ${window.location.origin}/access.html pour votre code d'accès et certificat.\n\nDate : 30 Avril et 1er Mai 2026 — 09:00 AM - 01:00 PM\nContact : +509 46807922\n\nL'équipe Rasin Ayiti`);
+    window.open(`mailto:${emails}?subject=${subject}&body=${body}`, '_blank');
+    showToast(`Email groupé pour ${confirmed.length} participant(s)`, 'success');
+}
+
+function renderConfirmesSection() {
+    const tbody = document.getElementById('confirmesTable');
+    const emptyEl = document.getElementById('emptyConfirmesState');
+    if (!tbody) return;
+
+    const confirmed = participants.filter(p => p.statut_paiement === 'verifie');
+
+    // Update badge
+    const badge = document.getElementById('confirmesCountBadge');
+    if (badge) badge.textContent = confirmed.length;
+
+    // Prefill zoom config fields
+    const zoom = getZoomConfig();
+    const zlEl = document.getElementById('adminZoomLink');
+    const ziEl = document.getElementById('adminZoomId');
+    const zpEl = document.getElementById('adminZoomPass');
+    if (zlEl && !zlEl.value) zlEl.value = zoom.link !== 'https://zoom.us/j/VOTRE_MEETING_ID' ? zoom.link : '';
+    if (ziEl && !ziEl.value) ziEl.value = zoom.meetingId !== 'À configurer' ? zoom.meetingId : '';
+    if (zpEl && !zpEl.value) zpEl.value = zoom.password !== 'À configurer' ? zoom.password : '';
+
+    if (confirmed.length === 0) {
+        tbody.innerHTML = '';
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add('hidden');
+
+    tbody.innerHTML = confirmed.map(p => {
+        const codeHtml = p.access_code
+            ? `<code style="background:#f0f7ff;color:var(--primary);padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:0.1em;">${p.access_code}</code>`
+            : `<button class="btn-icon" onclick="assignCode(${p.id})" title="Générer code" style="background:#f0f7ff;color:var(--primary);border:1px dashed var(--primary);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78rem;"><i class="fas fa-key"></i> Générer</button>`;
+        const certHtml = p.certificat_telecharge
+            ? '<span style="color:#10b981;font-size:0.8rem;"><i class="fas fa-check"></i> Téléchargé</span>'
+            : '<span style="color:#9ca3af;font-size:0.8rem;">Non encore</span>';
+        return `<tr>
+            <td>${p.nom}</td>
+            <td>${p.prenom}</td>
+            <td style="font-size:0.82rem;">${p.email}</td>
+            <td>${p.telephone || '—'}</td>
+            <td>${codeHtml}</td>
+            <td>${certHtml}</td>
+            <td class="actions">
+                <button class="btn-icon btn-email" onclick="sendIndividualZoomEmail(${p.id})" title="Envoyer email individuel"><i class="fas fa-envelope"></i></button>
+                <button class="btn-icon btn-primary" onclick="showQRModal(${p.id})" title="QR Code"><i class="fas fa-qrcode"></i></button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
 // ===== SECTION NAVIGATION =====
 
 function showSection(sectionName) {
@@ -641,7 +806,9 @@ function showSection(sectionName) {
     document.querySelector(`[data-section="${sectionName}"]`)?.classList.add('active');
     
     // Charger les données selon la section
-    if (sectionName === 'donations') {
+    if (sectionName === 'confirmes') {
+        renderConfirmesSection();
+    } else if (sectionName === 'donations') {
         loadDonations();
     } else if (sectionName === 'paiements') {
         renderPaymentsSection();
@@ -1073,6 +1240,12 @@ window.loadParticipants = loadParticipants;
 window.renderPaymentsSection = renderPaymentsSection;
 window.quickVerify = quickVerify;
 window.quickReject = quickReject;
+window.renderConfirmesSection = renderConfirmesSection;
+window.assignCode = assignCode;
+window.generateAllCodes = generateAllCodes;
+window.sendIndividualZoomEmail = sendIndividualZoomEmail;
+window.sendGroupZoomEmail = sendGroupZoomEmail;
+window.saveZoomConfig = saveZoomConfig;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation Admin Panel...');

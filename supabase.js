@@ -244,6 +244,43 @@ async function emailExists(email) {
 }
 
 // ============================================
+// FONCTIONS ACCESS CODE
+// ============================================
+
+async function saveAccessCode(participantId, code) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient
+        .from('participants')
+        .update({ access_code: code, code_genere_at: new Date().toISOString() })
+        .eq('id', participantId)
+        .select();
+    if (error) throw error;
+    return data[0];
+}
+
+async function validateAccessCode(code) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient
+        .from('participants')
+        .select('*')
+        .eq('access_code', code.trim().toUpperCase())
+        .limit(1);
+    if (error) throw error;
+    return data && data.length > 0 ? data[0] : null;
+}
+
+async function markCertificatDownloaded(participantId) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient
+        .from('participants')
+        .update({ certificat_telecharge: true })
+        .eq('id', participantId)
+        .select();
+    if (error) throw error;
+    return data[0];
+}
+
+// ============================================
 // FONCTIONS ADMIN
 // ============================================
 

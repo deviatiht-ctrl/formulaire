@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Participant — Séminaire Rasin Ayiti</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ---- Code Entry Screen ---- */
+        .access-wrap { max-width: 440px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .access-logo { text-align: center; margin-bottom: 28px; }
+        .access-logo .logo { background: #1a73e8; }
+        .access-logo h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-top: 10px; }
+        .access-logo p { font-size: 0.82rem; color: var(--text-secondary); }
+
+        .code-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 32px; box-shadow: var(--shadow-lg); }
+        .code-input-wrap { display: flex; gap: 10px; margin: 20px 0 8px; }
+        .code-input {
+            flex: 1; padding: 16px 20px; font-size: 1.4rem; font-weight: 800;
+            letter-spacing: 0.25em; text-align: center; text-transform: uppercase;
+            border: 2px solid var(--border); border-radius: var(--radius-md);
+            background: var(--bg-light); color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+        .code-input:focus { outline: none; border-color: var(--primary); }
+        .code-input.error { border-color: var(--danger); }
+        .code-submit { padding: 16px 20px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 1.1rem; transition: background 0.2s; }
+        .code-submit:hover { background: var(--primary-dark, #4338ca); }
+        #codeError { color: var(--danger); font-size: 0.82rem; display: block; min-height: 18px; }
+
+        /* ---- Dashboard (after valid code) ---- */
+        .dash-wrap { max-width: 680px; margin: 0 auto; padding: 32px 20px; }
+        .dash-header { background: linear-gradient(135deg,#1a73e8,#0d47a1); color: #fff; border-radius: var(--radius-xl); padding: 24px 28px; margin-bottom: 24px; }
+        .dash-welcome { font-size: 1.3rem; font-weight: 800; }
+        .dash-sub { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+
+        .dash-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .dash-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .dash-card h3 i { color: var(--primary); }
+
+        .zoom-join-btn {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            background: #1a73e8; color: #fff; padding: 16px 28px;
+            border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 1rem;
+            box-shadow: 0 6px 20px rgba(26,115,232,0.4); transition: transform 0.2s;
+            width: 100%; text-align: center;
+        }
+        .zoom-join-btn:hover { transform: translateY(-2px); }
+        .zoom-info { background: #f0f7ff; border: 1px solid #c7dcff; border-radius: var(--radius-md); padding: 14px 18px; margin-top: 14px; font-size: 0.85rem; }
+        .zoom-info div { display: flex; gap: 8px; margin-bottom: 6px; }
+        .zoom-info div:last-child { margin-bottom: 0; }
+        .zoom-info label { font-weight: 600; color: var(--text-secondary); min-width: 100px; }
+        .zoom-info span { font-weight: 700; color: var(--text-primary); font-family: monospace; font-size: 1rem; }
+
+        .cert-locked { display: flex; align-items: center; gap: 14px; background: #fef9ec; border: 1px solid #fde68a; border-radius: var(--radius-md); padding: 16px; }
+        .cert-locked i { font-size: 1.6rem; color: #f59e0b; }
+        .cert-locked p { font-size: 0.85rem; color: #92400e; margin: 0; }
+        .cert-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #10b981; color: #fff; padding: 14px 24px; border-radius: 50px; border: none; cursor: pointer; font-weight: 700; font-size: 0.95rem; width: 100%; margin-top: 14px; transition: background 0.2s; }
+        .cert-btn:hover { background: #059669; }
+
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+        .badge-verified { background: #dcfce7; color: #166534; }
+        .badge-pending  { background: #fef9c3; color: #854d0e; }
+        .badge-refused  { background: #fee2e2; color: #991b1b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="bg-shapes"><div class="shape shape-1"></div><div class="shape shape-2"></div></div>
+
+    <!-- CODE ENTRY SCREEN -->
+    <div id="screenCode" class="access-wrap">
+        <div class="access-logo">
+            <div class="logo"><i class="fas fa-leaf"></i></div>
+            <h1>RASIN AYITI × UNITECH</h1>
+            <p>Espace Participant — Séminaire Compétences de Vie</p>
+        </div>
+
+        <div class="code-card">
+            <div style="text-align:center; margin-bottom:20px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Zoom_Logo_2022.svg/512px-Zoom_Logo_2022.svg.png" alt="Zoom" style="height:28px; margin-bottom:12px; display:block; margin:0 auto 12px;">
+                <h2 style="font-size:1.1rem; margin-bottom:6px;">Formation sur Zoom</h2>
+                <p style="font-size:0.85rem; color:var(--text-secondary);">Entrez votre code d'accès reçu par email pour rejoindre la formation.</p>
+            </div>
+
+            <div class="code-input-wrap">
+                <input type="text" id="codeInput" class="code-input" maxlength="10" placeholder="EX: RA2026AB" autocomplete="off" autofocus>
+                <button class="code-submit" id="codeBtn" onclick="checkCode()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <span id="codeError"></span>
+
+            <div style="text-align:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+                <p style="font-size:0.8rem; color:var(--text-muted);">Pas encore inscrit ?</p>
+                <a href="index.html" style="font-size:0.85rem; color:var(--primary); font-weight:600; text-decoration:none;">
+                    <i class="fas fa-user-plus" style="margin-right:5px;"></i>S'inscrire gratuitement
+                </a>
+            </div>
+        </div>
+
+        <p style="text-align:center; font-size:0.75rem; color:var(--text-muted); margin-top:20px;">
+            © 2026 Rasin Ayiti × UNITECH — Séminaire Compétences de Vie
+        </p>
+    </div>
+
+    <!-- DASHBOARD (after valid code) -->
+    <div id="screenDash" class="dash-wrap hidden">
+        <div class="dash-header">
+            <div class="dash-welcome">Bienvenue, <span id="dashName"></span> 👋</div>
+            <div class="dash-sub">Séminaire Compétences de Vie — 30 Avril &amp; 1er Mai 2026</div>
+        </div>
+
+        <!-- Zoom Section -->
+        <div class="dash-card">
+            <h3><i class="fas fa-video"></i> Rejoindre la Formation Zoom</h3>
+            <a id="zoomJoinBtn" href="#" target="_blank" class="zoom-join-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Zoom_Logo_2022.svg/512px-Zoom_Logo_2022.svg.png" alt="Zoom" style="height:22px; filter:brightness(0) invert(1);">
+                Rejoindre la formation maintenant
+            </a>
+            <div class="zoom-info" id="zoomInfoBox">
+                <div><label>Meeting ID :</label><span id="zoomMeetingId">—</span></div>
+                <div><label>Mot de passe :</label><span id="zoomPassword">—</span></div>
+                <div><label>Votre code :</label><span id="dashCode" style="color:var(--primary);"></span></div>
+            </div>
+        </div>
+
+        <!-- Payment & Certificate -->
+        <div class="dash-card">
+            <h3><i class="fas fa-certificate"></i> Certificat de Participation</h3>
+            <div id="certSection"></div>
+        </div>
+
+        <!-- Participant Info -->
+        <div class="dash-card" style="font-size:0.85rem; color:var(--text-secondary);">
+            <h3><i class="fas fa-info-circle"></i> Vos informations</h3>
+            <div id="participantInfo"></div>
+        </div>
+
+        <div style="text-align:center; margin-top:16px;">
+            <button onclick="logout()" style="background:none; border:none; color:var(--text-muted); font-size:0.82rem; cursor:pointer;">
+                <i class="fas fa-sign-out-alt"></i> Se déconnecter
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="screenLoad" class="access-wrap hidden" style="justify-content:center; align-items:center; text-align:center;">
+        <div class="spinner" style="width:40px;height:40px;border-width:4px;margin:0 auto 16px;"></div>
+        <p style="color:var(--text-secondary);">Vérification en cours…</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="supabase.js?v=2"></script>
+    <script src="access.js?v=1"></script>
+</body>
+</html>

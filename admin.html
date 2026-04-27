@@ -28,6 +28,11 @@
                 <i class="fas fa-users"></i>
                 <span>Participants</span>
             </a>
+            <a href="#" class="nav-item" data-section="confirmes" onclick="showSection('confirmes')">
+                <i class="fas fa-check-circle"></i>
+                <span>Confirmés</span>
+                <span class="badge badge-success" id="confirmesCountBadge" style="margin-left:auto;font-size:0.7rem;padding:2px 6px;">0</span>
+            </a>
             <a href="#" class="nav-item" data-section="paiements" onclick="showSection('paiements')">
                 <i class="fas fa-money-check-alt"></i>
                 <span>Paiements</span>
@@ -133,6 +138,64 @@
             </div>
         </div>
         
+        <!-- Confirmés / Triage Section -->
+        <section class="section" id="confirmesSection">
+            <div class="section-header">
+                <h2>Participants Confirmés — Triage Zoom</h2>
+                <div class="section-actions">
+                    <button class="btn-action btn-primary" onclick="sendGroupZoomEmail()">
+                        <i class="fas fa-paper-plane"></i>
+                        Email groupé (tous)
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="generateAllCodes()">
+                        <i class="fas fa-key"></i>
+                        Générer tous les codes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Zoom Config -->
+            <div style="background:var(--bg-white);border:1px solid #c7dcff;border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
+                <div style="flex:1;min-width:220px;">
+                    <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">LIEN ZOOM</label>
+                    <input id="adminZoomLink" type="text" placeholder="https://zoom.us/j/..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;">
+                </div>
+                <div style="min-width:150px;">
+                    <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">MEETING ID</label>
+                    <input id="adminZoomId" type="text" placeholder="123 456 7890" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;">
+                </div>
+                <div style="min-width:140px;">
+                    <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">MOT DE PASSE ZOOM</label>
+                    <input id="adminZoomPass" type="text" placeholder="motdepasse" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;">
+                </div>
+                <button onclick="saveZoomConfig()" class="btn-action btn-primary" style="height:38px;">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container glass">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
+                            <th>Tél</th>
+                            <th>Code Accès</th>
+                            <th>Certificat</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="confirmesTable"></tbody>
+                </table>
+                <div class="empty-state hidden" id="emptyConfirmesState">
+                    <i class="fas fa-user-check"></i>
+                    <p>Aucun participant confirmé pour l’instant</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Paiements Section -->
         <section class="section" id="paiementsSection">
             <div class="section-header">
@@ -559,6 +622,6 @@
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=3"></script>
-    <script src="admin.js?v=3"></script>
+    <script src="admin.js?v=4"></script>
 </body>
 </html>

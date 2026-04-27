@@ -12,6 +12,15 @@
     <!-- Admin Hidden Button -->
     <div class="admin-trigger" onclick="openAdminLogin()"></div>
 
+    <!-- Zoom Floating Badge -->
+    <a href="access.html" class="zoom-float" title="Accéder à la formation Zoom">
+        <div class="zoom-float-inner">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Zoom_Logo_2022.svg/512px-Zoom_Logo_2022.svg.png" alt="Zoom" style="height:22px;">
+            <span>Formation en ligne</span>
+        </div>
+        <div class="zoom-float-sub">Accéder avec mon code</div>
+    </a>
+
     <!-- Background Elements -->
     <div class="bg-gradient"></div>
     <div class="bg-shapes">
@@ -62,6 +71,26 @@
             </div>
 
             <p class="tagline">Apprenez à avoir du succès, créer des opportunités, dépasser vos blocages</p>
+
+            <!-- Zoom Banner -->
+            <div class="zoom-banner">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Zoom_Logo_2022.svg/512px-Zoom_Logo_2022.svg.png" alt="Zoom" style="height:20px; vertical-align:middle;">
+                <span>Évènement <strong>100% en ligne</strong> sur <strong>Zoom</strong> &mdash; Lien envoyé après confirmation</span>
+            </div>
+
+            <!-- Countdown Timer -->
+            <div class="countdown-box">
+                <div class="countdown-label">Compte à rebours avant le Séminaire</div>
+                <div class="countdown-grid" id="countdown">
+                    <div class="cd-item"><span class="cd-val" id="cd-days">00</span><span class="cd-unit">Jours</span></div>
+                    <div class="cd-sep">:</div>
+                    <div class="cd-item"><span class="cd-val" id="cd-hours">00</span><span class="cd-unit">Heures</span></div>
+                    <div class="cd-sep">:</div>
+                    <div class="cd-item"><span class="cd-val" id="cd-mins">00</span><span class="cd-unit">Min</span></div>
+                    <div class="cd-sep">:</div>
+                    <div class="cd-item"><span class="cd-val" id="cd-secs">00</span><span class="cd-unit">Sec</span></div>
+                </div>
+            </div>
         </div>
 
         <!-- Form Card -->
@@ -374,5 +403,27 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=2"></script>
     <script src="script.js?v=2"></script>
+    <script>
+    // Countdown to April 30, 2026 09:00 AM Haiti time (UTC-4)
+    (function() {
+        const target = new Date('2026-04-30T09:00:00-04:00').getTime();
+        function update() {
+            const diff = target - Date.now();
+            if (diff <= 0) {
+                document.getElementById('countdown').innerHTML = '<div style="color:var(--success);font-weight:700;font-size:1.1rem;">L\'évènement a commencé !</div>';
+                return;
+            }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+            document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+            document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+            document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+        }
+        update(); setInterval(update, 1000);
+    })();
+    </script>
 </body>
 </html>
