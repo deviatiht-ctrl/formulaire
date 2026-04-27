@@ -775,6 +775,7 @@ async function sendAllRegistrationEmails() {
     const zoom = getZoomConfig();
     showToast(`Envoi en cours pour ${participants.length} inscrit(s)…`, 'info');
     let sent = 0, errors = 0;
+    let lastError = '';
     for (const p of participants) {
         try {
             if (p.statut_paiement === 'verifie' && p.access_code) {
@@ -783,9 +784,17 @@ async function sendAllRegistrationEmails() {
                 await sendRegistrationEmail(p);
             }
             sent++;
-        } catch(e) { errors++; console.warn('Email erreur:', p.email, e.message); }
+        } catch(e) {
+            errors++;
+            lastError = e.message;
+            console.error('Email erreur [' + p.email + ']:', e.message);
+        }
     }
-    showToast(`✅ ${sent} email(s) envoyés${errors ? ` | ${errors} erreur(s)` : ''}`, sent > 0 ? 'success' : 'error');
+    if (sent > 0) {
+        showToast(`✅ ${sent} email(s) envoyés !${errors ? ' (' + errors + ' échec)' : ''}`, 'success');
+    } else {
+        showToast('❌ Erreur: ' + (lastError || 'inconnue'), 'error');
+    }
 }
 
 function renderConfirmesSection() {
