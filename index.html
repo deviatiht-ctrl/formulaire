@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription Événement - Jeunes</title>
+    <title>Séminaire sur les Compétences de Vie - Rasin Ayiti</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,18 +24,51 @@
     <main class="container">
         <!-- Logo Section -->
         <div class="logo-section">
-            <div class="logo">
-                <i class="fas fa-rocket"></i>
+            <div class="orgs-row">
+                <div class="org-badge">
+                    <i class="fas fa-leaf"></i>
+                    <span>RASIN AYITI</span>
+                </div>
+                <span class="org-cross">×</span>
+                <div class="org-badge">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>UNITECH</span>
+                </div>
             </div>
-            <h1 class="brand-name">EventJeunes</h1>
-            <p class="tagline">Rejoins l'aventure !</p>
+
+            <h1 class="brand-name">SÉMINAIRE SUR LES<br>COMPÉTENCES DE VIE</h1>
+
+            <div class="event-theme">
+                <div class="theme-number">5</div>
+                <div class="theme-content">
+                    <span class="theme-secrets">SECRETS</span>
+                    <p>POUR RÉUSSIR COMME JEUNE ET DEVENIR CRÉATEUR D’OPPORTUNITÉS EN HAÏTI</p>
+                </div>
+            </div>
+
+            <div class="event-info-bar">
+                <div class="event-info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>30 Avril &amp; 1er Mai 2026</span>
+                </div>
+                <div class="event-info-item">
+                    <i class="fas fa-clock"></i>
+                    <span>09:00 AM – 01:00 PM</span>
+                </div>
+                <div class="event-info-item">
+                    <i class="fas fa-phone"></i>
+                    <a href="tel:+50946807922" style="color:inherit;text-decoration:none;">+509 46807922</a>
+                </div>
+            </div>
+
+            <p class="tagline">Apprenez à avoir du succès, créer des opportunités, dépasser vos blocages</p>
         </div>
 
         <!-- Form Card -->
         <div class="form-card glass">
             <div class="form-header">
-                <h2>Inscription</h2>
-                <p>Remplis tes infos pour réserver ta place</p>
+                <h2>Inscrivez-vous</h2>
+                <p>Participez <strong style="color:var(--success);">sans frais</strong> — réservez votre place dès maintenant</p>
             </div>
 
             <form id="registrationForm" novalidate>
@@ -100,7 +133,7 @@
                 </div>
 
                 <button type="submit" class="btn-submit" id="submitBtn">
-                    <span class="btn-text">S'inscrire</span>
+                    <span class="btn-text">S’inscrire gratuitement</span>
                     <i class="fas fa-arrow-right"></i>
                     <div class="btn-loader">
                         <div class="spinner"></div>
@@ -115,7 +148,7 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <h2>Inscription réussie !</h2>
-            <p>Ta place est réservée. À très bientôt !</p>
+            <p>Votre place est réservée pour le Séminaire. À très bientôt !</p>
             <button class="btn-secondary" onclick="resetForm()">
                 <i class="fas fa-plus"></i>
                 Nouvelle inscription
@@ -139,7 +172,7 @@
                     </p>
                     <div class="certificate-preview" style="background: var(--bg-light); padding: 20px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
                         <i class="fas fa-certificate" style="font-size: 48px; color: #f59e0b; margin-bottom: 12px;"></i>
-                        <h4 style="margin-bottom: 8px;">Certificat EventJeunes 2026</h4>
+                        <h4 style="margin-bottom: 8px;">Certificat Rasin Ayiti 2026</h4>
                         <p style="font-size: 0.9rem; color: var(--text-muted);">Certificat personnalisé avec ton nom</p>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 12px;">
                             500 Gds
@@ -160,10 +193,10 @@
         <div class="donation-section glass" id="donationSection">
             <div class="donation-header">
                 <i class="fas fa-heart"></i>
-                <h3>Soutenir EventJeunes</h3>
+                <h3>Soutenir Rasin Ayiti</h3>
             </div>
             <p class="donation-text">
-                Tu veux contribuer à la réussite de cet événement ? Fais un don et aide-nous à créer une expérience inoubliable pour tous les jeunes.
+                Vous voulez contribuer à la réussite de ce séminaire ? Faites un don et aidez-nous à créer une expérience inoubliable pour tous les jeunes haïtiens.
             </p>
             <div class="donation-buttons">
                 <button class="btn-donate btn-donate-primary" onclick="openDonationModal()">

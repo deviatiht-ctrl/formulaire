@@ -148,40 +148,140 @@ body {
     align-items: center;
 }
 
-/* ===== LOGO SECTION ===== */
+/* ===== LOGO / EVENT HEADER SECTION ===== */
 .logo-section {
     text-align: center;
     margin-bottom: 32px;
+    width: 100%;
 }
 
-.logo {
-    width: 72px;
-    height: 72px;
-    background: var(--primary);
-    border-radius: var(--radius-lg);
+/* Organisations row */
+.orgs-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.org-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--primary);
+    color: #fff;
+    padding: 7px 16px;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     box-shadow: var(--shadow-colored);
 }
 
-.logo i {
-    font-size: 36px;
-    color: white;
+.org-badge i {
+    font-size: 1rem;
 }
 
-.brand-name {
-    font-size: 1.875rem;
+.org-cross {
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 8px;
+    color: var(--text-muted);
 }
 
+/* Main title */
+.brand-name {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+}
+
+/* Theme 5 SECRETS */
+.event-theme {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    text-align: left;
+    box-shadow: 0 8px 24px -4px rgba(21, 128, 61, 0.35);
+}
+
+.theme-number {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    min-width: 48px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.theme-content {
+    flex: 1;
+}
+
+.theme-secrets {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.theme-content p {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.88);
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+/* Event info bar */
+.event-info-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    text-align: left;
+}
+
+.event-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.event-info-item i {
+    color: var(--primary);
+    font-size: 0.9rem;
+    width: 18px;
+    text-align: center;
+}
+
+/* Tagline */
 .tagline {
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 0.88rem;
     font-weight: 400;
+    font-style: italic;
+    padding: 0 8px;
 }
 
 /* ===== FORM CARD ===== */
