@@ -16,14 +16,16 @@ const toastMessage = document.getElementById('toastMessage');
 const fields = {
     nom: document.getElementById('nom'),
     prenom: document.getElementById('prenom'),
-    email: document.getElementById('email')
+    email: document.getElementById('email'),
+    telephone: document.getElementById('telephone')
 };
 
 // Messages d'erreur
 const errors = {
     nom: document.getElementById('nomError'),
     prenom: document.getElementById('prenomError'),
-    email: document.getElementById('emailError')
+    email: document.getElementById('emailError'),
+    telephone: document.getElementById('telephoneError')
 };
 
 // ============================================
@@ -49,6 +51,13 @@ const validators = {
         if (!value.trim()) return 'L\'email est obligatoire';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) return 'Veuillez entrer un email valide';
+        return '';
+    },
+
+    telephone: (value) => {
+        if (!value.trim()) return 'Le numéro de téléphone est obligatoire';
+        const cleaned = value.replace(/[\s\-\+\(\)]/g, '');
+        if (!/^\d{8,}$/.test(cleaned)) return 'Numéro invalide (min 8 chiffres)';
         return '';
     }
 };
@@ -148,7 +157,8 @@ form.addEventListener('submit', async (e) => {
         const participant = {
             nom: fields.nom.value.trim(),
             prenom: fields.prenom.value.trim(),
-            email: email
+            email: email,
+            telephone: fields.telephone.value.trim()
         };
         
         let participantId;
