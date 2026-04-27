@@ -143,9 +143,13 @@
             <div class="section-header">
                 <h2>Participants Confirmés — Triage Zoom</h2>
                 <div class="section-actions">
-                    <button class="btn-action btn-primary" onclick="sendGroupZoomEmail()">
+                    <button class="btn-action btn-primary" onclick="sendAllRegistrationEmails()">
                         <i class="fas fa-paper-plane"></i>
-                        Email groupé (tous)
+                        Envoyer à tous les inscrits
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="sendGroupZoomEmail()">
+                        <i class="fas fa-check-circle"></i>
+                        Email Zoom (confirmés)
                     </button>
                     <button class="btn-action btn-secondary" onclick="generateAllCodes()">
                         <i class="fas fa-key"></i>

@@ -739,31 +739,53 @@ Organisé par : RASIN AYITI × UNITECH
 L'équipe Rasin Ayiti`;
 }
 
-function sendIndividualZoomEmail(participantId) {
+async function sendIndividualZoomEmail(participantId) {
     const p = participants.find(x => x.id == participantId);
     if (!p) return;
-    if (!p.access_code) { showToast('Générez d\'abord un code pour ce participant', 'warning'); return; }
     const zoom = getZoomConfig();
-    const subject = encodeURIComponent('✅ Confirmation + Code d\'accès — Séminaire Rasin Ayiti');
-    const body = encodeURIComponent(buildZoomEmailBody(p, zoom));
-    window.open(`mailto:${p.email}?subject=${subject}&body=${body}`, '_blank');
-    showToast('Gmail ouvert pour ' + p.prenom, 'success');
+    try {
+        if (p.statut_paiement === 'verifie' && p.access_code) {
+            await sendConfirmationEmail(p, zoom);
+            showToast(`✅ Email Zoom envoyé à ${p.email}`, 'success');
+        } else {
+            await sendRegistrationEmail(p);
+            showToast(`✅ Email inscription envoyé à ${p.email}`, 'success');
+        }
+    } catch(e) { showToast('Erreur envoi: ' + e.message, 'error'); }
 }
 
-function sendGroupZoomEmail() {
-    const confirmed = participants.filter(p => p.statut_paiement === 'verifie');
-    if (confirmed.length === 0) { showToast('Aucun participant confirmé', 'warning'); return; }
-    const withoutCode = confirmed.filter(p => !p.access_code);
-    if (withoutCode.length > 0) {
-        showToast(`${withoutCode.length} participant(s) sans code — Générez d'abord tous les codes`, 'warning');
-        return;
-    }
+async function sendGroupZoomEmail() {
+    if (participants.length === 0) { showToast('Aucun participant chargé', 'warning'); return; }
+    const confirmed = participants.filter(p => p.statut_paiement === 'verifie' && p.access_code);
+    if (confirmed.length === 0) { showToast('Aucun confirmé avec code — générez les codes d\'abord', 'warning'); return; }
     const zoom = getZoomConfig();
-    const emails = confirmed.map(p => p.email).join(',');
-    const subject = encodeURIComponent('✅ Confirmation + Accès Zoom — Séminaire Rasin Ayiti');
-    const body = encodeURIComponent(`Bonjour,\n\nVoici les informations pour rejoindre le Séminaire :\n\nLien Zoom  : ${zoom.link}\nMeeting ID : ${zoom.meetingId}\nMot de passe: ${zoom.password}\n\nRendez-vous sur : ${window.location.origin}/access.html pour votre code d'accès et certificat.\n\nDate : 30 Avril et 1er Mai 2026 — 09:00 AM - 01:00 PM\nContact : +509 46807922\n\nL'équipe Rasin Ayiti`);
-    window.open(`mailto:${emails}?subject=${subject}&body=${body}`, '_blank');
-    showToast(`Email groupé pour ${confirmed.length} participant(s)`, 'success');
+    showToast(`Envoi en cours pour ${confirmed.length} participant(s)…`, 'info');
+    let sent = 0, errors = 0;
+    for (const p of confirmed) {
+        try {
+            await sendConfirmationEmail(p, zoom);
+            sent++;
+        } catch(e) { errors++; console.warn('Email erreur:', p.email, e.message); }
+    }
+    showToast(`✅ ${sent} email(s) Zoom envoyés${errors ? ` (${errors} erreur(s))` : ''}`, sent > 0 ? 'success' : 'error');
+}
+
+async function sendAllRegistrationEmails() {
+    if (participants.length === 0) { showToast('Aucun participant chargé', 'warning'); return; }
+    const zoom = getZoomConfig();
+    showToast(`Envoi en cours pour ${participants.length} inscrit(s)…`, 'info');
+    let sent = 0, errors = 0;
+    for (const p of participants) {
+        try {
+            if (p.statut_paiement === 'verifie' && p.access_code) {
+                await sendConfirmationEmail(p, zoom);
+            } else {
+                await sendRegistrationEmail(p);
+            }
+            sent++;
+        } catch(e) { errors++; console.warn('Email erreur:', p.email, e.message); }
+    }
+    showToast(`✅ ${sent} email(s) envoyés${errors ? ` | ${errors} erreur(s)` : ''}`, sent > 0 ? 'success' : 'error');
 }
 
 function renderConfirmesSection() {
@@ -1271,6 +1293,7 @@ window.assignCode = assignCode;
 window.generateAllCodes = generateAllCodes;
 window.sendIndividualZoomEmail = sendIndividualZoomEmail;
 window.sendGroupZoomEmail = sendGroupZoomEmail;
+window.sendAllRegistrationEmails = sendAllRegistrationEmails;
 window.saveZoomConfig = saveZoomConfig;
 
 document.addEventListener('DOMContentLoaded', () => {
