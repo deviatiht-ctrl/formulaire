@@ -323,12 +323,9 @@ async function sendEmail(payload) {
         throw new Error('Type email inconnu: ' + payload.type);
     }
 
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetch('/api/send-email', {
         method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + RESEND_API_KEY,
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             from: RESEND_FROM,
             to: [payload.to],
