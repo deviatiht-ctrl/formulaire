@@ -202,6 +202,7 @@ function renderParticipants(data) {
             <td>${p.telephone || '-'}</td>
             <td>${whatsappDisplay}</td>
             <td>${p.departement || '-'}</td>
+            <td>${p.ville || '-'}</td>
             <td>${p.tranche_age || '-'}</td>
             <td>${statusBadge}</td>
             <td>${qrStatus}</td>

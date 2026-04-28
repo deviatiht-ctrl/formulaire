@@ -228,6 +228,41 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="ville">Ville / Commune</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-city input-icon"></i>
+                        <input 
+                            type="text" 
+                            id="ville" 
+                            name="ville" 
+                            list="villes-list"
+                            placeholder="Ex: Delmas, Pétion-Ville, Carrefour..."
+                        >
+                        <datalist id="villes-list">
+                            <option value="Delmas">
+                            <option value="Pétion-Ville">
+                            <option value="Port-au-Prince">
+                            <option value="Carrefour">
+                            <option value="Cité Soleil">
+                            <option value="Tabarre">
+                            <option value="Croix-des-Bouquets">
+                            <option value="Kenscoff">
+                            <option value="Gonaïves">
+                            <option value="Cap-Haïtien">
+                            <option value="Les Cayes">
+                            <option value="Jacmel">
+                            <option value="Jérémie">
+                            <option value="Saint-Marc">
+                            <option value="Hinche">
+                            <option value="Miragoâne">
+                            <option value="Port-de-Paix">
+                            <option value="Fort-Liberté">
+                        </datalist>
+                    </div>
+                    <span class="error-message" id="villeError"></span>
+                </div>
+
                 <button type="submit" class="btn-submit" id="submitBtn">
                     <span class="btn-text">S’inscrire gratuitement</span>
                     <i class="fas fa-arrow-right"></i>
@@ -468,8 +503,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=7"></script>
-    <script src="script.js?v=4"></script>
+    <script src="supabase.js?v=10"></script>
+    <script src="script.js?v=5"></script>
     <script>
     // Countdown to April 30, 2026 09:00 AM Haiti time (UTC-4)
     (function() {

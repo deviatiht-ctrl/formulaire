@@ -20,7 +20,8 @@ const fields = {
     telephone: document.getElementById('telephone'),
     whatsapp: document.getElementById('whatsapp'),
     departement: document.getElementById('departement'),
-    tranche_age: document.getElementById('tranche_age')
+    tranche_age: document.getElementById('tranche_age'),
+    ville: document.getElementById('ville')
 };
 
 // Messages d'erreur
@@ -31,7 +32,8 @@ const errors = {
     telephone: document.getElementById('telephoneError'),
     whatsapp: document.getElementById('whatsappError'),
     departement: document.getElementById('departementError'),
-    tranche_age: document.getElementById('tranche_ageError')
+    tranche_age: document.getElementById('tranche_ageError'),
+    ville: document.getElementById('villeError')
 };
 
 // ============================================
@@ -82,6 +84,11 @@ const validators = {
 
     tranche_age: (value) => {
         if (!value) return 'La tranche d\'âge est obligatoire';
+        return '';
+    },
+
+    ville: (value) => {
+        // Optionnel
         return '';
     }
 };
@@ -183,9 +190,10 @@ form.addEventListener('submit', async (e) => {
             prenom: fields.prenom.value.trim(),
             email: email,
             telephone: fields.telephone.value.trim(),
-            whatsapp: fields.whatsapp.value.trim() || fields.telephone.value.trim(), // Si vid, itilize telefòn
+            whatsapp: fields.whatsapp.value.trim() || fields.telephone.value.trim(),
             departement: fields.departement.value,
-            tranche_age: fields.tranche_age.value
+            tranche_age: fields.tranche_age.value,
+            ville: fields.ville.value.trim()
         };
         
         let participantId;
