@@ -161,6 +161,73 @@
                     <span class="error-message" id="telephoneError"></span>
                 </div>
 
+                <div class="form-group">
+                    <label for="whatsapp">Numéro WhatsApp (optionnel)</label>
+                    <div class="input-wrapper">
+                        <i class="fab fa-whatsapp input-icon" style="color:#25D366;"></i>
+                        <input 
+                            type="tel" 
+                            id="whatsapp" 
+                            name="whatsapp" 
+                            placeholder="Ex: 34 56 7890 (si différent)"
+                        >
+                    </div>
+                    <span class="error-message" id="whatsappError"></span>
+                </div>
+
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="departement">Département</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <select 
+                                id="departement" 
+                                name="departement" 
+                                required
+                                style="width:100%;padding:14px 16px 14px 44px;border:none;background:transparent;font-size:0.95rem;appearance:none;"
+                            >
+                                <option value="">Choisir...</option>
+                                <option value="Ouest">Ouest (PAP)</option>
+                                <option value="Nord">Nord (Cap)</option>
+                                <option value="Nord-Ouest">Nord-Ouest (Port-de-Paix)</option>
+                                <option value="Nord-Est">Nord-Est (Fort-Liberté)</option>
+                                <option value="Artibonite">Artibonite (Gonaïves)</option>
+                                <option value="Centre">Centre (Hinche)</option>
+                                <option value="Sud">Sud (Les Cayes)</option>
+                                <option value="Sud-Est">Sud-Est (Jacmel)</option>
+                                <option value="Nippes">Nippes (Miragoâne)</option>
+                                <option value="Grand'Anse">Grand'Anse (Jérémie)</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                            <i class="fas fa-chevron-down" style="position:absolute;right:16px;pointer-events:none;color:#9ca3af;"></i>
+                        </div>
+                        <span class="error-message" id="departementError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tranche_age">Tranche d'âge</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-birthday-cake input-icon"></i>
+                            <select 
+                                id="tranche_age" 
+                                name="tranche_age" 
+                                required
+                                style="width:100%;padding:14px 16px 14px 44px;border:none;background:transparent;font-size:0.95rem;appearance:none;"
+                            >
+                                <option value="">Choisir...</option>
+                                <option value="15-20">15 - 20 ans</option>
+                                <option value="21-25">21 - 25 ans</option>
+                                <option value="26-30">26 - 30 ans</option>
+                                <option value="31-35">31 - 35 ans</option>
+                                <option value="36-40">36 - 40 ans</option>
+                                <option value="40+">40 ans et plus</option>
+                            </select>
+                            <i class="fas fa-chevron-down" style="position:absolute;right:16px;pointer-events:none;color:#9ca3af;"></i>
+                        </div>
+                        <span class="error-message" id="tranche_ageError"></span>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn-submit" id="submitBtn">
                     <span class="btn-text">S’inscrire gratuitement</span>
                     <i class="fas fa-arrow-right"></i>
@@ -401,8 +468,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=4"></script>
-    <script src="script.js?v=3"></script>
+    <script src="supabase.js?v=7"></script>
+    <script src="script.js?v=4"></script>
     <script>
     // Countdown to April 30, 2026 09:00 AM Haiti time (UTC-4)
     (function() {

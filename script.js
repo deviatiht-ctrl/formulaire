@@ -17,7 +17,10 @@ const fields = {
     nom: document.getElementById('nom'),
     prenom: document.getElementById('prenom'),
     email: document.getElementById('email'),
-    telephone: document.getElementById('telephone')
+    telephone: document.getElementById('telephone'),
+    whatsapp: document.getElementById('whatsapp'),
+    departement: document.getElementById('departement'),
+    tranche_age: document.getElementById('tranche_age')
 };
 
 // Messages d'erreur
@@ -25,7 +28,10 @@ const errors = {
     nom: document.getElementById('nomError'),
     prenom: document.getElementById('prenomError'),
     email: document.getElementById('emailError'),
-    telephone: document.getElementById('telephoneError')
+    telephone: document.getElementById('telephoneError'),
+    whatsapp: document.getElementById('whatsappError'),
+    departement: document.getElementById('departementError'),
+    tranche_age: document.getElementById('tranche_ageError')
 };
 
 // ============================================
@@ -39,14 +45,14 @@ const validators = {
         if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(value)) return 'Le nom contient des caractères invalides';
         return '';
     },
-    
+
     prenom: (value) => {
         if (!value.trim()) return 'Le prénom est obligatoire';
         if (value.trim().length < 2) return 'Le prénom doit contenir au moins 2 caractères';
         if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(value)) return 'Le prénom contient des caractères invalides';
         return '';
     },
-    
+
     email: (value) => {
         if (!value.trim()) return 'L\'email est obligatoire';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,6 +64,24 @@ const validators = {
         if (!value.trim()) return 'Le numéro de téléphone est obligatoire';
         const cleaned = value.replace(/[\s\-\+\(\)]/g, '');
         if (!/^\d{8,}$/.test(cleaned)) return 'Numéro invalide (min 8 chiffres)';
+        return '';
+    },
+
+    whatsapp: (value) => {
+        // Optionel - sèlman valide si pa vid
+        if (!value.trim()) return '';
+        const cleaned = value.replace(/[\s\-\+\(\)]/g, '');
+        if (!/^\d{8,}$/.test(cleaned)) return 'Numéro WhatsApp invalide';
+        return '';
+    },
+
+    departement: (value) => {
+        if (!value) return 'Le département est obligatoire';
+        return '';
+    },
+
+    tranche_age: (value) => {
+        if (!value) return 'La tranche d\'âge est obligatoire';
         return '';
     }
 };
@@ -158,7 +182,10 @@ form.addEventListener('submit', async (e) => {
             nom: fields.nom.value.trim(),
             prenom: fields.prenom.value.trim(),
             email: email,
-            telephone: fields.telephone.value.trim()
+            telephone: fields.telephone.value.trim(),
+            whatsapp: fields.whatsapp.value.trim() || fields.telephone.value.trim(), // Si vid, itilize telefòn
+            departement: fields.departement.value,
+            tranche_age: fields.tranche_age.value
         };
         
         let participantId;

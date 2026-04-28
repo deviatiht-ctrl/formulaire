@@ -190,11 +190,19 @@ function renderParticipants(data) {
         // Bouton supprimer
         actionButtons += `<button class="btn-icon btn-delete" onclick="deleteParticipantItem(${p.id})" title="Supprimer"><i class="fas fa-trash"></i></button>`;
         
+        // WhatsApp click-to-chat
+        const whatsappDisplay = p.whatsapp 
+            ? `<a href="https://wa.me/${p.whatsapp.replace(/\D/g, '')}" target="_blank" title="Ouvrir WhatsApp" style="color:#25D366;"><i class="fab fa-whatsapp"></i> ${p.whatsapp}</a>`
+            : (p.telephone ? `<a href="https://wa.me/${p.telephone.replace(/\D/g, '')}" target="_blank" style="color:#9ca3af;"><i class="fas fa-phone"></i></a>` : '-');
+        
         row.innerHTML = `
             <td>${p.nom || '-'}</td>
             <td>${p.prenom || '-'}</td>
             <td>${p.email}</td>
             <td>${p.telephone || '-'}</td>
+            <td>${whatsappDisplay}</td>
+            <td>${p.departement || '-'}</td>
+            <td>${p.tranche_age || '-'}</td>
             <td>${statusBadge}</td>
             <td>${qrStatus}</td>
             <td>${emailStatusBadge}</td>
@@ -1279,6 +1287,84 @@ window.rejectPayment = rejectPayment;
 window.deleteParticipantItem = deleteParticipantItem;
 window.generateAllQR = generateAllQR;
 window.sendAllEmails = sendAllEmails;
+// ===== WHATSAPP GROUP FUNCTION =====
+function showAllWhatsApp() {
+    // Rekipere tout nimewo WhatsApp
+    const withWhatsApp = participants.filter(p => p.whatsapp || p.telephone);
+    
+    if (withWhatsApp.length === 0) {
+        showToast('Aucun numéro WhatsApp disponible', 'warning');
+        return;
+    }
+    
+    // Grouppa pa depatman
+    const byDept = {};
+    withWhatsApp.forEach(p => {
+        const dept = p.departement || 'Non spécifié';
+        if (!byDept[dept]) byDept[dept] = [];
+        byDept[dept].push({
+            nom: `${p.prenom} ${p.nom}`,
+            num: (p.whatsapp || p.telephone).replace(/\D/g, ''),
+            original: p.whatsapp || p.telephone
+        });
+    });
+    
+    // Kreye modal HTML
+    let html = `<div style="max-height:70vh;overflow-y:auto;">
+        <h3 style="margin-bottom:16px;"><i class="fab fa-whatsapp" style="color:#25D366;"></i> ${withWhatsApp.length} numéros WhatsApp</h3>
+        <div style="margin-bottom:16px;padding:12px;background:#f0fdf4;border-radius:8px;">
+            <strong>Total:</strong> ${withWhatsApp.length} participants avec WhatsApp<br>
+            <strong>Conseil:</strong> Copiez les numéros et collez-les dans un groupe WhatsApp
+        </div>`;
+    
+    // Bouton kopi tout
+    const allNumbers = withWhatsApp.map(p => (p.whatsapp || p.telephone).replace(/\D/g, '')).join(',');
+    html += `<button onclick="navigator.clipboard.writeText('${allNumbers}');showToast('Numéros copiés !', 'success');" 
+        style="margin-bottom:16px;padding:10px 20px;background:#25D366;color:white;border:none;border-radius:8px;cursor:pointer;">
+        <i class="fas fa-copy"></i> Copier tous les numéros
+    </button>`;
+    
+    // Grouppa pa depatman
+    Object.keys(byDept).sort().forEach(dept => {
+        const list = byDept[dept];
+        const nums = list.map(l => l.num).join(',');
+        html += `<div style="margin-bottom:20px;">
+            <h4 style="color:var(--primary);margin-bottom:8px;">${dept} (${list.length})</h4>
+            <button onclick="navigator.clipboard.writeText('${nums}');showToast('Numéros ${dept} copiés !', 'success');" 
+                style="margin-bottom:8px;padding:6px 12px;background:#e0e7ff;border:none;border-radius:6px;cursor:pointer;font-size:0.85rem;">
+                <i class="fas fa-copy"></i> Copier ${dept}
+            </button>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">`;
+        
+        list.forEach(p => {
+            html += `<div style="padding:8px;background:#f8fafc;border-radius:6px;font-size:0.85rem;">
+                <a href="https://wa.me/${p.num}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                <span style="margin-left:6px;">${p.nom}</span><br>
+                <code style="background:#e2e8f0;padding:2px 6px;border-radius:4px;">${p.original}</code>
+            </div>`;
+        });
+        
+        html += `</div></div>`;
+    });
+    
+    html += `</div>`;
+    
+    // Afiche modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content glass" style="max-width:800px;width:90%;">
+            <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+            ${html}
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+window.showAllWhatsApp = showAllWhatsApp;
 window.logout = logout;
 window.showSection = showSection;
 window.showDonationVerifyModal = showDonationVerifyModal;
