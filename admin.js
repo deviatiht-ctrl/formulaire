@@ -463,11 +463,22 @@ function updateStats() {
     const qrCount = participants.filter(p => p.qr_code).length;
     qrGeneratedEl.textContent = qrCount;
     
-    const emailCount = participants.filter(p => p.email_envoye).length;
+    // Email ki ale (tcheke tout chan yo)
+    const emailCount = participants.filter(p => 
+        p.email_sent === true || 
+        p.email_envoye === true || 
+        p.confirmed === true
+    ).length;
     emailsSentEl.textContent = emailCount;
     
-    const paymentCount = participants.filter(p => p.statut_paiement === 'verifie').length;
-    paymentsVerifiedEl.textContent = paymentCount;
+    // Confirmed = peyeman verifye OUBYEN email resevwa
+    const confirmedCount = participants.filter(p => 
+        p.statut_paiement === 'verifie' || 
+        p.confirmed === true || 
+        p.email_sent === true ||
+        p.email_envoye === true
+    ).length;
+    paymentsVerifiedEl.textContent = confirmedCount;
 }
 
 // ===== PAYMENT VERIFICATION =====
@@ -743,7 +754,11 @@ async function sendIndividualZoomEmail(participantId) {
 
 async function sendGroupZoomEmail() {
     if (participants.length === 0) { showToast('Aucun participant chargé', 'warning'); return; }
-    const confirmed = participants.filter(p => p.statut_paiement === 'verifie' && p.access_code);
+    // Confirmed = peyeman verifye OUBYEN email resevwa
+    const confirmed = participants.filter(p => 
+        (p.statut_paiement === 'verifie' || p.confirmed === true || p.email_sent === true || p.email_envoye === true) 
+        && p.access_code
+    );
     if (confirmed.length === 0) { showToast('Aucun confirmé avec code — générez les codes d\'abord', 'warning'); return; }
     const zoom = getZoomConfig();
     showToast(`Envoi en cours pour ${confirmed.length} participant(s)…`, 'info');
@@ -804,7 +819,13 @@ function renderConfirmesSection() {
     const emptyEl = document.getElementById('emptyConfirmesState');
     if (!tbody) return;
 
-    const confirmed = participants.filter(p => p.statut_paiement === 'verifie');
+    // Confirmed = peyeman verifye OUBYEN email resevwa (confirmed = true)
+    const confirmed = participants.filter(p => 
+        p.statut_paiement === 'verifie' || 
+        p.confirmed === true || 
+        p.email_sent === true ||
+        p.email_envoye === true
+    );
 
     // Update badge
     const badge = document.getElementById('confirmesCountBadge');

@@ -357,7 +357,12 @@ async function markEmailSent(participantId) {
         console.warn('❌ participantId manquant - impossible de marquer email');
         return;
     }
-    const updateData = { email_sent: true, email_sent_at: new Date().toISOString() };
+    const updateData = { 
+        email_sent: true, 
+        email_sent_at: new Date().toISOString(),
+        confirmed: true,
+        confirmed_at: new Date().toISOString()
+    };
     console.log('📝 Mise à jour Supabase:', updateData, 'pour ID:', participantId);
     const { data, error } = await supabaseClient
         .from('participants')
