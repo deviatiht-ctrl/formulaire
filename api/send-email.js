@@ -1,21 +1,21 @@
 // api/send-email.js — Vercel Serverless Function
-// Envoie via SendGrid API (gratuit 100/jour, pas de domaine requis)
+// Envoie via Brevo API (ex-Sendinblue) - 300/jour gratuit
 const https = require('https');
 
-const SENDGRID_KEY = process.env.SENDGRID_API_KEY || '';
+const BREVO_KEY = process.env.BREVO_API_KEY || '';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'rasinayiti.ht@gmail.com';
 
-function sendgridRequest(body) {
+function brevoRequest(body) {
     return new Promise((resolve, reject) => {
-        if (!SENDGRID_KEY) return reject(new Error('SENDGRID_API_KEY manquant'));
+        if (!BREVO_KEY) return reject(new Error('BREVO_API_KEY manquant'));
 
         const data = JSON.stringify(body);
         const options = {
-            hostname: 'api.sendgrid.com',
-            path: '/v3/mail/send',
+            hostname: 'api.brevo.com',
+            path: '/v3/smtp/email',
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + SENDGRID_KEY,
+                'api-key': BREVO_KEY,
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(data),
             },
@@ -28,7 +28,7 @@ function sendgridRequest(body) {
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     resolve({ success: true, status: res.statusCode });
                 } else {
-                    reject(new Error('SendGrid error ' + res.statusCode + ': ' + responseData));
+                    reject(new Error('Brevo error ' + res.statusCode + ': ' + responseData));
                 }
             });
         });
@@ -51,20 +51,20 @@ module.exports = async function handler(req, res) {
     if (!to || !subject || !html) {
         return res.status(400).json({ error: 'Champs manquants: to, subject, html' });
     }
-    if (!SENDGRID_KEY) {
-        console.error('❌ SENDGRID_API_KEY manquant dans Environment Variables');
-        return res.status(500).json({ error: 'SENDGRID_API_KEY non configuré dans Vercel. Allez dans Settings > Environment Variables.' });
+    if (!BREVO_KEY) {
+        console.error('❌ BREVO_API_KEY manquant dans Environment Variables');
+        return res.status(500).json({ error: 'BREVO_API_KEY non configuré. Créez un compte sur brevo.com, générez une clé API, et ajoutez-la dans Vercel > Settings > Environment Variables.' });
     }
 
     const body = {
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: FROM_EMAIL, name: 'Rasin Ayiti × UNITECH' },
+        sender: { email: FROM_EMAIL, name: 'Rasin Ayiti × UNITECH' },
+        to: [{ email: to }],
         subject: subject,
-        content: [{ type: 'text/html', value: html }],
+        htmlContent: html,
     };
 
     try {
-        await sendgridRequest(body);
+        await brevoRequest(body);
         return res.status(200).json({ success: true });
     } catch (err) {
         return res.status(500).json({ error: err.message });
