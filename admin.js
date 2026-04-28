@@ -415,31 +415,7 @@ async function confirmSendEmail() {
 }
 
 async function sendAllEmails() {
-    const withoutEmail = participants.filter(p => !p.email_sent);
-    
-    if (withoutEmail.length === 0) {
-        showToast('Tous les emails ont déjà été envoyés', 'info');
-        return;
-    }
-    
-    let sent = 0;
-    for (const participant of withoutEmail) {
-        try {
-            if (!participant.qr_code) {
-                participant.qr_code = await generateQRCode(participant);
-            }
-            
-            await sendEmail(participant, participant.qr_code);
-            participant.email_sent = true;
-            sent++;
-            
-        } catch (error) {
-            console.error(`Erreur email pour ${participant.email}:`, error);
-        }
-    }
-    
-    updateStats();
-    showToast(`${sent} emails envoyés`, 'success');
+    return sendAllRegistrationEmails();
 }
 
 // ===== DELETE PARTICIPANT =====
