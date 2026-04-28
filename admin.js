@@ -930,11 +930,24 @@ function renderPaymentsSection() {
         else if (p.statut_paiement === 'refuse') { statusBadge = '❌ Refusé'; statusColor = '#ef4444'; }
         else { statusBadge = '—'; }
 
-        const proofHtml = p.preuve_paiement
-            ? `<a href="${p.preuve_paiement}" target="_blank">
-                <img src="${p.preuve_paiement}" alt="Preuve" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;cursor:zoom-in;">
-               </a>`
-            : `<div style="width:100%;height:120px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;"><i class="fas fa-image" style="font-size:2rem;"></i></div>`;
+        let proofHtml;
+        if (p.preuve_paiement) {
+            proofHtml = `<a href="${p.preuve_paiement}" target="_blank" title="Cliquer pour agrandir">
+                <img src="${p.preuve_paiement}" alt="Preuve" 
+                    style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:2px solid #10b981;cursor:zoom-in;"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div style="display:none;width:100%;height:80px;background:#fef3c7;border-radius:8px;align-items:center;justify-content:center;color:#d97706;font-size:0.8rem;flex-direction:column;gap:4px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Image non accessible</span>
+                    <a href="${p.preuve_paiement}" target="_blank" style="color:#2563eb;font-size:0.75rem;">Ouvrir le lien</a>
+                </div>
+               </a>`;
+        } else {
+            proofHtml = `<div style="width:100%;height:100px;background:#fef2f2;border:2px dashed #fca5a5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ef4444;flex-direction:column;gap:6px;">
+                <i class="fas fa-image" style="font-size:1.5rem;"></i>
+                <span style="font-size:0.78rem;">Pas encore de preuve</span>
+            </div>`;
+        }
 
         const actions = p.statut_paiement === 'en_attente'
             ? `<button class="btn-action btn-success" style="flex:1;" onclick="quickVerify(${p.id})">

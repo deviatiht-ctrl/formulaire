@@ -189,22 +189,31 @@ async function uploadPaymentProof(file, participantId) {
         throw new Error('Supabase non connecté');
     }
 
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split('.').pop().toLowerCase();
     const fileName = `preuve_${participantId}_${Date.now()}.${fileExt}`;
     const filePath = `preuves/${fileName}`;
 
-    // Upload file
-    const { error: uploadError } = await supabaseClient.storage
-        .from('paiements')
-        .upload(filePath, file);
+    console.log('📤 Upload preuve:', filePath, 'taille:', file.size);
 
-    if (uploadError) throw uploadError;
+    // Upload file
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from('paiements')
+        .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+        console.error('❌ Upload erreur:', uploadError);
+        throw new Error('Erreur upload: ' + (uploadError.message || JSON.stringify(uploadError)));
+    }
+
+    console.log('✅ Upload réussi:', uploadData);
 
     // Get public URL
-    const { data: { publicUrl } } = supabaseClient.storage
+    const { data: urlData } = supabaseClient.storage
         .from('paiements')
         .getPublicUrl(filePath);
 
+    const publicUrl = urlData?.publicUrl;
+    console.log('🔗 URL publique:', publicUrl);
     return publicUrl;
 }
 
