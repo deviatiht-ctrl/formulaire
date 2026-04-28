@@ -150,19 +150,28 @@ paymentFormElement.addEventListener('submit', async (e) => {
     setLoading(true);
     
     try {
+        console.log('🚀 Début soumission paiement, participantId:', participantId);
+        console.log('📁 Fichier:', selectedFile?.name, selectedFile?.size, 'bytes');
+        console.log('🔧 uploadPaymentProof disponible:', typeof uploadPaymentProof);
+
         // Upload image
         let preuveUrl = null;
         if (typeof uploadPaymentProof === 'function') {
+            showToast('Upload de la photo en cours...', 'info');
             preuveUrl = await uploadPaymentProof(selectedFile, participantId);
+            console.log('✅ Upload réussi, URL:', preuveUrl);
+            if (!preuveUrl) throw new Error('URL de la preuve vide après upload');
         } else {
-            // Mode démo
-            await new Promise(r => setTimeout(r, 1000));
-            preuveUrl = 'https://example.com/demo-preuve.jpg';
+            console.error('❌ uploadPaymentProof non disponible - supabase.js mal chargé?');
+            throw new Error('Erreur système: impossible d\'uploader la photo. Rechargez la page.');
         }
         
         // Mettre à jour statut paiement
         if (typeof updatePaymentStatus === 'function') {
             await updatePaymentStatus(participantId, 'en_attente', preuveUrl);
+            console.log('✅ Statut paiement mis à jour');
+        } else {
+            throw new Error('Erreur système: impossible de sauvegarder le paiement');
         }
         
         // Masquer formulaire, afficher attente
@@ -172,8 +181,8 @@ paymentFormElement.addEventListener('submit', async (e) => {
         showToast('Paiement soumis avec succès!', 'success');
         
     } catch (error) {
-        console.error('Erreur paiement:', error);
-        showToast('Erreur lors de l\'envoi: ' + error.message, 'error');
+        console.error('❌ Erreur paiement:', error);
+        showToast('Erreur: ' + (error.message || 'Problème inconnu. Réessayez.'), 'error');
     } finally {
         setLoading(false);
     }
