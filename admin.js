@@ -150,9 +150,11 @@ function renderParticipants(data) {
             statusBadge = '<span class="badge badge-danger">Refusé</span>';
         }
         
-        // Email status
-        const emailStatus = p.email_envoye 
-            ? '<span class="badge badge-success">Envoyé</span>' 
+        // Email status (tcheke tou de: email_sent (nouvo) ak email_envoye (ansyen))
+        const emailSent = p.email_sent || p.email_envoye;
+        const emailSentAt = p.email_sent_at || p.email_envoye_at;
+        let emailStatusBadge = emailSent 
+            ? `<span class="badge badge-success" title="Envoyé ${emailSentAt ? new Date(emailSentAt).toLocaleDateString() : ''}">Envoyé ✓</span>` 
             : '<span class="badge badge-secondary">Non envoyé</span>';
         
         // QR status
@@ -171,9 +173,10 @@ function renderParticipants(data) {
         }
         
         // Bouton Email
-        if (p.email_envoye) {
+        const hasEmailSent = p.email_sent || p.email_envoye;
+        if (hasEmailSent) {
             actionButtons += `<button class="btn-icon btn-email" onclick="showEmailModal(${p.id})" title="Renvoyer email"><i class="fas fa-redo"></i></button>`;
-        } else if (p.qr_code) {
+        } else if (p.qr_code || p.statut_paiement === 'verifie') {
             actionButtons += `<button class="btn-icon btn-email" onclick="showEmailModal(${p.id})" title="Envoyer email"><i class="fas fa-envelope"></i></button>`;
         }
         
@@ -194,7 +197,7 @@ function renderParticipants(data) {
             <td>${p.telephone || '-'}</td>
             <td>${statusBadge}</td>
             <td>${qrStatus}</td>
-            <td>${emailStatus}</td>
+            <td>${emailStatusBadge}</td>
             <td class="actions">${actionButtons}</td>
         `;
         
@@ -748,11 +751,22 @@ async function sendGroupZoomEmail() {
 
 async function sendAllRegistrationEmails() {
     if (participants.length === 0) { showToast('Aucun participant chargé', 'warning'); return; }
+    
+    // Filtre: sèlman moun ki poko resevwa email
+    const toSend = participants.filter(p => !(p.email_sent || p.email_envoye));
+    const alreadySent = participants.length - toSend.length;
+    
+    if (toSend.length === 0) {
+        showToast(`✅ Tous les participants (${participants.length}) ont déjà reçu leur email !`, 'success');
+        return;
+    }
+    
     const zoom = getZoomConfig();
-    showToast(`Envoi en cours pour ${participants.length} inscrit(s)…`, 'info');
+    showToast(`Envoi en cours pour ${toSend.length} inscrit(s)…${alreadySent > 0 ? ` (${alreadySent} déjà envoyé)` : ''}`, 'info');
+    
     let sent = 0, errors = 0;
     let lastError = '';
-    for (const p of participants) {
+    for (const p of toSend) {
         try {
             if (p.statut_paiement === 'verifie' && p.access_code) {
                 await sendConfirmationEmail(p, zoom);
@@ -766,8 +780,12 @@ async function sendAllRegistrationEmails() {
             console.error('Email erreur [' + p.email + ']:', e.message);
         }
     }
+    
+    // Recharge données pou mete ajou UI
+    await loadParticipants();
+    
     if (sent > 0) {
-        showToast(`✅ ${sent} email(s) envoyés !${errors ? ' (' + errors + ' échec)' : ''}`, 'success');
+        showToast(`✅ ${sent} email(s) envoyé(s) !${errors ? ' (' + errors + ' échec)' : ''}${alreadySent > 0 ? ' | ' + alreadySent + ' déjà envoyé' : ''}`, 'success');
     } else {
         showToast('❌ Erreur: ' + (lastError || 'inconnue'), 'error');
     }

@@ -342,17 +342,39 @@ async function sendEmail(payload) {
     return data;
 }
 
+/**
+ * Marquer l'email comme envoyé dans Supabase
+ * @param {string|number} participantId
+ * @returns {Promise<void>}
+ */
+async function markEmailSent(participantId) {
+    if (!supabaseClient) {
+        console.warn('Supabase non connecté - impossible de marquer email comme envoyé');
+        return;
+    }
+    const { error } = await supabaseClient
+        .from('participants')
+        .update({ email_sent: true, email_sent_at: new Date().toISOString() })
+        .eq('id', participantId);
+    if (error) {
+        console.error('Erreur marquage email envoyé:', error);
+    }
+}
+
 async function sendRegistrationEmail(participant) {
-    return sendEmail({
+    const result = await sendEmail({
         type: 'registration',
         to: participant.email,
         prenom: participant.prenom,
         nom: participant.nom,
     });
+    // Marquer comme envoyé après succès
+    if (participant.id) await markEmailSent(participant.id);
+    return result;
 }
 
 async function sendConfirmationEmail(participant, zoomConfig) {
-    return sendEmail({
+    const result = await sendEmail({
         type: 'confirmation',
         to: participant.email,
         prenom: participant.prenom,
@@ -362,6 +384,9 @@ async function sendConfirmationEmail(participant, zoomConfig) {
         zoom_id:     zoomConfig.meetingId,
         zoom_pass:   zoomConfig.password,
     });
+    // Marquer comme envoyé après succès
+    if (participant.id) await markEmailSent(participant.id);
+    return result;
 }
 
 // ============================================
