@@ -348,20 +348,31 @@ async function sendEmail(payload) {
  * @returns {Promise<void>}
  */
 async function markEmailSent(participantId) {
+    console.log('📝 markEmailSent appelé pour ID:', participantId);
     if (!supabaseClient) {
-        console.warn('Supabase non connecté - impossible de marquer email comme envoyé');
+        console.warn('❌ Supabase non connecté - impossible de marquer email comme envoyé');
         return;
     }
-    const { error } = await supabaseClient
+    if (!participantId) {
+        console.warn('❌ participantId manquant - impossible de marquer email');
+        return;
+    }
+    const updateData = { email_sent: true, email_sent_at: new Date().toISOString() };
+    console.log('📝 Mise à jour Supabase:', updateData, 'pour ID:', participantId);
+    const { data, error } = await supabaseClient
         .from('participants')
-        .update({ email_sent: true, email_sent_at: new Date().toISOString() })
-        .eq('id', participantId);
+        .update(updateData)
+        .eq('id', participantId)
+        .select();
     if (error) {
-        console.error('Erreur marquage email envoyé:', error);
+        console.error('❌ Erreur marquage email envoyé:', error);
+    } else {
+        console.log('✅ Email marqué comme envoyé:', data);
     }
 }
 
 async function sendRegistrationEmail(participant) {
+    console.log('📧 sendRegistrationEmail pour:', participant.email, 'ID:', participant.id);
     const result = await sendEmail({
         type: 'registration',
         to: participant.email,
@@ -369,11 +380,13 @@ async function sendRegistrationEmail(participant) {
         nom: participant.nom,
     });
     // Marquer comme envoyé après succès
+    console.log('✉️ Email envoyé, marquage pour ID:', participant.id);
     if (participant.id) await markEmailSent(participant.id);
     return result;
 }
 
 async function sendConfirmationEmail(participant, zoomConfig) {
+    console.log('📧 sendConfirmationEmail pour:', participant.email, 'ID:', participant.id);
     const result = await sendEmail({
         type: 'confirmation',
         to: participant.email,
@@ -385,6 +398,7 @@ async function sendConfirmationEmail(participant, zoomConfig) {
         zoom_pass:   zoomConfig.password,
     });
     // Marquer comme envoyé après succès
+    console.log('✉️ Email confirmé envoyé, marquage pour ID:', participant.id);
     if (participant.id) await markEmailSent(participant.id);
     return result;
 }
