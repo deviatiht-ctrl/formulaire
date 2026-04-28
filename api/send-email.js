@@ -33,7 +33,7 @@ function sendgridRequest(body) {
             });
         });
 
-        req.on('error', reject);
+        req.on('error', (e) => reject(new Error('Request error: ' + e.message)));
         req.write(data);
         req.end();
     });
@@ -52,7 +52,8 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Champs manquants: to, subject, html' });
     }
     if (!SENDGRID_KEY) {
-        return res.status(500).json({ error: 'SENDGRID_API_KEY non configuré dans Vercel' });
+        console.error('❌ SENDGRID_API_KEY manquant dans Environment Variables');
+        return res.status(500).json({ error: 'SENDGRID_API_KEY non configuré dans Vercel. Allez dans Settings > Environment Variables.' });
     }
 
     const body = {
