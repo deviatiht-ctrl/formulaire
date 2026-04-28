@@ -1,0 +1,9 @@
+<!-- Filtres -->
+<div class="filter-bar" style="padding:12px 16px;margin-bottom:12px;background:#f8fafc;border-radius:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <span><i class="fas fa-filter"></i> <strong>Filtres:</strong></span>
+    <button onclick="filterParticipants('all')" class="btn-filter active" id="filter-all" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Tous</button>
+    <button onclick="filterParticipants('email-not-sent')" class="btn-filter" id="filter-email-not-sent" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Email non envoyé</button>
+    <button onclick="filterParticipants('email-sent')" class="btn-filter" id="filter-email-sent" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Email envoyé</button>
+    <button onclick="filterParticipants('today')" class="btn-filter" id="filter-today" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Inscrits aujourd'hui</button>
+    <button onclick="filterParticipants('new')" class="btn-filter" id="filter-new" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Nouveaux (7j)</button>
+</div>

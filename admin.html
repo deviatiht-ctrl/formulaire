@@ -239,6 +239,16 @@
                 </div>
             </div>
             
+            <!-- Filtres -->
+            <div style="padding:12px 16px;margin-bottom:12px;background:#f8fafc;border-radius:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <span><i class="fas fa-filter"></i> <strong>Filtres:</strong></span>
+                <button onclick="filterParticipants('all')" id="f-all" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#4f46e5;color:white;cursor:pointer;">Tous</button>
+                <button onclick="filterParticipants('email-not-sent')" id="f-notsent" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Email non envoyé</button>
+                <button onclick="filterParticipants('email-sent')" id="f-sent" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Email envoyé</button>
+                <button onclick="filterParticipants('today')" id="f-today" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Aujourd'hui</button>
+                <button onclick="filterParticipants('new')" id="f-new" style="padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:white;cursor:pointer;">Nouveaux (7j)</button>
+            </div>
+            
             <div class="table-container glass">
                 <table class="data-table">
                     <thead>
@@ -632,7 +642,7 @@
     
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=7"></script>
-    <script src="admin.js?v=7"></script>
+    <script src="supabase.js?v=8"></script>
+    <script src="admin.js?v=8"></script>
 </body>
 </html>

@@ -1365,6 +1365,59 @@ function showAllWhatsApp() {
 }
 
 window.showAllWhatsApp = showAllWhatsApp;
+
+// ===== FILTER FUNCTIONS =====
+function filterParticipants(type) {
+    // Reset tout bouton yo
+    ['f-all', 'f-notsent', 'f-sent', 'f-today', 'f-new'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.style.background = 'white';
+            btn.style.color = '#374151';
+        }
+    });
+    
+    // Aktive bouton klik la
+    const activeBtn = document.getElementById('f-' + type.replace('email-', ''));
+    if (activeBtn) {
+        activeBtn.style.background = '#4f46e5';
+        activeBtn.style.color = 'white';
+    }
+    
+    // Filtre done yo
+    let filtered = participants;
+    const today = new Date().toDateString();
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    
+    switch(type) {
+        case 'email-not-sent':
+            filtered = participants.filter(p => !(p.email_sent || p.email_envoye));
+            showToast(`${filtered.length} participants sans email`, 'info');
+            break;
+        case 'email-sent':
+            filtered = participants.filter(p => p.email_sent || p.email_envoye);
+            showToast(`${filtered.length} participants avec email envoyé`, 'info');
+            break;
+        case 'today':
+            filtered = participants.filter(p => 
+                new Date(p.date_inscription).toDateString() === today
+            );
+            showToast(`${filtered.length} inscriptions aujourd'hui`, 'info');
+            break;
+        case 'new':
+            filtered = participants.filter(p => 
+                new Date(p.date_inscription) >= sevenDaysAgo
+            );
+            showToast(`${filtered.length} inscriptions des 7 derniers jours`, 'info');
+            break;
+        default:
+            showToast(`${filtered.length} participants total`, 'info');
+    }
+    
+    renderParticipants(filtered);
+}
+
+window.filterParticipants = filterParticipants;
 window.logout = logout;
 window.showSection = showSection;
 window.showDonationVerifyModal = showDonationVerifyModal;
