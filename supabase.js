@@ -330,7 +330,10 @@ async function sendEmail(payload) {
     });
 
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || data.name || 'Erreur Resend ' + res.status);
+    if (!res.ok) {
+        const errMsg = data.error || data.message || JSON.stringify(data) || ('HTTP ' + res.status);
+        throw new Error(errMsg);
+    }
     return data;
 }
 
