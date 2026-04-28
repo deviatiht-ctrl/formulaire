@@ -40,6 +40,9 @@ async function saveParticipant(participant) {
             prenom: participant.prenom,
             email: participant.email,
             telephone: participant.telephone || null,
+            whatsapp: participant.whatsapp || participant.telephone || null,
+            tranche_age: participant.tranche_age || null,
+            ville: participant.ville || null,
             date_inscription: new Date().toISOString(),
             qr_code: null,
             // Payment fields
