@@ -323,10 +323,15 @@ async function sendEmail(payload) {
         throw new Error('Type email inconnu: ' + payload.type);
     }
 
+    const cleanEmail = payload.to.trim().replace(/\.$/, '').replace(/\s/g, '');
+    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+        throw new Error('Email invalide: ' + payload.to);
+    }
+
     const res = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: payload.to, subject, html }),
+        body: JSON.stringify({ to: cleanEmail, subject, html }),
     });
 
     const data = await res.json().catch(() => ({}));
