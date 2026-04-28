@@ -180,11 +180,14 @@ function renderParticipants(data) {
             actionButtons += `<button class="btn-icon btn-email" onclick="showEmailModal(${p.id})" title="Envoyer email"><i class="fas fa-envelope"></i></button>`;
         }
         
-        // Bouton paiement - montre si en_attente (avec ou sans preuve)
+        // Bouton paiement - montre si en_attente
         if (p.statut_paiement === 'en_attente') {
-            const icon = p.preuve_paiement ? 'fa-money-check' : 'fa-clock';
-            const title = p.preuve_paiement ? 'Vérifier paiement' : 'Paiement en attente';
-            actionButtons += `<button class="btn-icon btn-payment" onclick="showPaymentModal(${p.id})" title="${title}"><i class="fas ${icon}"></i></button>`;
+            if (p.preuve_paiement) {
+                actionButtons += `<button class="btn-icon btn-payment" onclick="showPaymentModal(${p.id})" title="Vérifier paiement"><i class="fas fa-money-check"></i></button>`;
+            } else {
+                // Pas de preuve - bouton vérif manuelle (vert)
+                actionButtons += `<button class="btn-icon" onclick="manualVerify(${p.id}, '${p.prenom} ${p.nom}')" title="Vérifier manuellement" style="background:#d1fae5;color:#059669;border:1px solid #6ee7b7;"><i class="fas fa-check-circle"></i></button>`;
+            }
         }
         
         // Bouton supprimer
@@ -1398,6 +1401,60 @@ function showAllWhatsApp() {
     document.body.appendChild(modal);
 }
 
+// ===== VERIFIKASYON MANYAL =====
+async function manualVerify(participantId, nomComplet) {
+    // Modal konfirmasyon ak kote mete nòt
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+            <div style="background:white;border-radius:16px;padding:28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <h3 style="margin-bottom:8px;color:#059669;"><i class="fas fa-check-circle"></i> Vérifier paiement</h3>
+                <p style="color:#6b7280;margin-bottom:16px;">Confirmer le paiement de <strong>${nomComplet}</strong> ?</p>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.85rem;color:#166534;">
+                    <i class="fas fa-info-circle"></i> Cette action va marquer le paiement comme vérifié sans preuve photo.
+                </div>
+                <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;">Note (optionnel):</label>
+                <input type="text" id="manualVerifyNote" placeholder="Ex: Preuve reçue par WhatsApp" 
+                    style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:16px;box-sizing:border-box;">
+                <div style="display:flex;gap:10px;">
+                    <button onclick="confirmManualVerify(${participantId})" 
+                        style="flex:1;padding:12px;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+                        <i class="fas fa-check"></i> Confirmer
+                    </button>
+                    <button onclick="this.closest('[style*=\"position:fixed\"]').remove()" 
+                        style="flex:1;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;cursor:pointer;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal.firstElementChild);
+}
+
+async function confirmManualVerify(participantId) {
+    // Ferme modal
+    document.querySelector('[style*="position:fixed"][style*="z-index:9999"]')?.remove();
+    
+    const p = participants.find(x => x.id == participantId);
+    if (!p) return;
+    
+    try {
+        if (typeof updatePaymentStatus === 'function') {
+            await updatePaymentStatus(participantId, 'verifie', null);
+        }
+        p.statut_paiement = 'verifie';
+        renderParticipants(participants);
+        renderPaymentsSection();
+        updateStats();
+        showToast(`✅ Paiement de ${p.prenom} ${p.nom} vérifié !`, 'success');
+    } catch(e) {
+        showToast('Erreur: ' + e.message, 'error');
+    }
+}
+
+window.manualVerify = manualVerify;
+window.confirmManualVerify = confirmManualVerify;
 window.showAllWhatsApp = showAllWhatsApp;
 
 // ===== FILTER FUNCTIONS =====
