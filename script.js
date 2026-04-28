@@ -19,7 +19,6 @@ const fields = {
     email: document.getElementById('email'),
     telephone: document.getElementById('telephone'),
     whatsapp: document.getElementById('whatsapp'),
-    departement: document.getElementById('departement'),
     tranche_age: document.getElementById('tranche_age'),
     ville: document.getElementById('ville')
 };
@@ -31,7 +30,6 @@ const errors = {
     email: document.getElementById('emailError'),
     telephone: document.getElementById('telephoneError'),
     whatsapp: document.getElementById('whatsappError'),
-    departement: document.getElementById('departementError'),
     tranche_age: document.getElementById('tranche_ageError'),
     ville: document.getElementById('villeError')
 };
@@ -74,11 +72,6 @@ const validators = {
         if (!value.trim()) return '';
         const cleaned = value.replace(/[\s\-\+\(\)]/g, '');
         if (!/^\d{8,}$/.test(cleaned)) return 'Numéro WhatsApp invalide';
-        return '';
-    },
-
-    departement: (value) => {
-        if (!value) return 'Le département est obligatoire';
         return '';
     },
 
@@ -191,7 +184,6 @@ form.addEventListener('submit', async (e) => {
             email: email,
             telephone: fields.telephone.value.trim(),
             whatsapp: fields.whatsapp.value.trim() || fields.telephone.value.trim(),
-            departement: fields.departement.value,
             tranche_age: fields.tranche_age.value,
             ville: fields.ville.value.trim()
         };

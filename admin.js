@@ -201,7 +201,6 @@ function renderParticipants(data) {
             <td>${p.email}</td>
             <td>${p.telephone || '-'}</td>
             <td>${whatsappDisplay}</td>
-            <td>${p.departement || '-'}</td>
             <td>${p.ville || '-'}</td>
             <td>${p.tranche_age || '-'}</td>
             <td>${statusBadge}</td>
