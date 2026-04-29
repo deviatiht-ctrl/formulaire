@@ -737,7 +737,6 @@ async function validateAccessCode(code) {
         .from('participants')
         .select('*')
         .eq('access_code', code.trim().toUpperCase())
-        .eq('statut_paiement', 'verifie')
         .single();
     if (error || !data) return null;
     return data;

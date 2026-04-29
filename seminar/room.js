@@ -480,6 +480,126 @@ window.addEventListener('beforeunload', (e) => {
     e.returnValue = 'Voulez-vous vraiment quitter le séminaire ?';
 });
 
+// ============================================================
+//  CERTIFICATE (only for paid participants)
+// ============================================================
+function downloadCertificateFromRoom() {
+    if (!currentParticipant) return;
+    const p = currentParticipant;
+
+    // Check payment status
+    if (p.statut_paiement !== 'verifie') {
+        showToastMsg('🔒 Certificat disponible après paiement. Allez sur la page de paiement.');
+        setTimeout(() => {
+            if (confirm('Voulez-vous aller à la page de paiement pour obtenir votre certificat ?')) {
+                window.open('../payment.html', '_blank');
+            }
+        }, 1500);
+        return;
+    }
+
+    // Generate certificate PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+
+    // Background gradient simulation
+    doc.setFillColor(250, 250, 255);
+    doc.rect(0, 0, W, H, 'F');
+
+    // Border
+    doc.setDrawColor(79, 70, 229);
+    doc.setLineWidth(1.5);
+    doc.rect(10, 10, W - 20, H - 20, 'S');
+
+    // Inner border (gold)
+    doc.setDrawColor(251, 191, 36);
+    doc.setLineWidth(0.5);
+    doc.rect(14, 14, W - 28, H - 28, 'S');
+
+    // Header
+    doc.setTextColor(79, 70, 229);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RASIN AYITI  ×  UNIVERSITÉ DE TECHNOLOGIE D\'HAÏTI (UNITECH)', W / 2, 16, { align: 'center' });
+
+    // Title
+    doc.setTextColor(79, 70, 229);
+    doc.setFontSize(38);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CERTIFICAT', W / 2, 48, { align: 'center' });
+
+    doc.setFontSize(14);
+    doc.setTextColor(100, 100, 120);
+    doc.text('DE PARTICIPATION AU SÉMINAIRE', W / 2, 58, { align: 'center' });
+
+    // Decorative line
+    doc.setDrawColor(200, 200, 220);
+    doc.setLineWidth(0.3);
+    doc.line(W / 2 - 60, 64, W / 2 + 60, 64);
+
+    // "Certifié à"
+    doc.setFontSize(11);
+    doc.setTextColor(120, 120, 140);
+    doc.text('Ce certificat est décerné à', W / 2, 74, { align: 'center' });
+
+    // Participant name
+    doc.setFontSize(30);
+    doc.setTextColor(31, 41, 55);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${p.prenom} ${p.nom}`, W / 2, 88, { align: 'center' });
+
+    // Body text
+    doc.setFontSize(12);
+    doc.setTextColor(80, 80, 100);
+    doc.setFont('helvetica', 'normal');
+    const bodyText = `Pour sa participation active au séminaire sur les Compétences de Vie :\n"5 Secrets pour Réussir comme Jeune et Devenir Créateur d'Opportunités en Haïti"\n\nDate : 30 Avril et 1er Mai 2026\nFormat : En ligne via Zoom`;
+    doc.text(bodyText, W / 2, 102, { align: 'center', lineHeightFactor: 1.5 });
+
+    // Signatures section
+    const sigY = H - 45;
+
+    // Left signature (Rasin Ayiti)
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 120);
+    doc.text('Rasin Ayiti', 50, sigY + 12, { align: 'center' });
+    doc.line(30, sigY, 70, sigY);
+
+    // Center (seal)
+    doc.setDrawColor(79, 70, 229);
+    doc.setLineWidth(2);
+    doc.circle(W / 2, sigY + 5, 12, 'S');
+    doc.setFontSize(9);
+    doc.setTextColor(79, 70, 229);
+    doc.text('SCELLÉ', W / 2, sigY + 7, { align: 'center' });
+
+    // Right signature (UNITECH)
+    doc.setTextColor(100, 100, 120);
+    doc.setFontSize(10);
+    doc.text('UNITECH', W - 50, sigY + 12, { align: 'center' });
+    doc.line(W - 70, sigY, W - 30, sigY);
+
+    // Footer with verification code
+    doc.setFontSize(9);
+    doc.setTextColor(160, 160, 180);
+    doc.text(`Code de vérification: ${p.access_code}   |   Email: ${p.email}`, W / 2, H - 16, { align: 'center' });
+
+    doc.save(`Certificat_${p.prenom}_${p.nom}_RasinAyiti2026.pdf`);
+    showToastMsg('✅ Certificat téléchargé !');
+
+    // Mark as downloaded in DB
+    try {
+        if (supabaseClient) {
+            supabaseClient.from('participants')
+                .update({ certificat_downloaded: true, certificat_date: new Date().toISOString() })
+                .eq('id', p.id)
+                .then(() => {});
+        }
+    } catch(e) { console.warn('Marquage certificat:', e.message); }
+}
+
 // Expose functions used in HTML
 window.switchTab             = switchTab;
 window.toggleMic             = toggleMic;
@@ -497,3 +617,4 @@ window.adminSetHD            = adminSetHD;
 window.adminConfirmEndMeeting= adminConfirmEndMeeting;
 window.closeEndModal         = closeEndModal;
 window.adminEndMeeting       = adminEndMeeting;
+window.downloadCertificateFromRoom = downloadCertificateFromRoom;

@@ -151,6 +151,10 @@
         <i class="fas fa-hand-paper" id="handIcon"></i>
         <span>Main</span>
     </button>
+    <button class="ctrl-btn" id="btnCert" onclick="downloadCertificateFromRoom()" title="Certificat">
+        <i class="fas fa-certificate" id="certIcon"></i>
+        <span>Certificat</span>
+    </button>
     <button class="ctrl-btn leave" onclick="leaveMeeting()" title="Quitter">
         <i class="fas fa-phone-slash"></i>
         <span>Quitter</span>
@@ -176,7 +180,8 @@
 <!-- Zoom SDK Script -->
 <script src="https://source.zoom.us/2.18.0/ZoomMtg.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../supabase.js?v=18"></script>
-<script src="room.js?v=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../supabase.js?v=19"></script>
+<script src="room.js?v=2"></script>
 </body>
 </html>
