@@ -742,17 +742,22 @@ async function validateAccessCode(code) {
     return data;
 }
 
-async function checkIsAdmin() {
+async function checkIsAdmin(email) {
     if (!supabaseClient) return false;
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) return false;
+        // If email provided, use it; otherwise get from current session
+        let checkEmail = email;
+        if (!checkEmail) {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return false;
+            checkEmail = user.email;
+        }
         const { data } = await supabaseClient
             .from('admins')
-            .select('id')
-            .eq('email', user.email)
+            .select('*')
+            .eq('email', checkEmail)
             .single();
-        return !!data;
+        return data || false;
     } catch (_) { return false; }
 }
 
