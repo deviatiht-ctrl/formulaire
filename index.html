@@ -16,9 +16,9 @@
     <a href="seminar/index.html" class="zoom-float" title="Accéder à la formation Zoom">
         <div class="zoom-float-inner">
             <span class="zoom-icon-circle"><i class="fas fa-video"></i></span>
-            <span>Formation <strong>Zoom</strong></span>
+            <span>🎥 Formation <strong>Zoom LIVE</strong></span>
         </div>
-        <div class="zoom-float-sub">Accéder avec mon code</div>
+        <div class="zoom-float-sub">Cliquez pour rejoindre le séminaire</div>
     </a>
 
     <!-- Background Elements -->
@@ -241,29 +241,62 @@
 
         <!-- Success Message -->
         <div class="success-card glass hidden" id="successCard">
-            <div class="success-icon">
+            <div class="success-icon" style="background:linear-gradient(135deg,#16a34a,#22c55e);width:70px;height:70px;font-size:2.2rem;">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <h2>Inscription réussie !</h2>
-            <p>Votre place est réservée pour le Séminaire sur les Compétences de Vie.</p>
+            <h2 style="font-size:1.8rem;font-weight:800;">Inscription terminée !</h2>
+            <p style="font-size:1.05rem;color:var(--text-secondary);max-width:420px;margin:0 auto 16px;">
+                Votre place est réservée pour le <strong>Séminaire sur les Compétences de Vie</strong>.
+            </p>
 
-            <!-- WhatsApp Group CTA -->
-            <div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:16px;padding:20px;margin:20px 0;text-align:center;">
-                <div style="font-size:2rem;margin-bottom:8px;">📱</div>
-                <p style="font-weight:700;color:#166534;font-size:1rem;margin:0 0 6px;">Étape suivante — Rejoignez notre groupe WhatsApp !</p>
-                <p style="color:#15803d;font-size:0.85rem;margin:0 0 16px;line-height:1.6;">
-                    Entrez avec le <strong>numéro WhatsApp que vous avez enregistré</strong> lors de votre inscription.<br>
-                    <span style="color:#dc2626;font-weight:600;">⚠️ Sans rejoindre le groupe, vous serez automatiquement exclu(e).</span>
+            <!-- Big Zoom Access Button -->
+            <div style="background:linear-gradient(135deg,#dbeafe,#eff6ff);border:2px solid #3b82f6;border-radius:20px;padding:28px 24px;margin:24px 0;text-align:center;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563eb,#60a5fa);"></div>
+                <div style="font-size:3rem;margin-bottom:12px;">🎥</div>
+                <p style="font-weight:800;color:#1e40af;font-size:1.15rem;margin:0 0 8px;">Accéder à la Formation en Direct</p>
+                <p style="color:#3b82f6;font-size:0.9rem;margin:0 0 20px;line-height:1.6;font-weight:600;">
+                    Cliquez ci-dessous pour rejoindre le séminaire Zoom avec votre code d'accès
                 </p>
-                <a href="https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t" target="_blank"
-                   style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.95rem;box-shadow:0 4px 16px rgba(37,211,102,0.4);">
-                    <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Rejoindre le Groupe WhatsApp
+                <a href="seminar/index.html"
+                   style="display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:18px 40px;border-radius:50px;text-decoration:none;font-weight:800;font-size:1.1rem;box-shadow:0 8px 28px rgba(37,99,235,0.45);transition:all 0.3s;">
+                    <i class="fas fa-video" style="font-size:1.2rem;"></i> 
+                    <span>Entrer dans la Salle Zoom</span>
                 </a>
             </div>
 
-            <button class="btn-secondary" onclick="resetForm()" style="margin-top:8px;">
+            <!-- Email Info Box -->
+            <div style="background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid #f59e0b;border-radius:16px;padding:20px;margin:20px 0;text-align:left;">
+                <div style="display:flex;align-items:flex-start;gap:12px;">
+                    <div style="font-size:1.8rem;flex-shrink:0;">📧</div>
+                    <div>
+                        <p style="font-weight:700;color:#92400e;font-size:0.95rem;margin:0 0 8px;">
+                            <i class="fas fa-clock" style="margin-right:6px;"></i>Demain matin — 8h45 à 9h00
+                        </p>
+                        <p style="color:#b45309;font-size:0.85rem;margin:0;line-height:1.7;">
+                            Vérifiez bien votre <strong>email</strong> (et vos spams/courriers indésirables). 
+                            Vous recevrez votre <strong>code d'accès personnel</strong> pour entrer dans le live.<br>
+                            <span style="color:#dc2626;font-weight:700;">⚠️ Important :</span> Ce code est unique et nécessaire pour rejoindre le séminaire.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Group CTA -->
+            <div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:16px;padding:20px;margin:20px 0;text-align:center;">
+                <div style="font-size:2rem;margin-bottom:8px;">💬</div>
+                <p style="font-weight:700;color:#166534;font-size:1rem;margin:0 0 6px;">Rejoignez aussi notre groupe WhatsApp !</p>
+                <p style="color:#15803d;font-size:0.82rem;margin:0 0 14px;line-height:1.5;">
+                    Entrez avec le <strong>même numéro WhatsApp</strong> que vous avez enregistré.
+                </p>
+                <a href="https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t" target="_blank"
+                   style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.9rem;box-shadow:0 4px 16px rgba(37,211,102,0.35);">
+                    <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Rejoindre WhatsApp
+                </a>
+            </div>
+
+            <button class="btn-secondary" onclick="resetForm()" style="margin-top:8px;padding:10px 20px;font-size:0.85rem;">
                 <i class="fas fa-plus"></i>
-                Nouvelle inscription
+                Inscrire une autre personne
             </button>
         </div>
 
