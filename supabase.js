@@ -2,6 +2,7 @@
 // SUPABASE CONFIGURATION
 // ============================================
 
+const SITE_URL = 'https://formulaire-iota.vercel.app'; // URL Vercel du site
 const SUPABASE_URL = 'https://silpnglpfzeoqkqvwdsn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbHBuZ2xwZnplb3FrcXZ3ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjAxNjMsImV4cCI6MjA5MjYzNjE2M30.DKkAvKjh6AyQfIrc3aAG3GVp-6B7lrGd7Bf_CMNkk9o';
 
@@ -264,8 +265,12 @@ const RESEND_FROM    = 'Rasin Ayiti <onboarding@resend.dev>';
 
 function _registrationHtml(prenom, nom, email) {
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
-  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:28px 32px;text-align:center;margin-bottom:24px;">
-    <h1 style="color:#fff;font-size:1.4rem;margin:0 0 4px;">RASIN AYITI × UNITECH</h1>
+  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
+      <img src="${SITE_URL}/assets/logorasin.PNG" alt="Rasin Ayiti" style="height:42px;width:auto;" />
+      <span style="color:rgba(255,255,255,0.7);font-size:1.2rem;font-weight:700">×</span>
+      <img src="${SITE_URL}/assets/logounitech.PNG" alt="UNITECH" style="height:42px;width:auto;" />
+    </div>
     <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">Séminaire sur les Compétences de Vie</p>
   </div>
   <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
@@ -292,8 +297,12 @@ function _registrationHtml(prenom, nom, email) {
 
 function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoomPass) {
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
-  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:28px 32px;text-align:center;margin-bottom:24px;">
-    <h1 style="color:#fff;font-size:1.4rem;margin:0 0 4px;">RASIN AYITI × UNITECH</h1>
+  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
+      <img src="${SITE_URL}/assets/logorasin.PNG" alt="Rasin Ayiti" style="height:42px;width:auto;" />
+      <span style="color:rgba(255,255,255,0.7);font-size:1.2rem;font-weight:700">×</span>
+      <img src="${SITE_URL}/assets/logounitech.PNG" alt="UNITECH" style="height:42px;width:auto;" />
+    </div>
     <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">Confirmation de Participation</p>
   </div>
   <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
@@ -327,8 +336,12 @@ function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoo
 
 function _reminderHtml(prenom, nom, email) {
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
-  <div style="background:linear-gradient(135deg,#f59e0b,#dc2626);border-radius:16px;padding:28px 32px;text-align:center;margin-bottom:24px;">
-    <h1 style="color:#fff;font-size:1.4rem;margin:0 0 4px;">RASIN AYITI × UNITECH</h1>
+  <div style="background:linear-gradient(135deg,#f59e0b,#dc2626);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
+      <img src="${SITE_URL}/assets/logorasin.PNG" alt="Rasin Ayiti" style="height:42px;width:auto;" />
+      <span style="color:rgba(255,255,255,0.7);font-size:1.2rem;font-weight:700">×</span>
+      <img src="${SITE_URL}/assets/logounitech.PNG" alt="UNITECH" style="height:42px;width:auto;" />
+    </div>
     <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">⏰ Rappel — Séminaire sur les Compétences de Vie</p>
   </div>
   <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
@@ -356,9 +369,12 @@ function _reminderHtml(prenom, nom, email) {
 function _waGroupInviteHtml(prenom, nom, email, waLink, waNumero) {
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#f0f4ff;padding:32px 16px;">
   <!-- Header -->
-  <div style="background:linear-gradient(135deg,#4f46e5 0%,#16a34a 100%);border-radius:20px;padding:32px;text-align:center;margin-bottom:24px;">
-    <div style="font-size:2.5rem;margin-bottom:8px;">🎓</div>
-    <h1 style="color:#fff;font-size:1.5rem;margin:0 0 6px;font-weight:800;">RASIN AYITI × UNITECH</h1>
+  <div style="background:linear-gradient(135deg,#4f46e5 0%,#16a34a 100%);border-radius:20px;padding:28px 32px;text-align:center;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;">
+      <img src="${SITE_URL}/assets/logorasin.PNG" alt="Rasin Ayiti" style="height:44px;width:auto;" />
+      <span style="color:rgba(255,255,255,0.7);font-size:1.2rem;font-weight:700">×</span>
+      <img src="${SITE_URL}/assets/logounitech.PNG" alt="UNITECH" style="height:44px;width:auto;" />
+    </div>
     <p style="color:rgba(255,255,255,0.9);font-size:0.92rem;margin:0;">Séminaire sur les Compétences de Vie</p>
   </div>
 
@@ -710,6 +726,40 @@ async function uploadDonationProof(file) {
 
     return publicUrl;
 }
+
+// ============================================================
+// SEMINAR ACCESS
+// ============================================================
+
+async function validateAccessCode(code) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient
+        .from('participants')
+        .select('*')
+        .eq('access_code', code.trim().toUpperCase())
+        .eq('statut_paiement', 'verifie')
+        .single();
+    if (error || !data) return null;
+    return data;
+}
+
+async function checkIsAdmin() {
+    if (!supabaseClient) return false;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return false;
+        const { data } = await supabaseClient
+            .from('admins')
+            .select('id')
+            .eq('email', user.email)
+            .single();
+        return !!data;
+    } catch (_) { return false; }
+}
+
+// Expose globally for seminar pages
+window.validateAccessCode = validateAccessCode;
+window.checkIsAdmin       = checkIsAdmin;
 
 // Export pour utilisation dans d'autres fichiers
 if (typeof module !== 'undefined' && module.exports) {

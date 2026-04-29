@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Séminaire en Direct — Rasin Ayiti × UNITECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Zoom Web SDK CSS -->
+    <link rel="stylesheet" href="https://source.zoom.us/2.18.0/css/bootstrap.css">
+    <link rel="stylesheet" href="https://source.zoom.us/2.18.0/css/react-select.css">
+    <link rel="stylesheet" href="room.css">
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="room-header">
+    <div class="header-logos">
+        <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+        <div class="sep"></div>
+        <img src="../assets/logounitech.PNG" alt="UNITECH">
+    </div>
+    <div class="header-event">
+        <div class="title">Séminaire sur les Compétences de Vie</div>
+        <div class="sub">30 Avril &amp; 1er Mai 2026 — 09:00 AM</div>
+    </div>
+    <div class="header-right">
+        <div class="live-badge"><div class="live-dot"></div> EN DIRECT</div>
+        <div class="user-chip">
+            <div class="user-avatar" id="headerAvatar">?</div>
+            <span id="headerName" style="font-weight:600;font-size:0.8rem;">Chargement…</span>
+        </div>
+    </div>
+</header>
+
+<!-- ===== BODY ===== -->
+<div class="room-body">
+
+    <!-- ZOOM AREA -->
+    <div class="zoom-area" id="zoomArea">
+        <!-- Joining overlay -->
+        <div class="joining-overlay" id="joiningOverlay">
+            <div class="spinner-ring"></div>
+            <div style="text-align:center;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Connexion à la formation…</div>
+                <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);">Veuillez patienter</div>
+            </div>
+        </div>
+        <!-- Zoom SDK will render here -->
+        <div id="zmmtg-root"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <!-- Tabs -->
+        <div class="sidebar-tabs">
+            <button class="tab-btn active" data-tab="participants" onclick="switchTab('participants')">
+                <i class="fas fa-users"></i> Participants
+            </button>
+            <button class="tab-btn" data-tab="chat" onclick="switchTab('chat')">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button class="tab-btn hidden" data-tab="admin" id="adminTab" onclick="switchTab('admin')">
+                <i class="fas fa-sliders-h"></i> Admin
+            </button>
+        </div>
+
+        <!-- PARTICIPANTS TAB -->
+        <div class="tab-panel active" id="tab-participants">
+            <div class="participants-header">
+                <h4>Participants présents</h4>
+                <div class="p-count" id="pCount">0</div>
+            </div>
+            <div class="participants-list" id="participantsList">
+                <div style="display:flex;align-items:center;justify-content:center;height:80px;color:rgba(255,255,255,0.3);font-size:0.82rem;">
+                    Chargement…
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT TAB -->
+        <div class="tab-panel" id="tab-chat">
+            <div class="chat-messages" id="chatMessages">
+                <div style="text-align:center;color:rgba(255,255,255,0.3);font-size:0.8rem;padding:20px;">
+                    Le chat commence avec le séminaire…
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <textarea class="chat-input" id="chatInput" rows="1"
+                    placeholder="Écrire un message…"
+                    onkeydown="handleChatKey(event)"></textarea>
+                <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ADMIN TAB (host only) -->
+        <div class="tab-panel" id="tab-admin">
+            <div class="admin-panel">
+                <div class="admin-section-title">Contrôles audio</div>
+                <button class="admin-btn danger" onclick="adminMuteAll()">
+                    <i class="fas fa-microphone-slash"></i> Couper tous les micros
+                </button>
+                <button class="admin-btn success" onclick="adminUnmuteAll()">
+                    <i class="fas fa-microphone"></i> Autoriser tous les micros
+                </button>
+
+                <div class="admin-section-title">Gestion participants</div>
+                <button class="admin-btn" id="btnHandsUp" onclick="adminShowHands()">
+                    <i class="fas fa-hand-paper" style="color:var(--warning);"></i>
+                    Voir mains levées
+                    <span id="handsCount" style="margin-left:auto;background:rgba(251,191,36,0.2);color:var(--warning);border-radius:50px;padding:2px 8px;font-size:0.72rem;"></span>
+                </button>
+                <button class="admin-btn danger" onclick="adminConfirmEndMeeting()">
+                    <i class="fas fa-stop-circle"></i> Terminer la réunion
+                </button>
+
+                <div class="admin-section-title">Qualité vidéo</div>
+                <button class="admin-btn" onclick="adminSetHD()">
+                    <i class="fas fa-tv" style="color:var(--primary);"></i> Activer HD / 4K
+                </button>
+
+                <div class="admin-section-title" style="margin-top:auto;border-top:1px solid var(--border);padding-top:12px;">Infos réunion</div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.78rem;color:rgba(255,255,255,0.5);">
+                    <div style="margin-bottom:5px;">Meeting ID : <span id="infoMeetingId" style="color:var(--text-main);font-family:monospace;">—</span></div>
+                    <div>Participants : <span id="infoCount" style="color:var(--primary);font-weight:700;">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /.room-body -->
+
+<!-- ===== BOTTOM CONTROLS ===== -->
+<div class="room-controls">
+    <button class="ctrl-btn active-muted" id="btnMic" onclick="toggleMic()" title="Microphone">
+        <i class="fas fa-microphone-slash" id="micIcon"></i>
+        <span>Micro</span>
+    </button>
+    <button class="ctrl-btn active-muted" id="btnCam" onclick="toggleCam()" title="Caméra">
+        <i class="fas fa-video-slash" id="camIcon"></i>
+        <span>Caméra</span>
+    </button>
+    <button class="ctrl-btn" id="btnChat" onclick="switchTab('chat')" title="Chat">
+        <i class="fas fa-comments"></i>
+        <span>Chat</span>
+    </button>
+    <button class="ctrl-btn" id="btnHand" onclick="toggleHand()" title="Lever la main">
+        <i class="fas fa-hand-paper" id="handIcon"></i>
+        <span>Main</span>
+    </button>
+    <button class="ctrl-btn leave" onclick="leaveMeeting()" title="Quitter">
+        <i class="fas fa-phone-slash"></i>
+        <span>Quitter</span>
+    </button>
+</div>
+
+<!-- ===== END MEETING MODAL ===== -->
+<div class="modal-overlay hidden" id="endModal">
+    <div class="modal-box">
+        <h3>⚠️ Terminer la réunion ?</h3>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.55);line-height:1.6;">
+            Ceci va terminer la réunion pour <strong>tous les participants</strong>. Cette action est irréversible.
+        </p>
+        <div class="modal-actions">
+            <button class="modal-btn primary" onclick="adminEndMeeting()" style="background:linear-gradient(135deg,#dc2626,#ef4444);">
+                <i class="fas fa-stop-circle"></i> Terminer
+            </button>
+            <button class="modal-btn secondary" onclick="closeEndModal()">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- Zoom SDK Script -->
+<script src="https://source.zoom.us/2.18.0/ZoomMtg.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js?v=18"></script>
+<script src="room.js?v=1"></script>
+</body>
+</html>
