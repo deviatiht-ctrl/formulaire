@@ -320,6 +320,53 @@ function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoo
 </div>`;
 }
 
+function _reminderHtml(prenom, nom, email) {
+    return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
+  <div style="background:linear-gradient(135deg,#f59e0b,#dc2626);border-radius:16px;padding:28px 32px;text-align:center;margin-bottom:24px;">
+    <h1 style="color:#fff;font-size:1.4rem;margin:0 0 4px;">RASIN AYITI × UNITECH</h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">⏰ Rappel — Séminaire sur les Compétences de Vie</p>
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
+    <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${prenom} ${nom} 👋</h2>
+    <p style="color:#4b5563;line-height:1.7;font-size:0.92rem;">Nous avons bien reçu votre inscription au <strong>Séminaire sur les Compétences de Vie</strong>.</p>
+    <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;padding:16px;margin:20px 0;">
+      <p style="margin:0 0 8px;font-size:0.95rem;color:#92400e;font-weight:700;">⚠️ Action requise</p>
+      <p style="margin:0;font-size:0.88rem;color:#92400e;">Nous n'avons pas encore reçu votre <strong>preuve de paiement</strong>. Sans confirmation, nous ne pourrons pas vous envoyer votre certificat de participation.</p>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:16px 0;">
+      <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;"><strong>📅 Date :</strong> 30 Avril et 1er Mai 2026</p>
+      <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;"><strong>🕘 Heure :</strong> 09:00 AM – 01:00 PM</p>
+      <p style="margin:0;font-size:0.88rem;color:#166534;"><strong>💰 Frais :</strong> 500 Gourdes (Moncash ou Natcash)</p>
+    </div>
+    <div style="text-align:center;margin:20px 0;">
+      <p style="font-size:0.88rem;color:#4b5563;margin-bottom:12px;">Envoyez la capture d'écran de votre paiement à :</p>
+      <a href="https://wa.me/50946807922" style="display:inline-block;background:#25D366;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.92rem;">📱 WhatsApp : +509 46807922</a>
+    </div>
+    <p style="color:#9ca3af;font-size:0.8rem;margin:16px 0 0;">Email inscrit : ${email}</p>
+  </div>
+  <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>
+</div>`;
+}
+
+async function sendReminderEmail(participant) {
+    const subject = '⏰ Rappel — Votre preuve de paiement | Séminaire Rasin Ayiti';
+    const html = _reminderHtml(participant.prenom, participant.nom, participant.email);
+    const cleanEmail = participant.email.trim().replace(/\.$/, '').replace(/\s/g, '');
+    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+        throw new Error('Email invalide: ' + participant.email);
+    }
+    const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: cleanEmail, subject, html }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error(data.error || data.message || ('HTTP ' + res.status));
+    }
+    return data;
+}
+
 async function sendEmail(payload) {
     let subject, html;
 
@@ -595,6 +642,7 @@ if (typeof module !== 'undefined' && module.exports) {
         updatePaymentStatus,
         markEmailSent,
         uploadPaymentProof,
+        sendReminderEmail,
         saveDonation,
         getAllDonations,
         updateDonationStatus,

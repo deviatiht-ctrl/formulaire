@@ -190,6 +190,11 @@ function renderParticipants(data) {
             }
         }
         
+        // Bouton rappel si san prèv ak pa verifye
+        if (!p.preuve_paiement && p.statut_paiement !== 'verifie') {
+            actionButtons += `<button class="btn-icon" onclick="sendReminderIndividual(${p.id})" title="Envoyer rappel preuve" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;"><i class="fas fa-bell"></i></button>`;
+        }
+
         // Bouton supprimer
         actionButtons += `<button class="btn-icon btn-delete" onclick="deleteParticipantItem(${p.id})" title="Supprimer"><i class="fas fa-trash"></i></button>`;
         
@@ -1460,7 +1465,7 @@ window.showAllWhatsApp = showAllWhatsApp;
 // ===== FILTER FUNCTIONS =====
 function filterParticipants(type) {
     // Reset tout bouton yo
-    ['f-all', 'f-notsent', 'f-sent', 'f-today', 'f-new'].forEach(id => {
+    ['f-all', 'f-withproof', 'f-noproof', 'f-verifie', 'f-notsent', 'f-sent', 'f-today', 'f-new'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
             btn.style.background = 'white';
@@ -1469,7 +1474,9 @@ function filterParticipants(type) {
     });
     
     // Aktive bouton klik la
-    const activeBtn = document.getElementById('f-' + type.replace('email-', ''));
+    const idMap = { 'all':'f-all', 'with-proof':'f-withproof', 'no-proof':'f-noproof', 'verifie':'f-verifie',
+        'email-not-sent':'f-notsent', 'email-sent':'f-sent', 'today':'f-today', 'new':'f-new' };
+    const activeBtn = document.getElementById(idMap[type] || ('f-' + type));
     if (activeBtn) {
         activeBtn.style.background = '#4f46e5';
         activeBtn.style.color = 'white';
@@ -1488,6 +1495,18 @@ function filterParticipants(type) {
         case 'email-sent':
             filtered = participants.filter(p => p.email_sent || p.email_envoye);
             showToast(`${filtered.length} participants avec email envoyé`, 'info');
+            break;
+        case 'with-proof':
+            filtered = participants.filter(p => p.preuve_paiement);
+            showToast(`${filtered.length} participants avec preuve de paiement`, 'info');
+            break;
+        case 'no-proof':
+            filtered = participants.filter(p => !p.preuve_paiement && p.statut_paiement !== 'verifie');
+            showToast(`${filtered.length} participants sans preuve (pas encore vérifiés)`, 'warning');
+            break;
+        case 'verifie':
+            filtered = participants.filter(p => p.statut_paiement === 'verifie');
+            showToast(`${filtered.length} paiements vérifiés`, 'success');
             break;
         case 'today':
             filtered = participants.filter(p => 
@@ -1508,6 +1527,90 @@ function filterParticipants(type) {
     renderParticipants(filtered);
 }
 
+// ===== EMAIL RAPPEL (sans preuve) =====
+
+function buildReminderEmailBody(p) {
+    return `Bonjour ${p.prenom} ${p.nom},
+
+Nous avons bien reçu votre inscription au Séminaire sur les Compétences de Vie organisé par RASIN AYITI × UNITECH.
+
+Cependant, nous n'avons pas encore reçu votre preuve de paiement.
+
+📅 L'événement approche : 30 Avril et 1er Mai 2026 (09:00 AM)
+
+👉 Pour recevoir votre CERTIFICAT DE PARTICIPATION, veuillez soumettre votre preuve de paiement (capture d'écran Moncash ou Natcash) dès que possible.
+
+Pour soumettre :
+• Visitez notre site et complétez l'étape de paiement
+• Ou envoyez la preuve directement au : +509 46807922
+
+⚠️ Sans confirmation de paiement, nous ne pourrons pas vous envoyer votre certificat.
+
+Merci de votre compréhension.
+L'équipe Rasin Ayiti`;
+}
+
+async function sendReminderIndividual(participantId) {
+    const p = participants.find(x => x.id == participantId);
+    if (!p) return;
+    try {
+        if (typeof sendRegistrationEmail === 'function') {
+            // Utiliser l'email de rappel customisé
+            await sendReminderEmail(p);
+            showToast(`✅ Rappel envoyé à ${p.email}`, 'success');
+        }
+    } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+}
+
+async function sendReminderGroup() {
+    const noProof = participants.filter(p => !p.preuve_paiement && p.statut_paiement !== 'verifie');
+    if (noProof.length === 0) { showToast('✅ Tous les participants ont une preuve ou sont vérifiés !', 'success'); return; }
+    
+    // Modal de confirmation
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+            <div style="background:white;border-radius:16px;padding:28px;max-width:460px;width:90%;">
+                <h3 style="color:#f59e0b;margin-bottom:8px;"><i class="fas fa-paper-plane"></i> Envoyer rappel groupe</h3>
+                <p style="color:#374151;margin-bottom:12px;">Envoyer un email de rappel à <strong>${noProof.length} participant(s)</strong> sans preuve de paiement ?</p>
+                <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.83rem;color:#92400e;">
+                    <strong>Liste :</strong><br>
+                    ${noProof.map(p => `• ${p.prenom} ${p.nom} (${p.email})`).join('<br>')}
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="confirmSendReminderGroup()" style="flex:1;padding:12px;background:#f59e0b;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+                        <i class="fas fa-paper-plane"></i> Envoyer à tous
+                    </button>
+                    <button onclick="this.closest('[style*=\'position:fixed\']').remove()" style="flex:1;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;cursor:pointer;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal.firstElementChild);
+}
+
+async function confirmSendReminderGroup() {
+    document.querySelector('[style*="position:fixed"][style*="z-index:9999"]')?.remove();
+    const noProof = participants.filter(p => !p.preuve_paiement && p.statut_paiement !== 'verifie');
+    showToast(`Envoi de ${noProof.length} rappels en cours...`, 'info');
+    let sent = 0, errors = 0;
+    for (const p of noProof) {
+        try {
+            await sendReminderEmail(p);
+            sent++;
+        } catch(e) {
+            errors++;
+            console.warn('Rappel erreur:', p.email, e.message);
+        }
+    }
+    showToast(`✅ ${sent} rappel(s) envoyé(s)${errors ? ` (${errors} erreur(s))` : ''}`, sent > 0 ? 'success' : 'error');
+}
+
+window.sendReminderGroup = sendReminderGroup;
+window.confirmSendReminderGroup = confirmSendReminderGroup;
+window.sendReminderIndividual = sendReminderIndividual;
 window.filterParticipants = filterParticipants;
 window.logout = logout;
 window.showSection = showSection;
