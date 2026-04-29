@@ -1573,9 +1573,9 @@ async function sendReminderGroup() {
             <div style="background:white;border-radius:16px;padding:28px;max-width:460px;width:90%;">
                 <h3 style="color:#f59e0b;margin-bottom:8px;"><i class="fas fa-paper-plane"></i> Envoyer rappel groupe</h3>
                 <p style="color:#374151;margin-bottom:12px;">Envoyer un email de rappel à <strong>${noProof.length} participant(s)</strong> sans preuve de paiement ?</p>
-                <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.83rem;color:#92400e;">
-                    <strong>Liste :</strong><br>
-                    ${noProof.map(p => `• ${p.prenom} ${p.nom} (${p.email})`).join('<br>')}
+                <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.83rem;color:#92400e;max-height:220px;overflow-y:auto;">
+                    <strong>Liste (${noProof.length}) :</strong><br><br>
+                    ${noProof.map((p, i) => `<span style="display:block;padding:4px 0;border-bottom:1px solid #fde68a;">${i+1}. <strong>${p.prenom} ${p.nom}</strong> — ${p.email}</span>`).join('')}
                 </div>
                 <div style="display:flex;gap:10px;">
                     <button onclick="confirmSendReminderGroup()" style="flex:1;padding:12px;background:#f59e0b;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
