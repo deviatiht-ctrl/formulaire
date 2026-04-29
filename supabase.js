@@ -279,6 +279,11 @@ function _registrationHtml(prenom, nom, email) {
     <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px;margin:16px 0;">
       <p style="margin:0;font-size:0.88rem;color:#854d0e;">⏳ <strong>Prochaine étape :</strong> Complétez votre paiement (500 Gds) pour confirmer votre place. Vous recevrez votre <strong>code d'accès Zoom</strong> après confirmation.</p>
     </div>
+    <div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:12px;padding:18px;margin:16px 0;text-align:center;">
+      <p style="margin:0 0 6px;font-size:0.9rem;font-weight:700;color:#166534;">📱 Rejoignez notre Groupe WhatsApp !</p>
+      <p style="margin:0 0 14px;font-size:0.82rem;color:#15803d;line-height:1.6;">Utilisez le <strong>numéro WhatsApp enregistré</strong> lors de votre inscription.<br><span style="color:#dc2626;font-weight:600;">⚠️ Sans rejoindre le groupe, vous serez automatiquement exclu(e).</span></p>
+      <a href="https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t" style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.88rem;">📱 Rejoindre le Groupe</a>
+    </div>
     <p style="color:#9ca3af;font-size:0.8rem;margin:0;">Email : ${email}</p>
   </div>
   <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>

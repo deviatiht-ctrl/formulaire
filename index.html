@@ -249,8 +249,23 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <h2>Inscription réussie !</h2>
-            <p>Votre place est réservée pour le Séminaire. À très bientôt !</p>
-            <button class="btn-secondary" onclick="resetForm()">
+            <p>Votre place est réservée pour le Séminaire sur les Compétences de Vie.</p>
+
+            <!-- WhatsApp Group CTA -->
+            <div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:16px;padding:20px;margin:20px 0;text-align:center;">
+                <div style="font-size:2rem;margin-bottom:8px;">📱</div>
+                <p style="font-weight:700;color:#166534;font-size:1rem;margin:0 0 6px;">Étape suivante — Rejoignez notre groupe WhatsApp !</p>
+                <p style="color:#15803d;font-size:0.85rem;margin:0 0 16px;line-height:1.6;">
+                    Entrez avec le <strong>numéro WhatsApp que vous avez enregistré</strong> lors de votre inscription.<br>
+                    <span style="color:#dc2626;font-weight:600;">⚠️ Sans rejoindre le groupe, vous serez automatiquement exclu(e).</span>
+                </p>
+                <a href="https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t" target="_blank"
+                   style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.95rem;box-shadow:0 4px 16px rgba(37,211,102,0.4);">
+                    <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Rejoindre le Groupe WhatsApp
+                </a>
+            </div>
+
+            <button class="btn-secondary" onclick="resetForm()" style="margin-top:8px;">
                 <i class="fas fa-plus"></i>
                 Nouvelle inscription
             </button>
@@ -473,8 +488,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=13"></script>
-    <script src="script.js?v=6"></script>
+    <script src="supabase.js?v=18"></script>
+    <script src="script.js?v=7"></script>
     <script>
     // Countdown to April 30, 2026 09:00 AM Haiti time (UTC-4)
     (function() {
