@@ -295,6 +295,25 @@
 
                 <div class="form-group">
                     <label>Preuve de paiement (capture d'écran)</label>
+
+                    <!-- ALERTE WHATSAPP - TRES IMPORTANT -->
+                    <div style="background:linear-gradient(135deg,#fef3c7,#fff7ed);border:2px solid #f59e0b;border-radius:12px;padding:16px;margin-bottom:14px;">
+                        <p style="margin:0 0 6px;font-size:0.92rem;font-weight:800;color:#92400e;">🔴 TRÈS IMPORTANT — 2 étapes obligatoires :</p>
+                        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+                            <span style="background:#4f46e5;color:white;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;">1</span>
+                            <p style="margin:0;font-size:0.85rem;color:#374151;">Upload ta capture d'écran ici (formulaire ci-dessous)</p>
+                        </div>
+                        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+                            <span style="background:#25D366;color:white;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;">2</span>
+                            <p style="margin:0;font-size:0.85rem;color:#374151;">Envoie aussi la capture <strong>avec ton nom complet</strong> sur WhatsApp au numéro Moncash</p>
+                        </div>
+                        <a href="https://wa.me/50946807922?text=Bonjour%2C+je+vous+envoie+ma+preuve+de+paiement+pour+le+S%C3%A9minaire+Rasin+Ayiti.+Mon+nom+est+%3A+" target="_blank"
+                           style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#25D366,#128C7E);color:white;padding:11px 20px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.88rem;">
+                            <i class="fab fa-whatsapp" style="font-size:1.1rem;"></i>
+                            Envoyer sur WhatsApp : +509 46807922
+                        </a>
+                    </div>
+
                     <div class="file-upload" id="fileUpload" onclick="document.getElementById('preuveFile').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <p>Clique pour télécharger la capture</p>
@@ -310,11 +329,11 @@
                         <i class="fas fa-info-circle" style="color: var(--primary);"></i> Instructions:
                     </label>
                     <ol style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 20px; margin: 0;">
-                        <li>Effectue un transfert de <strong>500 Gds</strong></li>
-                        <li>Garde la capture d'écran du transfert</li>
-                        <li>Upload la capture ici</li>
-                        <li>Attends la vérification par l'admin</li>
-                        <li>Recevoir ton QR code par email</li>
+                        <li>Effectue un transfert de <strong>500 Gds</strong> au <strong>+509 46807922</strong></li>
+                        <li>Prends une capture d'écran du transfert</li>
+                        <li>Upload la capture ici <strong>ET</strong> envoie-la sur WhatsApp avec ton nom</li>
+                        <li>Attends la vérification par l'admin (24h max)</li>
+                        <li>Reçois ton accès Zoom par email</li>
                     </ol>
                 </div>
 
@@ -331,12 +350,24 @@
         <!-- Waiting Message -->
         <div class="form-card waiting-card" id="waitingMessage">
             <i class="fas fa-clock"></i>
-            <h2>Paiement en attente de vérification</h2>
-            <p>Ton paiement a été soumis. Notre équipe va vérifier ta preuve de paiement sous 24h. Tu recevras un email avec ton QR code une fois le paiement confirmé.</p>
+            <h2>Preuve soumise !</h2>
+            <p>Ta capture d'écran a été envoyée. Notre équipe va vérifier ton paiement dans les 24h.</p>
+
+            <!-- WhatsApp reminder -->
+            <div style="background:linear-gradient(135deg,#fef3c7,#fff7ed);border:2px solid #f59e0b;border-radius:14px;padding:18px;margin:0 0 20px;text-align:center;">
+                <p style="font-weight:800;color:#92400e;font-size:0.95rem;margin:0 0 6px;">🔴 As-tu envoyé la preuve sur WhatsApp ?</p>
+                <p style="color:#78350f;font-size:0.82rem;margin:0 0 14px;line-height:1.6;">C'est <strong>très important</strong> ! Envoie la capture avec <strong>ton nom complet</strong> sur WhatsApp au numéro Moncash pour accélérer la vérification.</p>
+                <a href="https://wa.me/50946807922?text=Bonjour%2C+je+vous+envoie+ma+preuve+de+paiement+pour+le+S%C3%A9minaire+Rasin+Ayiti.+Mon+nom+est+%3A+" target="_blank"
+                   style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#25D366,#128C7E);color:white;padding:13px 28px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.92rem;box-shadow:0 4px 14px rgba(37,211,102,0.35);">
+                    <i class="fab fa-whatsapp" style="font-size:1.2rem;"></i>
+                    Envoyer sur WhatsApp maintenant
+                </a>
+            </div>
+
             <div style="background: var(--bg-light); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
                 <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
                     <i class="fas fa-envelope" style="color: var(--primary); margin-right: 8px;"></i>
-                    Email de confirmation à: <strong id="userEmail"></strong>
+                    Confirmation à: <strong id="userEmail"></strong>
                 </p>
             </div>
             <button class="btn-secondary" onclick="window.location.href='index.html'">
@@ -357,7 +388,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=13"></script>
-    <script src="payment.js?v=3"></script>
+    <script src="supabase.js?v=18"></script>
+    <script src="payment.js?v=4"></script>
 </body>
 </html>
