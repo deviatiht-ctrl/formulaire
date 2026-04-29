@@ -906,6 +906,8 @@ function showSection(sectionName) {
         renderQRCodesSection();
     } else if (sectionName === 'stats') {
         renderStatsSection();
+    } else if (sectionName === 'emailgros') {
+        renderEmailGrosSection();
     }
 }
 
@@ -1608,6 +1610,115 @@ async function confirmSendReminderGroup() {
     showToast(`✅ ${sent} rappel(s) envoyé(s)${errors ? ` (${errors} erreur(s))` : ''}`, sent > 0 ? 'success' : 'error');
 }
 
+// ===== EMAIL EN GROS =====
+
+function renderEmailGrosSection() {
+    // Mete ajou konte destinatè yo chak fwa seksyon an ouvri
+    updateWATargetCount();
+}
+
+function updateWATargetCount() {
+    const target = document.getElementById('waGroupTarget');
+    if (!target) return;
+    const counts = {
+        all: participants.length,
+        noproof: participants.filter(p => !p.preuve_paiement && p.statut_paiement !== 'verifie').length,
+        verifie: participants.filter(p => p.statut_paiement === 'verifie').length
+    };
+    target.querySelectorAll('option').forEach(opt => {
+        const c = counts[opt.value] || 0;
+        const labels = { all: 'Tous les inscrits', noproof: 'Sans preuve de paiement', verifie: 'Paiement vérifié seulement' };
+        opt.textContent = `${labels[opt.value]} (${c})`;
+    });
+    target.addEventListener('change', updateWATargetCount);
+}
+
+function _getWATargetList() {
+    const val = document.getElementById('waGroupTarget')?.value || 'all';
+    if (val === 'noproof') return participants.filter(p => !p.preuve_paiement && p.statut_paiement !== 'verifie');
+    if (val === 'verifie') return participants.filter(p => p.statut_paiement === 'verifie');
+    return [...participants];
+}
+
+function previewWAGroupEmail() {
+    const waLink = document.getElementById('waGroupLink').value.trim();
+    if (!waLink) { showToast('Entrez le lien du groupe WhatsApp d\'abord', 'warning'); return; }
+    const preview = document.getElementById('waEmailPreviewBox');
+    const content = document.getElementById('waEmailPreviewContent');
+    if (!preview || !content) return;
+    // Aperçu avec exemple
+    if (typeof _waGroupInviteHtml === 'function') {
+        content.innerHTML = _waGroupInviteHtml('Jean', 'Dupont', 'exemple@email.com', waLink, '+509 34 56 7890');
+    }
+    preview.style.display = 'block';
+    preview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function sendWAGroupEmailBulk() {
+    const waLink = document.getElementById('waGroupLink').value.trim();
+    if (!waLink || !waLink.startsWith('http')) {
+        showToast('Entrez un lien WhatsApp valide (https://chat.whatsapp.com/...)', 'error');
+        return;
+    }
+    const targets = _getWATargetList();
+    if (targets.length === 0) { showToast('Aucun destinataire trouvé', 'warning'); return; }
+
+    // Modal confirmation
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
+            <div style="background:white;border-radius:18px;padding:32px;max-width:480px;width:92%;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="width:56px;height:56px;background:linear-gradient(135deg,#25D366,#128C7E);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                        <i class="fab fa-whatsapp" style="color:white;font-size:1.6rem;"></i>
+                    </div>
+                    <h3 style="margin:0;font-size:1.1rem;">Confirmer l'envoi</h3>
+                </div>
+                <p style="color:#374151;text-align:center;margin-bottom:8px;">Envoyer l'invitation WhatsApp à <strong>${targets.length} participant(s)</strong> ?</p>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:20px;max-height:180px;overflow-y:auto;font-size:0.82rem;color:#166534;">
+                    ${targets.map((p,i) => `<span style="display:block;padding:3px 0;border-bottom:1px solid #d1fae5;">${i+1}. <strong>${p.prenom} ${p.nom}</strong> — ${p.email}</span>`).join('')}
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="confirmSendWAGroupBulk('${waLink.replace(/'/g,"\\'")}')" 
+                        style="flex:1;padding:13px;background:linear-gradient(135deg,#25D366,#128C7E);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700;">
+                        <i class="fab fa-whatsapp"></i> Envoyer maintenant
+                    </button>
+                    <button onclick="this.closest('[style*=\\'position:fixed\\']').remove()" 
+                        style="flex:1;padding:13px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;cursor:pointer;">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal.firstElementChild);
+}
+
+async function confirmSendWAGroupBulk(waLink) {
+    document.querySelector('[style*="position:fixed"][style*="z-index:9999"]')?.remove();
+    const targets = _getWATargetList();
+    showToast(`📤 Envoi en cours pour ${targets.length} participant(s)...`, 'info');
+    let sent = 0, errors = 0;
+    for (const p of targets) {
+        try {
+            await sendWAGroupInviteEmail(p, waLink);
+            sent++;
+        } catch(e) {
+            errors++;
+            console.warn('WA invite erreur:', p.email, e.message);
+        }
+    }
+    if (sent > 0) {
+        showToast(`✅ ${sent} invitation(s) WhatsApp envoyée(s)${errors ? ` | ${errors} erreur(s)` : ''} !`, 'success');
+    } else {
+        showToast(`❌ Erreur lors de l'envoi. Vérifiez la console.`, 'error');
+    }
+}
+
+window.renderEmailGrosSection = renderEmailGrosSection;
+window.previewWAGroupEmail = previewWAGroupEmail;
+window.sendWAGroupEmailBulk = sendWAGroupEmailBulk;
+window.confirmSendWAGroupBulk = confirmSendWAGroupBulk;
 window.sendReminderGroup = sendReminderGroup;
 window.confirmSendReminderGroup = confirmSendReminderGroup;
 window.sendReminderIndividual = sendReminderIndividual;

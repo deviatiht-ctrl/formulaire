@@ -348,6 +348,83 @@ function _reminderHtml(prenom, nom, email) {
 </div>`;
 }
 
+function _waGroupInviteHtml(prenom, nom, email, waLink, waNumero) {
+    return `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#f0f4ff;padding:32px 16px;">
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#4f46e5 0%,#16a34a 100%);border-radius:20px;padding:32px;text-align:center;margin-bottom:24px;">
+    <div style="font-size:2.5rem;margin-bottom:8px;">🎓</div>
+    <h1 style="color:#fff;font-size:1.5rem;margin:0 0 6px;font-weight:800;">RASIN AYITI × UNITECH</h1>
+    <p style="color:rgba(255,255,255,0.9);font-size:0.92rem;margin:0;">Séminaire sur les Compétences de Vie</p>
+  </div>
+
+  <!-- Body -->
+  <div style="background:#ffffff;border-radius:16px;padding:32px;border:1px solid #e0e7ff;margin-bottom:16px;">
+    <h2 style="color:#1f2937;font-size:1.15rem;margin:0 0 8px;">Bonjour ${prenom} ${nom} 👋</h2>
+    <p style="color:#4b5563;line-height:1.8;font-size:0.93rem;margin-bottom:20px;">
+      Nous sommes ravis de vous compter parmi les participants au <strong>Séminaire sur les Compétences de Vie</strong>. 
+      Pour faciliter la communication et vous tenir informé(e) de tous les détails importants, 
+      nous vous invitons à rejoindre notre <strong>groupe WhatsApp officiel</strong>.
+    </p>
+
+    <!-- WhatsApp CTA -->
+    <div style="text-align:center;margin:28px 0;">
+      <a href="${waLink}" style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#ffffff;padding:16px 36px;border-radius:50px;text-decoration:none;font-weight:800;font-size:1rem;letter-spacing:0.02em;box-shadow:0 4px 20px rgba(37,211,102,0.4);">
+        <span style="margin-right:8px;">📱</span> Rejoindre le Groupe WhatsApp
+      </a>
+    </div>
+
+    <!-- Important notice -->
+    <div style="background:#fef9c3;border-left:4px solid #f59e0b;border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;">
+      <p style="margin:0 0 8px;font-size:0.92rem;font-weight:700;color:#92400e;">⚠️ Information importante</p>
+      <p style="margin:0;font-size:0.88rem;color:#92400e;line-height:1.7;">
+        L'accès au groupe se fait <strong>uniquement avec le numéro WhatsApp enregistré lors de votre inscription</strong> 
+        (<strong>${waNumero || 'votre numéro enregistré'}</strong>). 
+        Toute personne n'ayant pas rejoint le groupe avant la date limite sera 
+        <strong>automatiquement exclue de l'événement</strong>.
+      </p>
+    </div>
+
+    <!-- Event details -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px;margin:20px 0;">
+      <p style="margin:0 0 10px;font-size:0.88rem;font-weight:700;color:#166534;">📅 Rappel — Détails de l'événement</p>
+      <table style="width:100%;border-collapse:collapse;font-size:0.86rem;color:#166534;">
+        <tr><td style="padding:4px 0;"><strong>📆 Dates :</strong></td><td>30 Avril et 1er Mai 2026</td></tr>
+        <tr><td style="padding:4px 0;"><strong>🕘 Heure :</strong></td><td>09:00 AM – 01:00 PM</td></tr>
+        <tr><td style="padding:4px 0;"><strong>💻 Format :</strong></td><td>100% en ligne sur Zoom</td></tr>
+        <tr><td style="padding:4px 0;"><strong>📜 Certificat :</strong></td><td>Remis après participation complète</td></tr>
+      </table>
+    </div>
+
+    <p style="color:#9ca3af;font-size:0.78rem;margin:16px 0 0;">Email enregistré : ${email}</p>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding:16px;">
+    <p style="color:#6b7280;font-size:0.8rem;margin:0 0 6px;">Des questions ? Contactez-nous</p>
+    <a href="https://wa.me/50946807922" style="color:#25D366;font-weight:600;font-size:0.85rem;text-decoration:none;">📱 +509 46807922</a>
+    <p style="color:#9ca3af;font-size:0.72rem;margin:12px 0 0;">© 2026 Rasin Ayiti × UNITECH — Tous droits réservés</p>
+  </div>
+</div>`;
+}
+
+async function sendWAGroupInviteEmail(participant, waLink) {
+    const subject = '📱 Rejoignez le Groupe WhatsApp — Séminaire Rasin Ayiti';
+    const html = _waGroupInviteHtml(
+        participant.prenom, participant.nom, participant.email,
+        waLink, participant.whatsapp || participant.telephone
+    );
+    const cleanEmail = participant.email.trim().replace(/\.$/, '').replace(/\s/g, '');
+    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) throw new Error('Email invalide: ' + participant.email);
+    const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: cleanEmail, subject, html }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.message || ('HTTP ' + res.status));
+    return data;
+}
+
 async function sendReminderEmail(participant) {
     const subject = '⏰ Rappel — Votre preuve de paiement | Séminaire Rasin Ayiti';
     const html = _reminderHtml(participant.prenom, participant.nom, participant.email);
@@ -643,6 +720,7 @@ if (typeof module !== 'undefined' && module.exports) {
         markEmailSent,
         uploadPaymentProof,
         sendReminderEmail,
+        sendWAGroupInviteEmail,
         saveDonation,
         getAllDonations,
         updateDonationStatus,
