@@ -548,45 +548,52 @@ adminLoginForm.addEventListener('submit', async (e) => {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
     
     try {
-        // Vérifier que Supabase est connecté
-        const supabaseInstance = (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : 
-                                (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) ? window.supabaseClient : null;
-        
+        const supabaseInstance = (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient :
+                                 (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) ? window.supabaseClient : null;
+
         if (!supabaseInstance) {
             throw new Error('Supabase non connecté - Vérifie ta connexion internet');
         }
-        
-        // 1. Connexion avec Supabase Auth
-        const { data: authData, error: authError } = await supabaseInstance.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-        
-        if (authError) {
-            throw new Error('Email ou mot de passe incorrect');
+
+        // Query admin_users table directly (no Supabase Auth)
+        const { data: rows, error: rowsError } = await supabaseInstance
+            .from('admin_users')
+            .select('*');
+
+        console.log('Tous les admins:', rows, 'Erreur:', rowsError);
+
+        if (rowsError) {
+            throw new Error('Erreur DB: ' + rowsError.message + ' | code: ' + rowsError.code);
         }
-        
-        // 2. Vérifier si l'utilisateur est admin
-        let admin = null;
-        if (typeof checkIsAdmin === 'function') {
-            admin = await checkIsAdmin(email);
+
+        if (!rows || rows.length === 0) {
+            throw new Error('Table admin_users vide ou inaccessible');
         }
-        
-        if (!admin) {
-            // Déconnexion car pas admin
-            await supabaseInstance.auth.signOut();
-            throw new Error('Accès refusé - Vous n\'êtes pas autorisé à accéder au panel admin');
+
+        // Find admin matching email (case-insensitive) and password
+        const data = rows.find(a =>
+            a.email && a.email.trim().toLowerCase() === email.trim().toLowerCase()
+        );
+        console.log('Admin trouvé:', data);
+
+        if (!data) {
+            throw new Error('Aucun admin trouvé avec cet email');
         }
-        
-        // C'est un admin - continuer
-        // Stocker la session admin
+
+        // Verify password
+        const storedPassword = data.password || data.mot_de_passe || data.mdp || '';
+        console.log('Colonnes dispo:', Object.keys(data), '| Password stocké:', storedPassword);
+        if (storedPassword !== password) {
+            throw new Error('Mot de passe incorrect');
+        }
+
+        // Admin trouvé — sauvegarder la session
         sessionStorage.setItem('adminLoggedIn', 'true');
-        sessionStorage.setItem('adminEmail', admin.email);
-        sessionStorage.setItem('adminNom', admin.nom || 'Admin');
-        
+        sessionStorage.setItem('adminEmail', data.email);
+        sessionStorage.setItem('adminNom', data.nom || data.name || 'Admin');
+
         showToast('Connexion réussie !');
-        
-        // Rediriger vers le panel admin
+
         setTimeout(() => {
             window.location.href = 'admin.html';
         }, 500);
