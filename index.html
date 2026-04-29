@@ -89,8 +89,32 @@
             </div>
         </div>
 
-        <!-- Form Card -->
-        <div class="form-card glass">
+        <!-- Registration Closed Message -->
+        <div class="closed-card glass" id="closedCard">
+            <div class="closed-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h2>Inscription terminée !</h2>
+            <p style="font-size:1.1rem;margin-bottom:20px;">
+                Les inscriptions pour ce séminaire sont maintenant <strong>closes</strong>.
+            </p>
+            <div style="background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid #f59e0b;border-radius:16px;padding:20px;margin:20px 0;text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:12px;">📧</div>
+                <p style="font-weight:700;color:#92400e;font-size:1rem;margin:0 0 8px;">
+                    <i class="fas fa-clock" style="margin-right:6px;"></i>Demain matin — 8h45 à 9h00
+                </p>
+                <p style="color:#b45309;font-size:0.9rem;margin:0;line-height:1.6;">
+                    Si vous êtes déjà inscrit, vérifiez votre <strong>email</strong> (et vos spams) pour recevoir votre code d'accès au live Zoom.
+                </p>
+            </div>
+            <a href="seminar/index.html" 
+               style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:16px 32px;border-radius:50px;text-decoration:none;font-weight:700;font-size:1rem;margin-top:10px;box-shadow:0 6px 20px rgba(37,99,235,0.4);">
+                <i class="fas fa-video"></i> Accéder à la Formation Zoom
+            </a>
+        </div>
+
+        <!-- Form Card (HIDDEN - Registration Closed) -->
+        <div class="form-card glass hidden" id="formCard">
             <div class="form-header">
                 <h2>Inscrivez-vous</h2>
                 <p>Participez <strong style="color:var(--success);">sans frais</strong> — réservez votre place dès maintenant</p>
