@@ -501,6 +501,62 @@
                 </div>
             </div>
         </section>
+
+        <!-- ===== EMAIL EN GROS SECTION ===== -->
+        <section class="section" id="emailgrosSection">
+            <div class="section-header">
+                <h2><i class="fas fa-bullhorn" style="color:#4f46e5;"></i> Email en Gros</h2>
+            </div>
+
+            <div style="background:#fff;border:2px solid #4f46e5;border-radius:16px;padding:28px;margin-bottom:24px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#25D366,#128C7E);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fab fa-whatsapp" style="color:white;font-size:1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0;font-size:1.05rem;">Invitation Groupe WhatsApp</h3>
+                        <p style="margin:0;font-size:0.82rem;color:#6b7280;">Envoyer le lien du groupe à tous les inscrits</p>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
+                    <div style="flex:1;min-width:280px;">
+                        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">LIEN GROUPE WHATSAPP <span style="color:#ef4444;">*</span></label>
+                        <input id="waGroupLink" type="url" placeholder="https://chat.whatsapp.com/..."
+                            style="width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:0.92rem;box-sizing:border-box;">
+                    </div>
+                    <div style="min-width:200px;">
+                        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">DESTINATAIRES</label>
+                        <select id="waGroupTarget" style="width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:0.92rem;">
+                            <option value="all">Tous les inscrits</option>
+                            <option value="noproof">Sans preuve de paiement</option>
+                            <option value="verifie">Paiement vérifié seulement</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:20px;font-size:0.85rem;color:#166534;">
+                    <i class="fas fa-info-circle"></i> <strong>Contenu de l'email :</strong> Lien groupe + rappel numéro WhatsApp enregistré obligatoire. Exclusion automatique si pas rejoint.
+                </div>
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <button onclick="previewWAGroupEmail()" style="padding:12px 24px;background:#f3f4f6;color:#374151;border:2px solid #e5e7eb;border-radius:10px;cursor:pointer;font-weight:600;font-size:0.9rem;">
+                        <i class="fas fa-eye"></i> Prévisualiser l'email
+                    </button>
+                    <button onclick="sendWAGroupEmailBulk()" style="padding:12px 28px;background:linear-gradient(135deg,#25D366,#128C7E);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.9rem;">
+                        <i class="fab fa-whatsapp"></i> Envoyer à tous
+                    </button>
+                </div>
+            </div>
+
+            <div id="waEmailPreviewBox" style="display:none;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h4 style="margin:0;"><i class="fas fa-eye"></i> Aperçu de l'email</h4>
+                    <button onclick="document.getElementById('waEmailPreviewBox').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:#6b7280;">✕</button>
+                </div>
+                <div id="waEmailPreviewContent" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;"></div>
+            </div>
+        </section>
     </main>
     
     <!-- QR Code Modal -->
@@ -649,70 +705,12 @@
         </div>
     </div>
     
-    <!-- Email en Gros nav item and full section with WhatsApp group email feature -->
-    <section class="section hidden" id="emailgrosSection">
-        <div class="section-header">
-            <h2><i class="fas fa-bullhorn" style="color:#4f46e5;"></i> Email en Gros</h2>
-        </div>
-
-        <!-- Groupe WhatsApp -->
-        <div style="background:#fff;border:2px solid #4f46e5;border-radius:16px;padding:28px;margin-bottom:24px;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-                <div style="width:48px;height:48px;background:linear-gradient(135deg,#25D366,#128C7E);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                    <i class="fab fa-whatsapp" style="color:white;font-size:1.5rem;"></i>
-                </div>
-                <div>
-                    <h3 style="margin:0;font-size:1.05rem;">Invitation Groupe WhatsApp</h3>
-                    <p style="margin:0;font-size:0.82rem;color:#6b7280;">Envoyer le lien du groupe à tous les inscrits</p>
-                </div>
-            </div>
-
-            <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
-                <div style="flex:1;min-width:280px;">
-                    <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">LIEN GROUPE WHATSAPP <span style="color:#ef4444;">*</span></label>
-                    <input id="waGroupLink" type="url" placeholder="https://chat.whatsapp.com/..." 
-                        style="width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:0.92rem;box-sizing:border-box;">
-                </div>
-                <div style="min-width:200px;">
-                    <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">DESTINATAIRES</label>
-                    <select id="waGroupTarget" style="width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:0.92rem;">
-                        <option value="all">Tous les inscrits</option>
-                        <option value="noproof">Sans preuve de paiement</option>
-                        <option value="verifie">Paiement vérifié seulement</option>
-                    </select>
-                </div>
-            </div>
-
-            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:20px;font-size:0.85rem;color:#166534;">
-                <i class="fas fa-info-circle"></i> <strong>Contenu de l'email :</strong> Le lien du groupe WhatsApp + rappel que l'entrée se fait avec le numéro WhatsApp enregistré à l'inscription. Les personnes qui ne rejoignent pas seront exclues automatiquement.
-            </div>
-
-            <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                <button onclick="previewWAGroupEmail()" style="padding:12px 24px;background:#f3f4f6;color:#374151;border:2px solid #e5e7eb;border-radius:10px;cursor:pointer;font-weight:600;font-size:0.9rem;">
-                    <i class="fas fa-eye"></i> Prévisualiser l'email
-                </button>
-                <button onclick="sendWAGroupEmailBulk()" style="padding:12px 28px;background:linear-gradient(135deg,#25D366,#128C7E);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.9rem;">
-                    <i class="fab fa-whatsapp"></i> Envoyer à tous
-                </button>
-            </div>
-        </div>
-
-        <!-- Preview modal placeholder -->
-        <div id="waEmailPreviewBox" style="display:none;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <h4 style="margin:0;"><i class="fas fa-eye"></i> Aperçu de l'email</h4>
-                <button onclick="document.getElementById('waEmailPreviewBox').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:#6b7280;">✕</button>
-            </div>
-            <div id="waEmailPreviewContent" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;"></div>
-        </div>
-    </section>
-
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
     
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=17"></script>
-    <script src="admin.js?v=17"></script>
+    <script src="admin.js?v=18"></script>
 </body>
 </html>
