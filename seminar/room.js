@@ -45,58 +45,69 @@ async function getZoomConfig() {
 async function init() {
     console.log('🟢 === room.js init() START ===');
     
-    // 1. Verify participant session
-    const stored = sessionStorage.getItem('seminarParticipant');
-    if (!stored) {
-        console.log('❌ No participant session, redirecting...');
-        window.location.href = 'index.html';
-        return;
-    }
-    currentParticipant = JSON.parse(stored);
-    console.log('✅ Participant:', currentParticipant.prenom, currentParticipant.nom);
+    try {
+        // 1. Verify participant session
+        const stored = sessionStorage.getItem('seminarParticipant');
+        if (!stored) {
+            console.log('❌ No participant session, redirecting...');
+            window.location.href = 'index.html';
+            return;
+        }
+        currentParticipant = JSON.parse(stored);
+        console.log('✅ Participant:', currentParticipant.prenom, currentParticipant.nom);
 
-    // 2. Admin flag (check via URL param or Supabase admin check)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('host') === '1') {
+        // 2. Admin flag (check via URL param or Supabase admin check)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('host') === '1') {
+            try {
+                isHost = await checkIsAdmin();
+                console.log('👑 Is host:', isHost);
+            } catch (e) { 
+                console.log('👑 Admin check failed:', e.message);
+                isHost = false; 
+            }
+        }
+
+        // 3. Update header UI
+        updateHeaderUI();
+
+        // 4. Show admin tab if host
+        if (isHost) {
+            const adminTab = document.getElementById('adminTab');
+            if (adminTab) adminTab.classList.remove('hidden');
+        }
+
+        // 5. Load Zoom config (from Supabase DB or localStorage)
+        console.log('📞 Loading Zoom config...');
+        const cfg = await getZoomConfig();
+        console.log('📞 Config loaded:', cfg);
+        
+        if (cfg.meetingNumber) {
+            console.log('📞 Meeting ID found:', cfg.meetingNumber);
+            const infoEl = document.getElementById('infoMeetingId');
+            if (infoEl) infoEl.textContent = cfg.meetingNumber;
+            // 6. Initialize Zoom SDK
+            initZoom(cfg);
+        } else {
+            console.error('❌ Meeting ID NOT FOUND in config');
+            showToastMsg('⚠️ Meeting ID non configuré. Contactez l\'admin.');
+            hideJoiningOverlay();
+        }
+
+        // 7. Load & refresh participant list from Supabase
         try {
-            isHost = await checkIsAdmin();
-        } catch (_) { isHost = false; }
-    }
-
-    // 3. Update header UI
-    updateHeaderUI();
-
-    // 4. Show admin tab if host
-    if (isHost) {
-        document.getElementById('adminTab').classList.remove('hidden');
-    }
-
-    // 5. Load Zoom config (from Supabase DB or localStorage)
-    console.log('📞 Loading Zoom config...');
-    const cfg = await getZoomConfig();
-    console.log('📞 Config loaded:', cfg);
-    
-    if (cfg.meetingNumber) {
-        console.log('📞 Meeting ID found:', cfg.meetingNumber);
-        const infoEl = document.getElementById('infoMeetingId');
-        if (infoEl) infoEl.textContent = cfg.meetingNumber;
-        // 6. Initialize Zoom SDK
-        initZoom(cfg);
-    } else {
-        console.error('❌ Meeting ID NOT FOUND in config');
-        showToastMsg('⚠️ Meeting ID non configuré. Contactez l\'admin.');
+            await loadParticipants();
+            refreshInterval = setInterval(loadParticipants, 30000);
+        } catch (e) {
+            console.error('❌ Error loading participants:', e);
+        }
+        
+        console.log('🟢 === init() COMPLETE ===');
+    } catch (err) {
+        console.error('❌❌❌ GLOBAL init() ERROR:', err);
+        showToastMsg('❌ Erreur: ' + err.message);
         hideJoiningOverlay();
     }
-
-    // 7. Load & refresh participant list from Supabase
-    try {
-        await loadParticipants();
-        refreshInterval = setInterval(loadParticipants, 30000);
-    } catch (e) {
-        console.error('❌ Error loading participants:', e);
-    }
-    
-    console.log('🟢 === init() COMPLETE ===');
 }
 
 // ============================================================
