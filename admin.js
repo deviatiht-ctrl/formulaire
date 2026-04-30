@@ -779,6 +779,85 @@ async function sendIndividualZoomEmail(participantId) {
     } catch(e) { showToast('Erreur envoi: ' + e.message, 'error'); }
 }
 
+// ===== EMAIL ZOOM BLAST — HELPERS =====
+
+function updateEmailProgress(sent, total, text) {
+    const box  = document.getElementById('emailProgressBox');
+    const bar  = document.getElementById('emailProgressBar');
+    const cnt  = document.getElementById('emailProgressCount');
+    const txt  = document.getElementById('emailProgressText');
+    if (!box) return;
+    box.style.display = 'block';
+    const pct = total > 0 ? Math.round((sent / total) * 100) : 0;
+    if (bar)  bar.style.width  = pct + '%';
+    if (cnt)  cnt.textContent  = `${sent} / ${total}`;
+    if (txt)  txt.textContent  = text || 'Envoi en cours…';
+}
+
+function hideEmailProgress() {
+    const box = document.getElementById('emailProgressBox');
+    if (box) setTimeout(() => { box.style.display = 'none'; }, 3000);
+}
+
+function updateEmailCounters() {
+    const withCode = participants.filter(p => p.access_code);
+    const withoutEmail = withCode.filter(p => !(p.email_sent || p.email_envoye));
+    const allEl = document.getElementById('emailAllCount');
+    const newEl = document.getElementById('emailNewCount');
+    if (allEl) allEl.textContent = `${withCode.length} participant(s) avec code`;
+    if (newEl) newEl.textContent = `${withoutEmail.length} nouveau(x) sans email`;
+}
+
+async function sendZoomEmailAll() {
+    const zoom = getZoomConfig();
+    if (!zoom.link) { showToast('❌ Configurez d\'abord le lien Zoom', 'error'); return; }
+
+    const targets = participants.filter(p => p.access_code);
+    if (targets.length === 0) { showToast('Aucun participant avec code — générez les codes d\'abord', 'warning'); return; }
+
+    if (!confirm(`Envoyer l'email Zoom à ${targets.length} participant(s) ?\n\nCela inclut ceux qui ont déjà reçu un email.`)) return;
+
+    let sent = 0, errors = 0;
+    for (const p of targets) {
+        try {
+            await sendConfirmationEmail(p, zoom);
+            sent++;
+        } catch(e) {
+            errors++;
+            console.warn('Email erreur:', p.email, e.message);
+        }
+        updateEmailProgress(sent + errors, targets.length, 'Envoi en cours…');
+    }
+    hideEmailProgress();
+    showToast(`✅ ${sent} email(s) envoyés${errors ? ` — ${errors} erreur(s)` : ''}`, sent > 0 ? 'success' : 'error');
+    updateEmailCounters();
+}
+
+async function sendZoomEmailNew() {
+    const zoom = getZoomConfig();
+    if (!zoom.link) { showToast('❌ Configurez d\'abord le lien Zoom', 'error'); return; }
+
+    const targets = participants.filter(p => p.access_code && !(p.email_sent || p.email_envoye));
+    if (targets.length === 0) { showToast('✅ Tous les participants ont déjà reçu leur email Zoom !', 'success'); return; }
+
+    if (!confirm(`Envoyer l'email Zoom à ${targets.length} nouveau(x) inscrit(s) ?`)) return;
+
+    let sent = 0, errors = 0;
+    for (const p of targets) {
+        try {
+            await sendConfirmationEmail(p, zoom);
+            sent++;
+        } catch(e) {
+            errors++;
+            console.warn('Email erreur:', p.email, e.message);
+        }
+        updateEmailProgress(sent + errors, targets.length, 'Envoi aux nouveaux…');
+    }
+    hideEmailProgress();
+    showToast(`✅ ${sent} email(s) envoyés${errors ? ` — ${errors} erreur(s)` : ''}`, sent > 0 ? 'success' : 'error');
+    updateEmailCounters();
+}
+
 async function sendGroupZoomEmail() {
     if (participants.length === 0) { showToast('Aucun participant chargé', 'warning'); return; }
     // Confirmed = peyeman verifye OUBYEN email resevwa
@@ -845,6 +924,7 @@ function renderConfirmesSection() {
     const tbody = document.getElementById('confirmesTable');
     const emptyEl = document.getElementById('emptyConfirmesState');
     if (!tbody) return;
+    updateEmailCounters();
 
     // Confirmed = peyeman verifye OUBYEN email resevwa (confirmed = true)
     const confirmed = participants.filter(p => 
@@ -1761,6 +1841,8 @@ window.sendIndividualZoomEmail = sendIndividualZoomEmail;
 window.sendGroupZoomEmail = sendGroupZoomEmail;
 window.sendAllRegistrationEmails = sendAllRegistrationEmails;
 window.saveZoomConfig = saveZoomConfig;
+window.sendZoomEmailAll = sendZoomEmailAll;
+window.sendZoomEmailNew = sendZoomEmailNew;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation Admin Panel...');

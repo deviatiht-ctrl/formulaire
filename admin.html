@@ -162,23 +162,81 @@
                 </div>
             </div>
 
-            <!-- Zoom Config -->
-            <div style="background:var(--bg-white);border:1px solid #c7dcff;border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
-                <div style="flex:1;min-width:220px;">
-                    <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">LIEN ZOOM</label>
-                    <input id="adminZoomLink" type="text" placeholder="https://zoom.us/j/..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;">
+            <!-- ===== ZOOM CONFIG + EMAIL BLAST ===== -->
+            <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #3b82f6;border-radius:16px;padding:28px;margin-bottom:28px;">
+                
+                <!-- Header -->
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-video" style="color:white;font-size:1.3rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0;font-size:1.15rem;font-weight:800;color:#1e40af;">Configuration Zoom & Envoi d'Emails</h3>
+                        <p style="margin:0;font-size:0.82rem;color:#3b82f6;">Configurez le meeting et envoyez les liens à vos participants</p>
+                    </div>
                 </div>
-                <div style="min-width:150px;">
-                    <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">MEETING ID</label>
-                    <input id="adminZoomId" type="text" placeholder="123 456 7890" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;">
+
+                <!-- Zoom Config Fields -->
+                <div style="background:white;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid #bfdbfe;">
+                    <div style="flex:2;min-width:220px;">
+                        <label style="font-size:0.75rem;font-weight:700;color:#1e40af;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">🔗 Lien Zoom</label>
+                        <input id="adminZoomLink" type="text" placeholder="https://zoom.us/j/1234567890?pwd=..." style="width:100%;padding:10px 12px;border:1.5px solid #93c5fd;border-radius:8px;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#93c5fd'">
+                    </div>
+                    <div style="min-width:150px;">
+                        <label style="font-size:0.75rem;font-weight:700;color:#1e40af;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">🆔 Meeting ID</label>
+                        <input id="adminZoomId" type="text" placeholder="123 456 7890" style="width:100%;padding:10px 12px;border:1.5px solid #93c5fd;border-radius:8px;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#93c5fd'">
+                    </div>
+                    <div style="min-width:150px;">
+                        <label style="font-size:0.75rem;font-weight:700;color:#1e40af;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">🔒 Mot de passe</label>
+                        <input id="adminZoomPass" type="text" placeholder="motdepasse" style="width:100%;padding:10px 12px;border:1.5px solid #93c5fd;border-radius:8px;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#93c5fd'">
+                    </div>
+                    <button onclick="saveZoomConfig()" style="height:42px;padding:0 20px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;">
+                        <i class="fas fa-save"></i> Enregistrer Config
+                    </button>
                 </div>
-                <div style="min-width:140px;">
-                    <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:6px;">MOT DE PASSE ZOOM</label>
-                    <input id="adminZoomPass" type="text" placeholder="motdepasse" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;">
+
+                <!-- Email Blast Buttons -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    
+                    <!-- Envoyer à TOUS -->
+                    <div style="background:white;border:2px solid #22c55e;border-radius:12px;padding:20px;text-align:center;">
+                        <div style="font-size:2rem;margin-bottom:8px;">📨</div>
+                        <div style="font-weight:800;color:#15803d;font-size:1rem;margin-bottom:4px;">Envoyer à TOUS</div>
+                        <div style="font-size:0.78rem;color:#16a34a;margin-bottom:14px;line-height:1.4;">
+                            Envoie le lien Zoom + code d'accès à <strong>tous les participants</strong> qui ont un code généré
+                        </div>
+                        <div id="emailAllCount" style="font-size:0.75rem;color:#6b7280;margin-bottom:12px;">— participants avec code</div>
+                        <button onclick="sendZoomEmailAll()" style="width:100%;padding:12px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:8px;font-weight:700;font-size:0.92rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <i class="fas fa-paper-plane"></i> Envoyer à tous
+                        </button>
+                    </div>
+
+                    <!-- Envoyer aux NOUVEAUX seulement -->
+                    <div style="background:white;border:2px solid #f59e0b;border-radius:12px;padding:20px;text-align:center;">
+                        <div style="font-size:2rem;margin-bottom:8px;">✉️</div>
+                        <div style="font-weight:800;color:#92400e;font-size:1rem;margin-bottom:4px;">Nouveaux Inscrits</div>
+                        <div style="font-size:0.78rem;color:#b45309;margin-bottom:14px;line-height:1.4;">
+                            Envoie <strong>uniquement</strong> aux participants qui n'ont pas encore reçu d'email Zoom
+                        </div>
+                        <div id="emailNewCount" style="font-size:0.75rem;color:#6b7280;margin-bottom:12px;">— nouveaux sans email</div>
+                        <button onclick="sendZoomEmailNew()" style="width:100%;padding:12px;background:linear-gradient(135deg,#d97706,#b45309);color:white;border:none;border-radius:8px;font-weight:700;font-size:0.92rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <i class="fas fa-paper-plane"></i> Envoyer aux nouveaux
+                        </button>
+                    </div>
+
                 </div>
-                <button onclick="saveZoomConfig()" class="btn-action btn-primary" style="height:38px;">
-                    <i class="fas fa-save"></i> Enregistrer
-                </button>
+
+                <!-- Progress bar -->
+                <div id="emailProgressBox" style="display:none;margin-top:16px;background:white;border-radius:10px;padding:14px;border:1px solid #bfdbfe;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.82rem;font-weight:600;color:#1e40af;">
+                        <span id="emailProgressText">Envoi en cours…</span>
+                        <span id="emailProgressCount">0 / 0</span>
+                    </div>
+                    <div style="background:#dbeafe;border-radius:50px;height:10px;overflow:hidden;">
+                        <div id="emailProgressBar" style="height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);width:0%;transition:width 0.3s;border-radius:50px;"></div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Table -->
