@@ -161,13 +161,13 @@
     </div>
 </header>
 
-<!-- ===== CODE ENTRY GATE (Restream Access) ===== -->
+<!-- ===== CODE ENTRY GATE (Facebook Live Access) ===== -->
 <div id="codeGate" class="code-gate-overlay">
     <div class="code-gate-box">
-        <div class="code-gate-icon">
-            <i class="fas fa-lock"></i>
+        <div class="code-gate-icon" style="background: linear-gradient(135deg, #1877f2, #0d5cb6);">
+            <i class="fab fa-facebook-f"></i>
         </div>
-        <h2>Accès Restream</h2>
+        <h2>Accès Facebook Live</h2>
         <p>Entrez le code pour accéder au live</p>
         <div class="code-input-group">
             <input type="password" id="restreamCodeInput" class="code-input" placeholder="Code d'accès" maxlength="10" onkeydown="handleCodeKey(event)">
@@ -180,19 +180,31 @@
     </div>
 </div>
 
-<!-- ===== RESTREAM VIDEO AREA ===== -->
-<div class="video-area restream-area" id="videoArea">
-    <!-- Restream iframe - shown after code verified -->
-    <iframe id="restreamFrame" class="video-iframe restream-iframe" 
+<!-- ===== FACEBOOK LIVE VIDEO AREA ===== -->
+<div class="video-area facebook-area" id="videoArea">
+    <!-- Facebook Live iframe - shown after code verified -->
+    <iframe id="facebookFrame" class="video-iframe facebook-iframe" 
             src="" 
             allow="fullscreen" 
-            style="display:none;"></iframe>
+            style="display:none;"
+            scrolling="no"
+            frameborder="0"
+            allowfullscreen="true"></iframe>
+    
+    <!-- External Facebook Link (fallback) -->
+    <a id="externalFacebookLink" href="https://www.facebook.com/rasinayiti/live" 
+       target="_blank" 
+       class="facebook-external-link"
+       style="display:none;">
+        <i class="fab fa-facebook"></i>
+        <span>Voir sur Facebook Live</span>
+    </a>
     
     <!-- Waiting message before code entry -->
-    <div id="restreamWaiting" class="video-placeholder">
+    <div id="facebookWaiting" class="video-placeholder">
         <i class="fas fa-broadcast-tower"></i>
         <h3>En attente du code...</h3>
-        <p>Veuillez entrer le code d'accès Restream</p>
+        <p>Veuillez entrer le code d'accès Facebook Live</p>
     </div>
 </div>
 

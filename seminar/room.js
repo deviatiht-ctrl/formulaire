@@ -109,8 +109,8 @@ async function init() {
         // 5. Check if code already verified
         console.log('🔐 Checking code verification...');
         if (isCodeVerified()) {
-            console.log('✅ Code already verified - showing Restream');
-            showRestreamEmbed();
+            console.log('✅ Code already verified - showing Facebook Live');
+            showFacebookEmbed();
             await registerViewer();
             setInterval(updateViewerPresence, 30000);
         } else {
@@ -558,17 +558,20 @@ function showToastMsg(msg) {
 //  RESTREAM CODE VERIFICATION
 // ============================================================
 
-const RESTREAM_CONFIG = {
-    // Admin sets this code - change to your actual Restream code
-    accessCode: 'RESTREAM2026', 
-    // Restream embed URL - viewers will see the live stream here
-    embedUrl: 'https://embed.restream.io/player/index.html?token=re_11617675_event1d8f0dbfea1044c38d16e0c48df827b1',
-    backupUrl: 'https://restream.io/watch' // Fallback URL
+const FACEBOOK_CONFIG = {
+    // Access code for Facebook Live
+    accessCode: 'FACEBOOK2026', 
+    // Facebook Live embed URL - REPLACE with your actual Facebook Live video URL
+    // Format: https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/[PAGE_NAME]/videos/[VIDEO_ID]/
+    embedUrl: '',
+    // Facebook page URL - viewers can watch here
+    watchUrl: 'https://www.facebook.com/rasinayiti/live', // REPLACE with your page
+    pageName: 'Rasin Ayiti' // REPLACE with your page name
 };
 
 // Check if code was already verified in this session
 function isCodeVerified() {
-    return sessionStorage.getItem('restreamCodeVerified') === 'true';
+    return sessionStorage.getItem('facebookCodeVerified') === 'true';
 }
 
 function verifyRestreamCode() {
@@ -588,53 +591,62 @@ function verifyRestreamCode() {
     console.log('🔐 Code cleaned:', code);
     
     // Accept multiple codes - main code or admin code
-    const validCodes = ['RESTREAM2026', 'RASIN2026', 'LIVE2026', 'UNITECH'];
+    const validCodes = [FACEBOOK_CONFIG.accessCode, 'FACEBOOK2026', 'RASIN2026', 'LIVE2026', 'UNITECH'];
     
     console.log('🔐 Valid codes:', validCodes);
     console.log('🔐 Code match:', validCodes.includes(code));
     
     if (validCodes.includes(code)) {
         console.log('✅ Code verified!');
-        sessionStorage.setItem('restreamCodeVerified', 'true');
+        sessionStorage.setItem('facebookCodeVerified', 'true');
         
         // Hide code gate
         const gate = document.getElementById('codeGate');
         if (gate) gate.style.display = 'none';
         
-        // Show Restream iframe
-        showRestreamEmbed();
+        // Show Facebook embed
+        showFacebookEmbed();
         
         // Register viewer
         registerViewer();
         
-        showToastMsg('✅ Accès Restream autorisé!');
+        showToastMsg('✅ Accès Facebook Live autorisé!');
     } else {
-        error.textContent = 'Code incorrect. Essayez encore.';
+        if (error) error.textContent = 'Code incorrect. Essayez encore.';
         input.classList.add('error');
         setTimeout(() => input.classList.remove('error'), 1000);
     }
 }
 
-function showRestreamEmbed() {
-    const frame = document.getElementById('restreamFrame');
-    const waiting = document.getElementById('restreamWaiting');
+function showFacebookEmbed() {
+    const frame = document.getElementById('facebookFrame');
+    const waiting = document.getElementById('facebookWaiting');
     const videoArea = document.getElementById('videoArea');
     
     // Hide waiting message
     if (waiting) waiting.style.display = 'none';
     
-    // Show iframe with Restream
+    // Show iframe with Facebook Live
     if (frame) {
-        // Use embed URL or backup
-        const url = RESTREAM_CONFIG.embedUrl || RESTREAM_CONFIG.backupUrl;
-        frame.src = url;
-        frame.style.display = 'block';
+        // Use Facebook embed URL if available, otherwise show external link button
+        if (FACEBOOK_CONFIG.embedUrl) {
+            frame.src = FACEBOOK_CONFIG.embedUrl;
+            frame.style.display = 'block';
+        } else {
+            // Show external link if no embed URL configured
+            frame.style.display = 'none';
+            const externalLink = document.getElementById('externalFacebookLink');
+            if (externalLink) {
+                externalLink.href = FACEBOOK_CONFIG.watchUrl;
+                externalLink.style.display = 'flex';
+            }
+        }
     }
     
     // Add active class to video area
     if (videoArea) videoArea.classList.add('active');
     
-    console.log('📺 Restream embed shown');
+    console.log('📺 Facebook Live shown');
 }
 
 // Handle Enter key in code input
