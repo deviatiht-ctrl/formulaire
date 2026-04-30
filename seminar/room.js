@@ -105,10 +105,17 @@ async function init() {
             if (adminTab) adminTab.classList.remove('hidden');
         }
 
-        // 5. Set default platform to Zoom
-        console.log('� Setting up iframe platform...');
-        switchPlatform('zoom');
-        
+        // 5. Check if code already verified
+        console.log('🔐 Checking code verification...');
+        if (isCodeVerified()) {
+            console.log('✅ Code already verified - showing Restream');
+            showRestreamEmbed();
+            await registerViewer();
+            setInterval(updateViewerPresence, 30000);
+        } else {
+            console.log('🔐 Code gate displayed - waiting for user input');
+        }
+
         // 6. Register viewer in Supabase for tracking
         await registerViewer();
         
@@ -547,86 +554,78 @@ function showToastMsg(msg) {
 }
 
 // ============================================================
-//  PLATFORM SWITCHING (TikTok, Facebook, Instagram, Zoom)
+//  RESTREAM CODE VERIFICATION
 // ============================================================
-const PLATFORM_CONFIG = {
-    zoom: {
-        name: 'Zoom',
-        url: 'https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1',
-        icon: 'fa-video',
-        color: '#2d8cff',
-        canEmbed: false // Zoom blocks iframe embedding
-    },
-    tiktok: {
-        name: 'TikTok',
-        url: 'https://www.tiktok.com/@rasinayiti/live', // Replace with actual TikTok username
-        icon: 'fa-tiktok',
-        color: '#ff0050',
-        canEmbed: false // TikTok blocks iframe embedding
-    },
-    facebook: {
-        name: 'Facebook',
-        url: 'https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/rasinayiti/live', // Replace with actual FB page
-        icon: 'fa-facebook',
-        color: '#1877f2',
-        canEmbed: true
-    },
-    instagram: {
-        name: 'Instagram',
-        url: 'https://www.instagram.com/rasinayiti/live', // Replace with actual IG username
-        icon: 'fa-instagram',
-        color: '#e6683c',
-        canEmbed: false // Instagram blocks iframe embedding
-    }
+
+const RESTREAM_CONFIG = {
+    // Admin sets this code - change to your actual Restream code
+    accessCode: 'RESTREAM2026', 
+    embedUrl: '', // Your Restream embed URL will be set here
+    backupUrl: 'https://restream.io/watch' // Fallback URL
 };
 
-let currentPlatform = 'zoom';
+// Check if code was already verified in this session
+function isCodeVerified() {
+    return sessionStorage.getItem('restreamCodeVerified') === 'true';
+}
 
-function switchPlatform(platform) {
-    console.log('📺 Switching to platform:', platform);
-    currentPlatform = platform;
-    const config = PLATFORM_CONFIG[platform];
-    if (!config) return;
+function verifyRestreamCode() {
+    const input = document.getElementById('restreamCodeInput');
+    const error = document.getElementById('codeError');
+    const code = input.value.trim().toUpperCase();
     
-    // Update button states
-    document.querySelectorAll('.platform-btn').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById('btnPlatform' + platform.charAt(0).toUpperCase() + platform.slice(1));
-    if (activeBtn) activeBtn.classList.add('active');
+    // Accept multiple codes - main code or admin code
+    const validCodes = [RESTREAM_CONFIG.accessCode, 'RASIN2026', 'LIVE2026', 'UNITECH'];
     
-    // Update iframe or placeholder
-    const iframe = document.getElementById('videoFrame');
-    const placeholder = document.getElementById('videoPlaceholder');
-    const placeholderIcon = document.getElementById('placeholderIcon');
-    const placeholderTitle = document.getElementById('placeholderTitle');
-    const placeholderText = document.getElementById('placeholderText');
-    const externalBtn = document.getElementById('externalLinkBtn');
-    
-    if (config.canEmbed) {
-        // Use iframe for embeddable platforms
-        if (iframe) {
-            iframe.src = config.url;
-            iframe.style.display = 'block';
-        }
-        if (placeholder) placeholder.style.display = 'none';
+    if (validCodes.includes(code)) {
+        console.log('✅ Code verified!');
+        sessionStorage.setItem('restreamCodeVerified', 'true');
+        
+        // Hide code gate
+        const gate = document.getElementById('codeGate');
+        if (gate) gate.style.display = 'none';
+        
+        // Show Restream iframe
+        showRestreamEmbed();
+        
+        // Register viewer
+        registerViewer();
+        
+        showToastMsg('✅ Accès Restream autorisé!');
     } else {
-        // Use placeholder with external link for non-embeddable platforms
-        if (iframe) iframe.style.display = 'none';
-        if (placeholder) {
-            placeholder.style.display = 'flex';
-            if (placeholderIcon) placeholderIcon.className = 'fab ' + config.icon;
-            if (placeholderTitle) placeholderTitle.textContent = config.name + ' Live';
-            if (placeholderText) placeholderText.textContent = 'Cliquez ci-dessous pour rejoindre sur ' + config.name;
-        }
-        if (externalBtn) {
-            externalBtn.href = config.url;
-            externalBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Ouvrir ${config.name}`;
-            externalBtn.style.background = config.color;
-        }
+        error.textContent = 'Code incorrect. Essayez encore.';
+        input.classList.add('error');
+        setTimeout(() => input.classList.remove('error'), 1000);
+    }
+}
+
+function showRestreamEmbed() {
+    const frame = document.getElementById('restreamFrame');
+    const waiting = document.getElementById('restreamWaiting');
+    const videoArea = document.getElementById('videoArea');
+    
+    // Hide waiting message
+    if (waiting) waiting.style.display = 'none';
+    
+    // Show iframe with Restream
+    if (frame) {
+        // Use embed URL or backup
+        const url = RESTREAM_CONFIG.embedUrl || RESTREAM_CONFIG.backupUrl;
+        frame.src = url;
+        frame.style.display = 'block';
     }
     
-    // Save preference
-    localStorage.setItem('preferredPlatform', platform);
-    showToastMsg(`📺 ${config.name} sélectionné`);
+    // Add active class to video area
+    if (videoArea) videoArea.classList.add('active');
+    
+    console.log('📺 Restream embed shown');
+}
+
+// Handle Enter key in code input
+function handleCodeKey(e) {
+    if (e.key === 'Enter') {
+        verifyRestreamCode();
+    }
 }
 
 // ============================================================
@@ -917,5 +916,6 @@ window.adminConfirmEndMeeting= adminConfirmEndMeeting;
 window.closeEndModal         = closeEndModal;
 window.adminEndMeeting       = adminEndMeeting;
 window.downloadCertificateFromRoom = downloadCertificateFromRoom;
-window.switchPlatform        = switchPlatform;
+window.verifyRestreamCode    = verifyRestreamCode;
+window.handleCodeKey         = handleCodeKey;
 window.sendReaction          = sendReaction;

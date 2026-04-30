@@ -161,35 +161,38 @@
     </div>
 </header>
 
-<!-- ===== PLATFORM SELECTOR ===== -->
-<div class="platform-selector">
-    <button class="platform-btn active" id="btnPlatformZoom" onclick="switchPlatform('zoom')">
-        <i class="fas fa-video"></i> Zoom
-    </button>
-    <button class="platform-btn tiktok" id="btnPlatformTikTok" onclick="switchPlatform('tiktok')">
-        <i class="fab fa-tiktok"></i> TikTok
-    </button>
-    <button class="platform-btn facebook" id="btnPlatformFacebook" onclick="switchPlatform('facebook')">
-        <i class="fab fa-facebook"></i> Facebook
-    </button>
-    <button class="platform-btn instagram" id="btnPlatformInstagram" onclick="switchPlatform('instagram')">
-        <i class="fab fa-instagram"></i> Instagram
-    </button>
+<!-- ===== CODE ENTRY GATE (Restream Access) ===== -->
+<div id="codeGate" class="code-gate-overlay">
+    <div class="code-gate-box">
+        <div class="code-gate-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h2>Accès Restream</h2>
+        <p>Entrez le code pour accéder au live</p>
+        <div class="code-input-group">
+            <input type="password" id="restreamCodeInput" class="code-input" placeholder="Code d'accès" maxlength="10" onkeydown="handleCodeKey(event)">
+            <button class="code-submit-btn" onclick="verifyRestreamCode()">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        <div id="codeError" class="code-error"></div>
+        <div class="code-hint">Demandez le code à l'administrateur</div>
+    </div>
 </div>
 
-<!-- ===== VIDEO AREA ===== -->
-<div class="video-area" id="videoArea">
-    <!-- Default: Zoom via iframe -->
-    <iframe id="videoFrame" class="video-iframe" src="https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1" allow="camera; microphone; fullscreen; display-capture" style="display:none;"></iframe>
+<!-- ===== RESTREAM VIDEO AREA ===== -->
+<div class="video-area restream-area" id="videoArea">
+    <!-- Restream iframe - shown after code verified -->
+    <iframe id="restreamFrame" class="video-iframe restream-iframe" 
+            src="" 
+            allow="fullscreen" 
+            style="display:none;"></iframe>
     
-    <!-- Placeholder / External link mode -->
-    <div id="videoPlaceholder" class="video-placeholder">
-        <i class="fas fa-broadcast-tower" id="placeholderIcon"></i>
-        <h3 id="placeholderTitle">Zoom Live</h3>
-        <p id="placeholderText">Rejoignez le séminaire via Zoom</p>
-        <a id="externalLinkBtn" href="https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1" target="_blank" class="external-link-btn">
-            <i class="fas fa-external-link-alt"></i> Ouvrir dans Zoom
-        </a>
+    <!-- Waiting message before code entry -->
+    <div id="restreamWaiting" class="video-placeholder">
+        <i class="fas fa-broadcast-tower"></i>
+        <h3>En attente du code...</h3>
+        <p>Veuillez entrer le code d'accès Restream</p>
     </div>
 </div>
 
