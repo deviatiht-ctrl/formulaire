@@ -642,15 +642,30 @@ function getZoomConfig() {
     };
 }
 
-function saveZoomConfig() {
+async function saveZoomConfig() {
     const link = document.getElementById('adminZoomLink').value.trim();
     const id   = document.getElementById('adminZoomId').value.trim();
     const pass = document.getElementById('adminZoomPass').value.trim();
     if (!link) { showToast('Entrez le lien Zoom', 'error'); return; }
+    if (!id)   { showToast('Entrez le Meeting ID', 'error'); return; }
+    
+    // 1. Save to localStorage (for admin's own use)
     localStorage.setItem('zoomLink',      link);
     localStorage.setItem('zoomMeetingId', id);
     localStorage.setItem('zoomPassword',  pass);
-    showToast('Configuration Zoom enregistrée !', 'success');
+    
+    // 2. Save to Supabase (so all users can access it)
+    try {
+        if (typeof saveZoomConfigToDb === 'function') {
+            await saveZoomConfigToDb({ meetingId: id, password: pass, link: link });
+            showToast('✅ Configuration Zoom enregistrée pour TOUS les participants !', 'success');
+        } else {
+            showToast('⚠️ Enregistré localement uniquement', 'warning');
+        }
+    } catch (e) {
+        console.error('Erreur sauvegarde DB:', e);
+        showToast('⚠️ Enregistré localement, erreur base de données', 'warning');
+    }
 }
 
 // ===== CONFIRMÉS SECTION =====

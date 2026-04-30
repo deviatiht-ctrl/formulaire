@@ -14,15 +14,27 @@ let chatMessages = [];
 let presentParticipants = [];
 let refreshInterval = null;
 
-// ---- Zoom config (loaded from localStorage, set via admin panel) ----
-function getZoomConfig() {
+// ---- Zoom config (loaded from Supabase DB, set via admin panel) ----
+async function getZoomConfig() {
+    // 1. Try to get from Supabase DB first (shared with all users)
+    try {
+        if (typeof getZoomConfigFromDb === 'function') {
+            const dbConfig = await getZoomConfigFromDb();
+            if (dbConfig && dbConfig.meetingNumber) {
+                return { ...dbConfig, sdkKey: '' };
+            }
+        }
+    } catch (e) { console.warn('DB config error:', e); }
+    
+    // 2. Fallback to localStorage (for development/testing)
     try {
         const raw = localStorage.getItem('zoomConfig');
         if (raw) return JSON.parse(raw);
     } catch (_) {}
+    
     return {
-        meetingNumber: localStorage.getItem('adminZoomId')   || '',
-        password:      localStorage.getItem('adminZoomPass') || '',
+        meetingNumber: localStorage.getItem('zoomMeetingId') || localStorage.getItem('adminZoomId') || '',
+        password:      localStorage.getItem('zoomPassword')  || localStorage.getItem('adminZoomPass') || '',
         sdkKey:        ''
     };
 }
@@ -55,8 +67,8 @@ async function init() {
         document.getElementById('adminTab').classList.remove('hidden');
     }
 
-    // 5. Load Zoom config
-    const cfg = getZoomConfig();
+    // 5. Load Zoom config (from Supabase DB or localStorage)
+    const cfg = await getZoomConfig();
     if (cfg.meetingNumber) {
         document.getElementById('infoMeetingId').textContent = cfg.meetingNumber;
         // 6. Initialize Zoom SDK

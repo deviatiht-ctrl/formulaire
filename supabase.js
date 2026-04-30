@@ -761,9 +761,46 @@ async function checkIsAdmin(email) {
     } catch (_) { return false; }
 }
 
+// ============================================================
+// ZOOM CONFIG — Shared via Supabase (not just localStorage)
+// ============================================================
+
+async function saveZoomConfigToDb(config) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    // Upsert: update if exists, insert if not
+    const { data, error } = await supabaseClient
+        .from('zoom_config')
+        .upsert({ 
+            id: 1, 
+            meeting_id: config.meetingId || config.meetingNumber || '',
+            password: config.password || '',
+            link: config.link || '',
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+    if (error) throw error;
+    return data;
+}
+
+async function getZoomConfigFromDb() {
+    if (!supabaseClient) return null;
+    const { data, error } = await supabaseClient
+        .from('zoom_config')
+        .select('*')
+        .eq('id', 1)
+        .single();
+    if (error || !data) return null;
+    return {
+        meetingNumber: data.meeting_id,
+        password: data.password,
+        link: data.link
+    };
+}
+
 // Expose globally for seminar pages
 window.validateAccessCode = validateAccessCode;
 window.checkIsAdmin       = checkIsAdmin;
+window.saveZoomConfigToDb = saveZoomConfigToDb;
+window.getZoomConfigFromDb = getZoomConfigFromDb;
 
 // Export pour utilisation dans d'autres fichiers
 if (typeof module !== 'undefined' && module.exports) {
