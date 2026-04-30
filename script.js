@@ -81,7 +81,8 @@ const validators = {
     },
 
     ville: (value) => {
-        // Optionnel
+        if (!value.trim()) return 'La ville est obligatoire';
+        if (value.trim().length < 2) return 'La ville doit contenir au moins 2 caractères';
         return '';
     }
 };
