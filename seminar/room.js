@@ -43,13 +43,17 @@ async function getZoomConfig() {
 //  INIT — runs on page load
 // ============================================================
 async function init() {
+    console.log('🟢 === room.js init() START ===');
+    
     // 1. Verify participant session
     const stored = sessionStorage.getItem('seminarParticipant');
     if (!stored) {
+        console.log('❌ No participant session, redirecting...');
         window.location.href = 'index.html';
         return;
     }
     currentParticipant = JSON.parse(stored);
+    console.log('✅ Participant:', currentParticipant.prenom, currentParticipant.nom);
 
     // 2. Admin flag (check via URL param or Supabase admin check)
     const urlParams = new URLSearchParams(window.location.search);
@@ -68,19 +72,31 @@ async function init() {
     }
 
     // 5. Load Zoom config (from Supabase DB or localStorage)
+    console.log('📞 Loading Zoom config...');
     const cfg = await getZoomConfig();
+    console.log('📞 Config loaded:', cfg);
+    
     if (cfg.meetingNumber) {
-        document.getElementById('infoMeetingId').textContent = cfg.meetingNumber;
+        console.log('📞 Meeting ID found:', cfg.meetingNumber);
+        const infoEl = document.getElementById('infoMeetingId');
+        if (infoEl) infoEl.textContent = cfg.meetingNumber;
         // 6. Initialize Zoom SDK
         initZoom(cfg);
     } else {
+        console.error('❌ Meeting ID NOT FOUND in config');
         showToastMsg('⚠️ Meeting ID non configuré. Contactez l\'admin.');
         hideJoiningOverlay();
     }
 
     // 7. Load & refresh participant list from Supabase
-    await loadParticipants();
-    refreshInterval = setInterval(loadParticipants, 30000);
+    try {
+        await loadParticipants();
+        refreshInterval = setInterval(loadParticipants, 30000);
+    } catch (e) {
+        console.error('❌ Error loading participants:', e);
+    }
+    
+    console.log('🟢 === init() COMPLETE ===');
 }
 
 // ============================================================
@@ -96,12 +112,21 @@ function updateHeaderUI() {
 // ============================================================
 //  ZOOM SDK INITIALIZATION
 // ============================================================
-function initZoom(cfg) {
+async function initZoom(cfg) {
+    console.log('🎥 === initZoom START ===');
+    console.log('🎥 Config:', cfg);
+    console.log('🎥 Meeting Number:', cfg.meetingNumber);
+    console.log('🎥 Password:', cfg.password ? '(set)' : '(empty)');
+    
     // Set Zoom library path (CDN)
+    console.log('🎥 Setting Zoom JS Lib...');
     ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.0/lib', '/av');
+    console.log('🎥 preLoadWasm...');
     ZoomMtg.preLoadWasm();
+    console.log('🎥 prepareWebSDK...');
     ZoomMtg.prepareWebSDK();
 
+    console.log('🎥 Calling ZoomMtg.init...');
     ZoomMtg.init({
         leaveUrl:        window.location.origin + '/seminar/index.html',
         isSupportAV:     true,
@@ -113,19 +138,24 @@ function initZoom(cfg) {
         isShowJoiningErrorDialog: true,
         meetingInfo: ['topic', 'host', 'participant'],
         success: () => {
+            console.log('✅ ZoomMtg.init SUCCESS - calling joinMeeting...');
             joinMeeting(cfg);
         },
         error: (err) => {
-            console.error('ZoomMtg.init error:', err);
+            console.error('❌ ZoomMtg.init error:', err);
             showToastMsg('❌ Erreur init Zoom: ' + (err.errorMessage || JSON.stringify(err)));
             hideJoiningOverlay();
         }
     });
+    console.log('🎥 ZoomMtg.init called, waiting for callback...');
 }
 
 async function joinMeeting(cfg) {
+    console.log('🚀 === joinMeeting START ===');
     try {
         // Get JWT signature from server
+        console.log('📡 Fetching signature from /api/zoom-signature...');
+        console.log('📡 Meeting Number:', cfg.meetingNumber);
         const res = await fetch('/api/zoom-signature', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,10 +165,13 @@ async function joinMeeting(cfg) {
             })
         });
         const data = await res.json();
+        console.log('📡 Signature response:', data);
         if (!data.signature) throw new Error('Signature non reçue: ' + JSON.stringify(data));
+        console.log('✅ Signature received, calling ZoomMtg.join...');
 
         const p = currentParticipant;
         const userName = `${p.prenom} ${p.nom}`;
+        console.log('👤 Joining as:', userName);
 
         ZoomMtg.join({
             signature:     data.signature,
