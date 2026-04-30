@@ -528,7 +528,26 @@ function showToastMsg(msg) {
 // ============================================================
 //  START
 // ============================================================
-window.addEventListener('DOMContentLoaded', init);
+// Wait for Zoom SDK to be ready before calling init
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOMContentLoaded fired');
+    waitForZoomMtg();
+});
+
+function waitForZoomMtg(attempts = 0) {
+    console.log('⏳ Checking ZoomMtg... attempt', attempts);
+    if (typeof ZoomMtg !== 'undefined') {
+        console.log('✅ ZoomMtg is ready!');
+        init();
+    } else if (attempts < 30) {
+        console.log('⏳ ZoomMtg not ready yet, retrying in 200ms...');
+        setTimeout(() => waitForZoomMtg(attempts + 1), 200);
+    } else {
+        console.error('❌ ZoomMtg failed to load after 6 seconds');
+        showToastMsg('❌ Zoom SDK non chargé. Vérifiez votre connexion.');
+        hideJoiningOverlay();
+    }
+}
 
 // Prevent accidental navigation away
 window.addEventListener('beforeunload', (e) => {
