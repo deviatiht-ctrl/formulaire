@@ -45,6 +45,14 @@
                 <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Connexion à la formation…</div>
                 <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);">Veuillez patienter</div>
             </div>
+            <!-- Fallback direct link (shown if Zoom fails to load) -->
+            <div id="zoomFallback" style="display:none;margin-top:24px;text-align:center;">
+                <p style="font-size:0.82rem;color:rgba(255,255,255,0.6);margin-bottom:12px;">Problème de connexion au plugin Zoom.</p>
+                <a id="zoomDirectLink" href="#" target="_blank"
+                   style="display:inline-flex;align-items:center;gap:8px;background:#2563eb;color:#fff;padding:12px 24px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.9rem;">
+                    <i class="fas fa-external-link-alt"></i> Ouvrir Zoom directement
+                </a>
+            </div>
         </div>
         <!-- Zoom SDK will render here -->
         <div id="zmmtg-root"></div>
@@ -178,7 +186,7 @@
 </div>
 
 <!-- Zoom SDK Script -->
-<script src="https://source.zoom.us/2.18.0/ZoomMtg.min.js"></script>
+<script src="https://source.zoom.us/zoom-meeting-2.18.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="../supabase.js?v=19"></script>

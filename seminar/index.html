@@ -309,7 +309,7 @@
             const participant = await validateAccessCode(code);
             if (!participant) {
                 codeInput.classList.add('error');
-                codeError.textContent = '❌ Code invalide ou paiement non confirmé. Vérifiez votre email.';
+                codeError.textContent = '❌ Code invalide. Vérifiez votre email ou contactez l\'admin.';
                 return;
             }
             sessionStorage.setItem('seminarParticipant', JSON.stringify(participant));

@@ -539,14 +539,34 @@ function waitForZoomMtg(attempts = 0) {
     if (typeof ZoomMtg !== 'undefined') {
         console.log('✅ ZoomMtg is ready!');
         init();
-    } else if (attempts < 30) {
-        console.log('⏳ ZoomMtg not ready yet, retrying in 200ms...');
+    } else if (attempts < 40) {
         setTimeout(() => waitForZoomMtg(attempts + 1), 200);
     } else {
-        console.error('❌ ZoomMtg failed to load after 6 seconds');
-        showToastMsg('❌ Zoom SDK non chargé. Vérifiez votre connexion.');
-        hideJoiningOverlay();
+        console.error('❌ ZoomMtg failed to load after 8 seconds');
+        showZoomFallback();
     }
+}
+
+async function showZoomFallback() {
+    console.log('📌 Showing direct Zoom link fallback...');
+    const fallback = document.getElementById('zoomFallback');
+    const linkEl   = document.getElementById('zoomDirectLink');
+    
+    // Try to get the Zoom link from DB
+    try {
+        const cfg = await getZoomConfig();
+        if (cfg && cfg.link && linkEl) {
+            linkEl.href = cfg.link;
+        }
+    } catch (_) {}
+    
+    if (fallback) fallback.style.display = 'block';
+    
+    // Hide spinner
+    const spinner = document.querySelector('.spinner-ring');
+    if (spinner) spinner.style.display = 'none';
+    
+    showToastMsg('⚠️ Plugin Zoom indisponible. Utilisez le lien direct.');
 }
 
 // Prevent accidental navigation away
