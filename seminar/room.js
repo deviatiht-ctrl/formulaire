@@ -573,10 +573,24 @@ function isCodeVerified() {
 function verifyRestreamCode() {
     const input = document.getElementById('restreamCodeInput');
     const error = document.getElementById('codeError');
-    const code = input.value.trim().toUpperCase();
+    
+    if (!input) {
+        console.error('❌ Input not found!');
+        return;
+    }
+    
+    // Clean the code: remove spaces, uppercase
+    const rawCode = input.value;
+    const code = rawCode.replace(/\s/g, '').toUpperCase();
+    
+    console.log('🔐 Code entered:', rawCode);
+    console.log('🔐 Code cleaned:', code);
     
     // Accept multiple codes - main code or admin code
-    const validCodes = [RESTREAM_CONFIG.accessCode, 'RASIN2026', 'LIVE2026', 'UNITECH'];
+    const validCodes = ['RESTREAM2026', 'RASIN2026', 'LIVE2026', 'UNITECH'];
+    
+    console.log('🔐 Valid codes:', validCodes);
+    console.log('🔐 Code match:', validCodes.includes(code));
     
     if (validCodes.includes(code)) {
         console.log('✅ Code verified!');
