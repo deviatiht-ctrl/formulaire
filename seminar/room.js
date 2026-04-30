@@ -560,7 +560,8 @@ function showToastMsg(msg) {
 const RESTREAM_CONFIG = {
     // Admin sets this code - change to your actual Restream code
     accessCode: 'RESTREAM2026', 
-    embedUrl: '', // Your Restream embed URL will be set here
+    // Restream embed URL - viewers will see the live stream here
+    embedUrl: 'https://embed.restream.io/player/index.html?token=re_11617675_event1d8f0dbfea1044c38d16e0c48df827b1',
     backupUrl: 'https://restream.io/watch' // Fallback URL
 };
 
