@@ -660,11 +660,15 @@ async function saveZoomConfig() {
             await saveZoomConfigToDb({ meetingId: id, password: pass, link: link });
             showToast('✅ Configuration Zoom enregistrée pour TOUS les participants !', 'success');
         } else {
-            showToast('⚠️ Enregistré localement uniquement', 'warning');
+            showToast('⚠️ Fonction DB non disponible - enregistré localement', 'warning');
         }
     } catch (e) {
-        console.error('Erreur sauvegarde DB:', e);
-        showToast('⚠️ Enregistré localement, erreur base de données', 'warning');
+        console.error('❌ Erreur sauvegarde DB:', e);
+        showToast('❌ Erreur DB: ' + (e.message || 'Inconnue'), 'error');
+        // Still saved to localStorage, so show that
+        setTimeout(() => {
+            showToast('⚠️ Mais enregistré localement uniquement', 'warning');
+        }, 2000);
     }
 }
 

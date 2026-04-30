@@ -20,9 +20,9 @@ CREATE POLICY "Allow read zoom config"
 ON zoom_config FOR SELECT TO anon, authenticated 
 USING (true);
 
--- Allow authenticated users to upsert (for admin updates)
+-- Allow anyone to upsert (admin uses anon key, participants need this too)
 CREATE POLICY "Allow upsert zoom config" 
-ON zoom_config FOR ALL TO authenticated 
+ON zoom_config FOR ALL TO anon, authenticated 
 USING (true)
 WITH CHECK (true);
 

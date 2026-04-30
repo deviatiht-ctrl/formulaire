@@ -767,6 +767,8 @@ async function checkIsAdmin(email) {
 
 async function saveZoomConfigToDb(config) {
     if (!supabaseClient) throw new Error('Supabase non connecté');
+    console.log('💾 Saving Zoom config:', config);
+    
     // Upsert: update if exists, insert if not
     const { data, error } = await supabaseClient
         .from('zoom_config')
@@ -777,18 +779,39 @@ async function saveZoomConfigToDb(config) {
             link: config.link || '',
             updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
-    if (error) throw error;
+    
+    if (error) {
+        console.error('❌ DB Save Error:', error);
+        throw error;
+    }
+    console.log('✅ Config saved to DB:', data);
     return data;
 }
 
 async function getZoomConfigFromDb() {
-    if (!supabaseClient) return null;
+    if (!supabaseClient) {
+        console.warn('⚠️ Supabase not connected');
+        return null;
+    }
+    console.log('📖 Reading Zoom config from DB...');
+    
     const { data, error } = await supabaseClient
         .from('zoom_config')
         .select('*')
         .eq('id', 1)
         .single();
-    if (error || !data) return null;
+    
+    if (error) {
+        console.error('❌ DB Read Error:', error);
+        return null;
+    }
+    
+    if (!data) {
+        console.warn('⚠️ No config found in DB');
+        return null;
+    }
+    
+    console.log('✅ Config from DB:', data);
     return {
         meetingNumber: data.meeting_id,
         password: data.password,
