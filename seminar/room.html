@@ -6,10 +6,138 @@
     <title>Séminaire en Direct — Rasin Ayiti × UNITECH</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Zoom Web SDK CSS -->
-    <link rel="stylesheet" href="https://source.zoom.us/2.18.0/css/bootstrap.css">
-    <link rel="stylesheet" href="https://source.zoom.us/2.18.0/css/react-select.css">
     <link rel="stylesheet" href="room.css">
+    <style>
+        /* ===== PLATFORM SELECTOR ===== */
+        .platform-selector {
+            position: fixed;
+            top: 70px;
+            left: 20px;
+            right: 340px;
+            z-index: 50;
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .platform-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .platform-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .platform-btn.active {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-color: #60a5fa;
+        }
+        .platform-btn i {
+            font-size: 1.1rem;
+        }
+        .platform-btn.tiktok:hover { background: #ff0050; border-color: #ff0050; }
+        .platform-btn.facebook:hover { background: #1877f2; border-color: #1877f2; }
+        .platform-btn.instagram:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .platform-btn.zoom:hover { background: #2d8cff; border-color: #2d8cff; }
+        
+        /* ===== VIDEO AREA ===== */
+        .video-area {
+            position: fixed;
+            top: 130px;
+            left: 20px;
+            right: 340px;
+            bottom: 100px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .video-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            padding: 40px;
+        }
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .video-placeholder h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        /* External link button for platforms that block iframe */
+        .external-link-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        /* ===== REACTIONS BAR ===== */
+        .reactions-bar {
+            position: fixed;
+            left: 20px;
+            right: 340px;
+            bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 50;
+        }
+        .reaction-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .reaction-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
 
@@ -33,30 +161,50 @@
     </div>
 </header>
 
-<!-- ===== BODY ===== -->
-<div class="room-body">
+<!-- ===== PLATFORM SELECTOR ===== -->
+<div class="platform-selector">
+    <button class="platform-btn active" id="btnPlatformZoom" onclick="switchPlatform('zoom')">
+        <i class="fas fa-video"></i> Zoom
+    </button>
+    <button class="platform-btn tiktok" id="btnPlatformTikTok" onclick="switchPlatform('tiktok')">
+        <i class="fab fa-tiktok"></i> TikTok
+    </button>
+    <button class="platform-btn facebook" id="btnPlatformFacebook" onclick="switchPlatform('facebook')">
+        <i class="fab fa-facebook"></i> Facebook
+    </button>
+    <button class="platform-btn instagram" id="btnPlatformInstagram" onclick="switchPlatform('instagram')">
+        <i class="fab fa-instagram"></i> Instagram
+    </button>
+</div>
 
-    <!-- ZOOM AREA -->
-    <div class="zoom-area" id="zoomArea">
-        <!-- Joining overlay -->
-        <div class="joining-overlay" id="joiningOverlay">
-            <div class="spinner-ring"></div>
-            <div style="text-align:center;">
-                <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Connexion à la formation…</div>
-                <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);">Veuillez patienter</div>
-            </div>
-            <!-- Fallback direct link (shown if Zoom fails to load) -->
-            <div id="zoomFallback" style="display:none;margin-top:24px;text-align:center;">
-                <p style="font-size:0.82rem;color:rgba(255,255,255,0.6);margin-bottom:12px;">Problème de connexion au plugin Zoom.</p>
-                <a id="zoomDirectLink" href="#" target="_blank"
-                   style="display:inline-flex;align-items:center;gap:8px;background:#2563eb;color:#fff;padding:12px 24px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.9rem;">
-                    <i class="fas fa-external-link-alt"></i> Ouvrir Zoom directement
-                </a>
-            </div>
-        </div>
-        <!-- Zoom SDK will render here -->
-        <div id="zmmtg-root"></div>
+<!-- ===== VIDEO AREA ===== -->
+<div class="video-area" id="videoArea">
+    <!-- Default: Zoom via iframe -->
+    <iframe id="videoFrame" class="video-iframe" src="https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1" allow="camera; microphone; fullscreen; display-capture" style="display:none;"></iframe>
+    
+    <!-- Placeholder / External link mode -->
+    <div id="videoPlaceholder" class="video-placeholder">
+        <i class="fas fa-broadcast-tower" id="placeholderIcon"></i>
+        <h3 id="placeholderTitle">Zoom Live</h3>
+        <p id="placeholderText">Rejoignez le séminaire via Zoom</p>
+        <a id="externalLinkBtn" href="https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1" target="_blank" class="external-link-btn">
+            <i class="fas fa-external-link-alt"></i> Ouvrir dans Zoom
+        </a>
     </div>
+</div>
+
+<!-- ===== REACTIONS BAR ===== -->
+<div class="reactions-bar">
+    <button class="reaction-btn" onclick="sendReaction('❤️')" title="J'aime">❤️</button>
+    <button class="reaction-btn" onclick="sendReaction('👍')" title="Super">👍</button>
+    <button class="reaction-btn" onclick="sendReaction('👏')" title="Applaudir">👏</button>
+    <button class="reaction-btn" onclick="sendReaction('🔥')" title="Excellent">🔥</button>
+    <button class="reaction-btn" onclick="sendReaction('💡')" title="Idée">💡</button>
+    <button class="reaction-btn" onclick="sendReaction('❓')" title="Question">❓</button>
+</div>
+
+<!-- ===== BODY (Sidebar only now) ===== -->
+<div class="room-body">
 
     <!-- SIDEBAR -->
     <div class="sidebar">
@@ -141,55 +289,26 @@
 
 </div><!-- /.room-body -->
 
-<!-- ===== BOTTOM CONTROLS ===== -->
-<div class="room-controls">
-    <button class="ctrl-btn active-muted" id="btnMic" onclick="toggleMic()" title="Microphone">
-        <i class="fas fa-microphone-slash" id="micIcon"></i>
-        <span>Micro</span>
-    </button>
-    <button class="ctrl-btn active-muted" id="btnCam" onclick="toggleCam()" title="Caméra">
-        <i class="fas fa-video-slash" id="camIcon"></i>
-        <span>Caméra</span>
-    </button>
-    <button class="ctrl-btn" id="btnChat" onclick="switchTab('chat')" title="Chat">
+<!-- ===== SIMPLIFIED CONTROLS (Sidebar) ===== -->
+<div class="sidebar-controls">
+    <button class="sbar-btn" onclick="switchTab('chat')" title="Chat">
         <i class="fas fa-comments"></i>
-        <span>Chat</span>
     </button>
-    <button class="ctrl-btn" id="btnHand" onclick="toggleHand()" title="Lever la main">
+    <button class="sbar-btn" onclick="toggleHand()" title="Lever la main">
         <i class="fas fa-hand-paper" id="handIcon"></i>
-        <span>Main</span>
     </button>
-    <button class="ctrl-btn" id="btnCert" onclick="downloadCertificateFromRoom()" title="Certificat">
-        <i class="fas fa-certificate" id="certIcon"></i>
-        <span>Certificat</span>
+    <button class="sbar-btn" onclick="downloadCertificateFromRoom()" title="Certificat">
+        <i class="fas fa-certificate"></i>
     </button>
-    <button class="ctrl-btn leave" onclick="leaveMeeting()" title="Quitter">
-        <i class="fas fa-phone-slash"></i>
-        <span>Quitter</span>
+    <button class="sbar-btn leave" onclick="leaveMeeting()" title="Quitter">
+        <i class="fas fa-sign-out-alt"></i>
     </button>
 </div>
 
-<!-- ===== END MEETING MODAL ===== -->
-<div class="modal-overlay hidden" id="endModal">
-    <div class="modal-box">
-        <h3>⚠️ Terminer la réunion ?</h3>
-        <p style="font-size:0.85rem;color:rgba(255,255,255,0.55);line-height:1.6;">
-            Ceci va terminer la réunion pour <strong>tous les participants</strong>. Cette action est irréversible.
-        </p>
-        <div class="modal-actions">
-            <button class="modal-btn primary" onclick="adminEndMeeting()" style="background:linear-gradient(135deg,#dc2626,#ef4444);">
-                <i class="fas fa-stop-circle"></i> Terminer
-            </button>
-            <button class="modal-btn secondary" onclick="closeEndModal()">Annuler</button>
-        </div>
-    </div>
-</div>
-
-<!-- Zoom SDK Script -->
-<script src="https://source.zoom.us/2.18.0/lib/ZoomMtg.min.js"></script>
+<!-- ===== SCRIPTS ===== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../supabase.js?v=19"></script>
-<script src="room.js?v=3"></script>
+<script src="../supabase.js?v=20"></script>
+<script src="room.js?v=4"></script>
 </body>
 </html>

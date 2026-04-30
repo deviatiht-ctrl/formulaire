@@ -105,22 +105,15 @@ async function init() {
             if (adminTab) adminTab.classList.remove('hidden');
         }
 
-        // 5. Load Zoom config (from Supabase DB or localStorage)
-        console.log('📞 Loading Zoom config...');
-        const cfg = await getZoomConfig();
-        console.log('📞 Config loaded:', cfg);
+        // 5. Set default platform to Zoom
+        console.log('� Setting up iframe platform...');
+        switchPlatform('zoom');
         
-        if (cfg.meetingNumber) {
-            console.log('📞 Meeting ID found:', cfg.meetingNumber);
-            const infoEl = document.getElementById('infoMeetingId');
-            if (infoEl) infoEl.textContent = cfg.meetingNumber;
-            // 6. Initialize Zoom SDK
-            initZoom(cfg);
-        } else {
-            console.error('❌ Meeting ID NOT FOUND in config');
-            showToastMsg('⚠️ Meeting ID non configuré. Contactez l\'admin.');
-            hideJoiningOverlay();
-        }
+        // 6. Register viewer in Supabase for tracking
+        await registerViewer();
+        
+        // 7. Start viewer heartbeat (update presence every 30s)
+        setInterval(updateViewerPresence, 30000);
 
         // 7. Load & refresh participant list from Supabase
         try {
@@ -554,51 +547,234 @@ function showToastMsg(msg) {
 }
 
 // ============================================================
-//  START
+//  PLATFORM SWITCHING (TikTok, Facebook, Instagram, Zoom)
 // ============================================================
-// Wait for Zoom SDK to be ready before calling init
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOMContentLoaded fired');
-    waitForZoomMtg();
-});
+const PLATFORM_CONFIG = {
+    zoom: {
+        name: 'Zoom',
+        url: 'https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1',
+        icon: 'fa-video',
+        color: '#2d8cff',
+        canEmbed: false // Zoom blocks iframe embedding
+    },
+    tiktok: {
+        name: 'TikTok',
+        url: 'https://www.tiktok.com/@rasinayiti/live', // Replace with actual TikTok username
+        icon: 'fa-tiktok',
+        color: '#ff0050',
+        canEmbed: false // TikTok blocks iframe embedding
+    },
+    facebook: {
+        name: 'Facebook',
+        url: 'https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/rasinayiti/live', // Replace with actual FB page
+        icon: 'fa-facebook',
+        color: '#1877f2',
+        canEmbed: true
+    },
+    instagram: {
+        name: 'Instagram',
+        url: 'https://www.instagram.com/rasinayiti/live', // Replace with actual IG username
+        icon: 'fa-instagram',
+        color: '#e6683c',
+        canEmbed: false // Instagram blocks iframe embedding
+    }
+};
 
-function waitForZoomMtg(attempts = 0) {
-    console.log('⏳ Checking ZoomMtg... attempt', attempts);
-    if (typeof ZoomMtg !== 'undefined') {
-        console.log('✅ ZoomMtg is ready!');
-        init();
-    } else if (attempts < 40) {
-        setTimeout(() => waitForZoomMtg(attempts + 1), 200);
+let currentPlatform = 'zoom';
+
+function switchPlatform(platform) {
+    console.log('📺 Switching to platform:', platform);
+    currentPlatform = platform;
+    const config = PLATFORM_CONFIG[platform];
+    if (!config) return;
+    
+    // Update button states
+    document.querySelectorAll('.platform-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById('btnPlatform' + platform.charAt(0).toUpperCase() + platform.slice(1));
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Update iframe or placeholder
+    const iframe = document.getElementById('videoFrame');
+    const placeholder = document.getElementById('videoPlaceholder');
+    const placeholderIcon = document.getElementById('placeholderIcon');
+    const placeholderTitle = document.getElementById('placeholderTitle');
+    const placeholderText = document.getElementById('placeholderText');
+    const externalBtn = document.getElementById('externalLinkBtn');
+    
+    if (config.canEmbed) {
+        // Use iframe for embeddable platforms
+        if (iframe) {
+            iframe.src = config.url;
+            iframe.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
     } else {
-        console.error('❌ ZoomMtg failed to load after 8 seconds');
-        showZoomFallback();
+        // Use placeholder with external link for non-embeddable platforms
+        if (iframe) iframe.style.display = 'none';
+        if (placeholder) {
+            placeholder.style.display = 'flex';
+            if (placeholderIcon) placeholderIcon.className = 'fab ' + config.icon;
+            if (placeholderTitle) placeholderTitle.textContent = config.name + ' Live';
+            if (placeholderText) placeholderText.textContent = 'Cliquez ci-dessous pour rejoindre sur ' + config.name;
+        }
+        if (externalBtn) {
+            externalBtn.href = config.url;
+            externalBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> Ouvrir ${config.name}`;
+            externalBtn.style.background = config.color;
+        }
+    }
+    
+    // Save preference
+    localStorage.setItem('preferredPlatform', platform);
+    showToastMsg(`📺 ${config.name} sélectionné`);
+}
+
+// ============================================================
+//  VIEWER TRACKING (Register each user watching)
+// ============================================================
+async function registerViewer() {
+    if (!currentParticipant) return;
+    if (!supabaseClient) {
+        console.warn('⚠️ Supabase not connected - viewer not tracked');
+        return;
+    }
+    
+    const viewerData = {
+        participant_id: currentParticipant.id || null,
+        prenom: currentParticipant.prenom,
+        nom: currentParticipant.nom,
+        email: currentParticipant.email,
+        platform: currentPlatform,
+        joined_at: new Date().toISOString(),
+        last_seen: new Date().toISOString(),
+        is_active: true
+    };
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('live_viewers')
+            .upsert(viewerData, { onConflict: 'participant_id' });
+        
+        if (error) {
+            console.error('❌ Error registering viewer:', error);
+        } else {
+            console.log('✅ Viewer registered:', currentParticipant.prenom);
+        }
+    } catch (e) {
+        console.error('❌ Error registering viewer:', e);
     }
 }
 
-async function showZoomFallback() {
-    console.log('📌 Showing direct Zoom link fallback...');
-    const fallback = document.getElementById('zoomFallback');
-    const linkEl   = document.getElementById('zoomDirectLink');
+async function updateViewerPresence() {
+    if (!currentParticipant) return;
+    if (!supabaseClient) return;
     
-    // Try to get the Zoom link from DB
     try {
-        const cfg = await getZoomConfig();
-        if (cfg && cfg.link && linkEl) {
-            linkEl.href = cfg.link;
-        }
-    } catch (_) {}
-    
-    if (fallback) fallback.style.display = 'block';
-    
-    // Hide spinner
-    const spinner = document.querySelector('.spinner-ring');
-    if (spinner) spinner.style.display = 'none';
-    
-    showToastMsg('⚠️ Plugin Zoom indisponible. Utilisez le lien direct.');
+        await supabaseClient
+            .from('live_viewers')
+            .update({ 
+                last_seen: new Date().toISOString(),
+                platform: currentPlatform,
+                is_active: true
+            })
+            .eq('participant_id', currentParticipant.id);
+    } catch (e) {
+        console.error('❌ Error updating presence:', e);
+    }
 }
 
-// Prevent accidental navigation away
+async function removeViewer() {
+    if (!currentParticipant) return;
+    if (!supabaseClient) return;
+    
+    try {
+        await supabaseClient
+            .from('live_viewers')
+            .update({ is_active: false })
+            .eq('participant_id', currentParticipant.id);
+        console.log('👋 Viewer marked as left:', currentParticipant.prenom);
+    } catch (e) {
+        console.error('❌ Error removing viewer:', e);
+    }
+}
+
+// ============================================================
+//  REACTIONS SYSTEM (Real-time reactions from viewers)
+// ============================================================
+async function sendReaction(emoji) {
+    if (!currentParticipant) return;
+    if (!supabaseClient) {
+        showToastMsg('❌ Chat non disponible');
+        return;
+    }
+    
+    const reactionData = {
+        participant_id: currentParticipant.id || null,
+        prenom: currentParticipant.prenom,
+        nom: currentParticipant.nom,
+        emoji: emoji,
+        platform: currentPlatform,
+        created_at: new Date().toISOString()
+    };
+    
+    try {
+        const { error } = await supabaseClient
+            .from('live_reactions')
+            .insert(reactionData);
+        
+        if (error) {
+            console.error('❌ Error sending reaction:', error);
+        } else {
+            showFloatingReaction(emoji);
+            console.log('✅ Reaction sent:', emoji);
+        }
+    } catch (e) {
+        console.error('❌ Error sending reaction:', e);
+    }
+}
+
+function showFloatingReaction(emoji) {
+    const reaction = document.createElement('div');
+    reaction.textContent = emoji;
+    reaction.style.cssText = `
+        position: fixed;
+        left: ${Math.random() * 80 + 10}%;
+        bottom: 100px;
+        font-size: 2rem;
+        animation: floatUp 2s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    `;
+    document.body.appendChild(reaction);
+    setTimeout(() => reaction.remove(), 2000);
+}
+
+// Add floating animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-300px) scale(1.5); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// ============================================================
+//  START
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOMContentLoaded fired');
+    init();
+});
+
+// Mark viewer as left when leaving
 window.addEventListener('beforeunload', (e) => {
+    removeViewer();
+});
+
+// Mark viewer as left when leaving (already handled above)
+window.addEventListener('beforeunload', (e) => {
+    removeViewer();
     e.preventDefault();
     e.returnValue = 'Voulez-vous vraiment quitter le séminaire ?';
 });
@@ -741,3 +917,5 @@ window.adminConfirmEndMeeting= adminConfirmEndMeeting;
 window.closeEndModal         = closeEndModal;
 window.adminEndMeeting       = adminEndMeeting;
 window.downloadCertificateFromRoom = downloadCertificateFromRoom;
+window.switchPlatform        = switchPlatform;
+window.sendReaction          = sendReaction;

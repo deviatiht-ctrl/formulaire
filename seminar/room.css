@@ -449,3 +449,167 @@ body::before {
 }
 
 .hidden { display: none !important; }
+
+/* ============================================================
+   NEW LIVE STREAMING STYLES
+   ============================================================ */
+
+/* ===== PLATFORM SELECTOR ===== */
+.platform-selector {
+    position: fixed;
+    top: 70px;
+    left: 20px;
+    right: 340px;
+    z-index: 50;
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.platform-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.platform-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+.platform-btn.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-color: #60a5fa;
+}
+.platform-btn i { font-size: 1.1rem; }
+.platform-btn.tiktok.active, .platform-btn.tiktok:hover { background: #ff0050; border-color: #ff0050; }
+.platform-btn.facebook.active, .platform-btn.facebook:hover { background: #1877f2; border-color: #1877f2; }
+.platform-btn.instagram.active, .platform-btn.instagram:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.platform-btn.zoom.active, .platform-btn.zoom:hover { background: #2d8cff; border-color: #2d8cff; }
+
+/* ===== VIDEO AREA ===== */
+.video-area {
+    position: fixed;
+    top: 130px;
+    left: 20px;
+    right: 340px;
+    bottom: 100px;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.video-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.video-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 40px;
+}
+.video-placeholder i { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+.video-placeholder h3 { font-size: 1.5rem; margin-bottom: 10px; color: #fff; }
+.external-link-btn {
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+.external-link-btn:hover { transform: scale(1.05); }
+
+/* ===== REACTIONS BAR ===== */
+.reactions-bar {
+    position: fixed;
+    left: 20px;
+    right: 340px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.1);
+    z-index: 50;
+}
+.reaction-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.reaction-btn:hover {
+    transform: scale(1.15);
+    background: rgba(255,255,255,0.2);
+}
+
+/* ===== SIDEBAR CONTROLS ===== */
+.sidebar-controls {
+    position: fixed;
+    right: 290px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 50;
+}
+.sbar-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.sbar-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+.sbar-btn.leave { background: #dc2626; }
+.sbar-btn.leave:hover { background: #ef4444; }
+
+/* ===== FLOATING REACTION ANIMATION ===== */
+@keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-300px) scale(1.5); opacity: 0; }
+}
