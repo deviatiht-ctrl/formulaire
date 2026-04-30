@@ -13,6 +13,7 @@ let handRaised = false;
 let chatMessages = [];
 let presentParticipants = [];
 let refreshInterval = null;
+let currentPlatform = 'restream'; // Default platform for viewer tracking
 
 // ---- Zoom config (loaded from Supabase DB, set via admin panel) ----
 // HARDCODED FALLBACK — Seminar meeting details
