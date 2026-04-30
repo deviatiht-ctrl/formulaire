@@ -15,28 +15,41 @@ let presentParticipants = [];
 let refreshInterval = null;
 
 // ---- Zoom config (loaded from Supabase DB, set via admin panel) ----
+// HARDCODED FALLBACK — Seminar meeting details
+const HARDCODED_ZOOM_CONFIG = {
+    meetingNumber: '83538746946',
+    password: '822928',
+    link: 'https://unitech-edu-ht.zoom.us/j/83538746946?pwd=6a8lbOLvWMyE9p12YAHS6PPbldpBMz.1',
+    sdkKey: ''
+};
+
 async function getZoomConfig() {
     // 1. Try to get from Supabase DB first (shared with all users)
     try {
         if (typeof getZoomConfigFromDb === 'function') {
             const dbConfig = await getZoomConfigFromDb();
             if (dbConfig && dbConfig.meetingNumber) {
+                console.log('✅ Using DB config:', dbConfig.meetingNumber);
                 return { ...dbConfig, sdkKey: '' };
             }
         }
     } catch (e) { console.warn('DB config error:', e); }
     
-    // 2. Fallback to localStorage (for development/testing)
+    // 2. Fallback to localStorage
     try {
         const raw = localStorage.getItem('zoomConfig');
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.meetingNumber) {
+                console.log('✅ Using localStorage config');
+                return { ...parsed, sdkKey: '' };
+            }
+        }
     } catch (_) {}
     
-    return {
-        meetingNumber: localStorage.getItem('zoomMeetingId') || localStorage.getItem('adminZoomId') || '',
-        password:      localStorage.getItem('zoomPassword')  || localStorage.getItem('adminZoomPass') || '',
-        sdkKey:        ''
-    };
+    // 3. HARDCODED fallback — ensures seminar always works
+    console.log('⚠️ Using HARDCODED fallback config');
+    return HARDCODED_ZOOM_CONFIG;
 }
 
 // ============================================================
@@ -46,14 +59,29 @@ async function init() {
     console.log('🟢 === room.js init() START ===');
     
     try {
-        // 1. Verify participant session
+        // 1. Verify participant session (OR bypass during live)
         const stored = sessionStorage.getItem('seminarParticipant');
-        if (!stored) {
+        const bypassCode = new URLSearchParams(window.location.search).get('live') === '1';
+        
+        if (!stored && !bypassCode) {
             console.log('❌ No participant session, redirecting...');
             window.location.href = 'index.html';
             return;
         }
-        currentParticipant = JSON.parse(stored);
+        
+        // If bypass mode (direct live entry), create generic participant
+        if (!stored && bypassCode) {
+            currentParticipant = {
+                prenom: 'Participant',
+                nom: 'Live',
+                email: 'live@seminar.rasin',
+                statut_paiement: 'verifie'
+            };
+            sessionStorage.setItem('seminarParticipant', JSON.stringify(currentParticipant));
+            console.log('✅ Live bypass mode - generic participant created');
+        } else {
+            currentParticipant = JSON.parse(stored);
+        }
         console.log('✅ Participant:', currentParticipant.prenom, currentParticipant.nom);
 
         // 2. Admin flag (check via URL param or Supabase admin check)

@@ -397,6 +397,50 @@ body {
     50% { box-shadow: 0 10px 48px rgba(37,99,235,0.8); }
 }
 
+/* ===== LIVE INDICATOR (during seminar) ===== */
+.zoom-live-pulse {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border: 2px solid #fca5a5;
+    animation: liveRedPulse 1.5s infinite;
+    padding: 16px 22px;
+}
+.zoom-live-pulse:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 14px 40px rgba(220,38,38,0.6);
+}
+@keyframes liveRedPulse {
+    0%,100% { box-shadow: 0 10px 32px rgba(220,38,38,0.5); }
+    50% { box-shadow: 0 10px 48px rgba(220,38,38,0.9); }
+}
+.live-indicator {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    animation: liveBlink 1s infinite;
+}
+@keyframes liveBlink {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 /* ===== FORM CARD ===== */
 .form-card {
     width: 100%;
