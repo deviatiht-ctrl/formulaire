@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <div>
+                    <span class="sidebar-title">Rasin Ayiti</span>
+                    <span class="sidebar-subtitle">Administration</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations</span>
+                </a>
+                <a href="seminaires.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Séminaires</span>
+                </a>
+                <a href="etudiants.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Étudiants</span>
+                </a>
+                <a href="galerie.html" class="nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Galerie</span>
+                </a>
+                <a href="parametres.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-home"></i>
+                    <span>Retour site</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Tableau de bord</h1>
+                    <p>Vue d'ensemble de la plateforme</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-primary" onclick="window.location.href='formations.html?action=create'">
+                        <i class="fas fa-plus"></i>
+                        <span>Nouvelle formation</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statFormations">0</span>
+                        <span class="stat-label">Formations</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statSeminaires">0</span>
+                        <span class="stat-label">Séminaires</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statEtudiants">0</span>
+                        <span class="stat-label">Étudiants</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statInscriptions">0</span>
+                        <span class="stat-label">Inscriptions</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Formations récentes</h2>
+                        <a href="formations.html" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body" id="recentFormations">
+                        <p class="no-data">Chargement...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Dernières inscriptions</h2>
+                        <a href="etudiants.html" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body" id="recentInscriptions">
+                        <p class="no-data">Chargement...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Actions rapides</h2>
+                </div>
+                <div class="card-body">
+                    <div class="quick-actions">
+                        <a href="formations.html?action=create" class="quick-action">
+                            <div class="action-icon blue">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <span>Créer une formation</span>
+                        </a>
+                        <a href="seminaires.html?action=create" class="quick-action">
+                            <div class="action-icon green">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <span>Planifier un séminaire</span>
+                        </a>
+                        <a href="galerie.html?action=create" class="quick-action">
+                            <div class="action-icon purple">
+                                <i class="fas fa-upload"></i>
+                            </div>
+                            <span>Ajouter média</span>
+                        </a>
+                        <a href="notifications.html" class="quick-action">
+                            <div class="action-icon orange">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <span>Envoyer notification</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .admin-dashboard {
+            display: flex;
+            min-height: 100vh;
+            background: #f1f5f9;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+        }
+
+        .sidebar-title {
+            display: block;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p {
+            color: #64748b;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-header h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .view-all {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .no-data {
+            color: #94a3b8;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .quick-action:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .action-icon.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .action-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .action-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .action-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .quick-action span {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        // Check admin authentication
+        function checkAdminAuth() {
+            const admin = sessionStorage.getItem('admin');
+            if (!admin) {
+                window.location.href = '../index.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Load stats
+        async function loadStats() {
+            try {
+                // Formations count
+                const { count: formationsCount } = await supabase
+                    .from('formations')
+                    .select('*', { count: 'exact' });
+                
+                // Seminaires count
+                const { count: seminairesCount } = await supabase
+                    .from('seminaires')
+                    .select('*', { count: 'exact' });
+                
+                // Etudiants count
+                const { count: etudiantsCount } = await supabase
+                    .from('etudiants')
+                    .select('*', { count: 'exact' });
+                
+                // Inscriptions count
+                const { count: inscriptionsCount } = await supabase
+                    .from('inscriptions')
+                    .select('*', { count: 'exact' });
+
+                document.getElementById('statFormations').textContent = formationsCount || 0;
+                document.getElementById('statSeminaires').textContent = seminairesCount || 0;
+                document.getElementById('statEtudiants').textContent = etudiantsCount || 0;
+                document.getElementById('statInscriptions').textContent = inscriptionsCount || 0;
+
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        // Load recent formations
+        async function loadRecentFormations() {
+            try {
+                const { data, error } = await supabase
+                    .from('formations')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                const container = document.getElementById('recentFormations');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(f => `
+                        <div class="formation-item" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#f8fafc;border-radius:10px;margin-bottom:0.75rem;">
+                            <div style="width:40px;height:40px;background:${f.couleur || '#2563eb'};border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <h4 style="font-size:0.95rem;font-weight:600;color:#0f172a;margin:0;">${f.titre}</h4>
+                                <p style="font-size:0.8rem;color:#64748b;margin:0;">${f.type_formation || 'En ligne'}</p>
+                            </div>
+                            <span style="font-size:0.8rem;font-weight:600;color:${f.status === 'publie' ? '#10b981' : '#f59e0b'};">${f.status || 'Brouillon'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="no-data">Aucune formation</p>';
+                }
+            } catch (err) {
+                console.error('Error loading formations:', err);
+            }
+        }
+
+        // Load recent inscriptions
+        async function loadRecentInscriptions() {
+            try {
+                const { data, error } = await supabase
+                    .from('inscriptions')
+                    .select('*, etudiants(prenom, nom)')
+                    .order('date_inscription', { ascending: false })
+                    .limit(5);
+
+                const container = document.getElementById('recentInscriptions');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(ins => `
+                        <div class="inscription-item" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#f8fafc;border-radius:10px;margin-bottom:0.75rem;">
+                            <div style="width:40px;height:40px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">
+                                ${(ins.etudiants?.prenom || '?')[0]}${(ins.etudiants?.nom || '?')[0]}
+                            </div>
+                            <div style="flex:1;">
+                                <h4 style="font-size:0.95rem;font-weight:600;color:#0f172a;margin:0;">${ins.etudiants?.prenom} ${ins.etudiants?.nom}</h4>
+                                <p style="font-size:0.8rem;color:#64748b;margin:0;">Inscrit le ${new Date(ins.date_inscription).toLocaleDateString('fr-FR')}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="no-data">Aucune inscription</p>';
+                }
+            } catch (err) {
+                console.error('Error loading inscriptions:', err);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAdminAuth()) {
+                loadStats();
+                loadRecentFormations();
+                loadRecentInscriptions();
+            }
+        });
+    </script>
+</body>
+</html>

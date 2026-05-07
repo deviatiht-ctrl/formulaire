@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les Étudiants - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <div>
+                    <span class="sidebar-title">Rasin Ayiti</span>
+                    <span class="sidebar-subtitle">Administration</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations</span>
+                </a>
+                <a href="seminaires.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Séminaires</span>
+                </a>
+                <a href="etudiants.html" class="nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Étudiants</span>
+                </a>
+                <a href="galerie.html" class="nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Galerie</span>
+                </a>
+                <a href="parametres.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-home"></i>
+                    <span>Retour site</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Étudiants</h1>
+                    <p>Gérez vos étudiants inscrits</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-primary" onclick="exportStudents()">
+                        <i class="fas fa-download"></i>
+                        <span>Exporter</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <input type="text" id="searchInput" placeholder="Rechercher par nom, email..." class="search-input">
+                <select id="villeFilter" class="filter-select">
+                    <option value="">Toutes les villes</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="actif">Actif</option>
+                    <option value="inactif">Inactif</option>
+                </select>
+            </div>
+
+            <!-- Students Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="students-table-container">
+                        <table class="students-table" id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Ville</th>
+                                    <th>Tranche d'âge</th>
+                                    <th>Inscriptions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsList">
+                                <tr><td colspan="7" class="no-data">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div class="modal-overlay hidden" id="studentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Détails de l'étudiant</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="studentDetail">
+                <!-- Student details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .admin-dashboard {
+            display: flex;
+            min-height: 100vh;
+            background: #f1f5f9;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+        }
+
+        .sidebar-title {
+            display: block;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p {
+            color: #64748b;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input,
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .students-table-container {
+            overflow-x: auto;
+        }
+
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .students-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+
+        .students-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .students-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .student-email {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #94a3b8;
+            padding: 3rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .action-btn.view {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #475569;
+            width: 150px;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            color: #0f172a;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        // Load students
+        async function loadStudents() {
+            try {
+                const { data, error } = await supabase
+                    .from('etudiants')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('studentsList');
+                if (data && data.length > 0) {
+                    tbody.innerHTML = data.map(s => `
+                        <tr>
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">${(s.prenom || '?')[0]}${(s.nom || '?')[0]}</div>
+                                    <div>
+                                        <div class="student-name">${s.prenom} ${s.nom}</div>
+                                        <div class="student-email">${s.email}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${s.email}</td>
+                            <td>${s.telephone || '-'}</td>
+                            <td>${s.ville || '-'}</td>
+                            <td>${s.tranche_age || '-'}</td>
+                            <td><button class="action-btn view" onclick="viewInscriptions('${s.id}')"><i class="fas fa-list"></i></button></td>
+                            <td>
+                                <button class="action-btn view" onclick="viewStudent('${s.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn delete" onclick="deleteStudent('${s.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    
+                    // Load villes for filter
+                    loadVilles(data);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="no-data">Aucun étudiant</td></tr>';
+                }
+            } catch (err) {
+                console.error('Error loading students:', err);
+            }
+        }
+
+        // Load villes for filter
+        function loadVilles(students) {
+            const villes = [...new Set(students.map(s => s.ville).filter(Boolean))];
+            const select = document.getElementById('villeFilter');
+            select.innerHTML = '<option value="">Toutes les villes</option>';
+            villes.forEach(v => {
+                select.innerHTML += `<option value="${v}">${v}</option>`;
+            });
+        }
+
+        // View student details
+        async function viewStudent(id) {
+            try {
+                const { data, error } = await supabase.from('etudiants').select('*').eq('id', id).single();
+                if (error) throw error;
+                
+                const modal = document.getElementById('studentModal');
+                const detail = document.getElementById('studentDetail');
+                
+                detail.innerHTML = `
+                    <div class="detail-row">
+                        <div class="detail-label">Nom:</div>
+                        <div class="detail-value">${data.nom}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Prénom:</div>
+                        <div class="detail-value">${data.prenom}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email:</div>
+                        <div class="detail-value">${data.email}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Téléphone:</div>
+                        <div class="detail-value">${data.telephone || '-'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">WhatsApp:</div>
+                        <div class="detail-value">${data.whatsapp || '-'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Tranche d'âge:</div>
+                        <div class="detail-value">${data.tranche_age || '-'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Ville:</div>
+                        <div class="detail-value">${data.ville || '-'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Profession:</div>
+                        <div class="detail-value">${data.profession || '-'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Date inscription:</div>
+                        <div class="detail-value">${data.created_at ? new Date(data.created_at).toLocaleDateString('fr-FR') : '-'}</div>
+                    </div>
+                `;
+                
+                modal.classList.remove('hidden');
+            } catch (err) {
+                console.error('Error loading student:', err);
+            }
+        }
+
+        // View student inscriptions
+        async function viewInscriptions(id) {
+            try {
+                const { data, error } = await supabase
+                    .from('inscriptions')
+                    .select('*, formations(titre), seminaires(titre)')
+                    .eq('etudiant_id', id);
+
+                if (error) throw error;
+
+                const modal = document.getElementById('studentModal');
+                const detail = document.getElementById('studentDetail');
+                
+                if (data && data.length > 0) {
+                    detail.innerHTML = `
+                        <h3 style="margin-bottom:1rem;">Inscriptions (${data.length})</h3>
+                        ${data.map(ins => `
+                            <div style="padding:1rem;background:#f8fafc;border-radius:10px;margin-bottom:0.75rem;">
+                                <strong>${ins.formations?.titre || ins.seminaires?.titre || 'N/A'}</strong>
+                                <div style="font-size:0.875rem;color:#64748b;margin-top:0.25rem;">
+                                    Type: ${ins.formation_id ? 'Formation' : 'Séminaire'} |
+                                    Statut: ${ins.statut_paiement || 'En attente'} |
+                                    Date: ${new Date(ins.date_inscription).toLocaleDateString('fr-FR')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    detail.innerHTML = '<p style="color:#64748b;">Aucune inscription</p>';
+                }
+                
+                modal.classList.remove('hidden');
+            } catch (err) {
+                console.error('Error loading inscriptions:', err);
+            }
+        }
+
+        // Delete student
+        async function deleteStudent(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) return;
+            
+            try {
+                const { error } = await supabase.from('etudiants').delete().eq('id', id);
+                if (error) throw error;
+                
+                loadStudents();
+            } catch (err) {
+                console.error('Error deleting student:', err);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Export students
+        function exportStudents() {
+            alert('Fonctionnalité d\'export à implémenter');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('studentModal').classList.add('hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStudents();
+        });
+    </script>
+</body>
+</html>

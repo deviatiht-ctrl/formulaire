@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les Séminaires - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <div>
+                    <span class="sidebar-title">Rasin Ayiti</span>
+                    <span class="sidebar-subtitle">Administration</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations</span>
+                </a>
+                <a href="seminaires.html" class="nav-item active">
+                    <i class="fas fa-video"></i>
+                    <span>Séminaires</span>
+                </a>
+                <a href="etudiants.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Étudiants</span>
+                </a>
+                <a href="galerie.html" class="nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Galerie</span>
+                </a>
+                <a href="parametres.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-home"></i>
+                    <span>Retour site</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Séminaires</h1>
+                    <p>Gérez vos événements en direct</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-primary" onclick="openModal()">
+                        <i class="fas fa-plus"></i>
+                        <span>Nouveau séminaire</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <input type="text" id="searchInput" placeholder="Rechercher..." class="search-input">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="planifie">Planifié</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="termine">Terminé</option>
+                    <option value="annule">Annulé</option>
+                </select>
+            </div>
+
+            <!-- Seminaires List -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="seminaires-table-container">
+                        <table class="seminaires-table" id="seminairesTable">
+                            <thead>
+                                <tr>
+                                    <th>Séminaire</th>
+                                    <th>Formation</th>
+                                    <th>Date</th>
+                                    <th>Heure</th>
+                                    <th>Prix</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seminairesList">
+                                <tr><td colspan="7" class="no-data">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay hidden" id="seminaireModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nouveau Séminaire</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="seminaireForm" class="modal-body">
+                <input type="hidden" id="seminaireId">
+                
+                <div class="form-group">
+                    <label>Titre *</label>
+                    <input type="text" id="titre" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="description" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Formation associée *</label>
+                    <select id="formation" required>
+                        <option value="">Choisir...</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Heure début *</label>
+                        <input type="time" id="heureDebut" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Heure fin *</label>
+                        <input type="time" id="heureFin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prix (HTG) *</label>
+                        <input type="number" id="prix" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Lien Zoom / Live</label>
+                    <input type="url" id="lienLive" placeholder="https://...">
+                </div>
+
+                <div class="form-group">
+                    <label>Statut</label>
+                    <select id="statut">
+                        <option value="planifie">Planifié</option>
+                        <option value="en_cours">En cours</option>
+                        <option value="termine">Terminé</option>
+                        <option value="annule">Annulé</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .admin-dashboard {
+            display: flex;
+            min-height: 100vh;
+            background: #f1f5f9;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+        }
+
+        .sidebar-title {
+            display: block;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p {
+            color: #64748b;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input,
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .seminaires-table-container {
+            overflow-x: auto;
+        }
+
+        .seminaires-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .seminaires-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+
+        .seminaires-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .seminaires-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #94a3b8;
+            padding: 3rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.planifie { background: #dbeafe; color: #1d4ed8; }
+        .status-badge.en_cours { background: #dcfce7; color: #166534; }
+        .status-badge.termine { background: #f1f5f9; color: #475569; }
+        .status-badge.annule { background: #fee2e2; color: #dc2626; }
+
+        .action-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .action-btn.edit {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        // Load formations
+        async function loadFormations() {
+            try {
+                const { data, error } = await supabase.from('formations').select('*').eq('status', 'publie');
+                if (error) throw error;
+                
+                const select = document.getElementById('formation');
+                select.innerHTML = '<option value="">Choisir...</option>';
+                if (data) {
+                    data.forEach(f => {
+                        select.innerHTML += `<option value="${f.id}">${f.titre}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading formations:', err);
+            }
+        }
+
+        // Load seminaires
+        async function loadSeminaires() {
+            try {
+                const { data, error } = await supabase
+                    .from('seminaires')
+                    .select('*, formations(titre)')
+                    .order('date_seminaire', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('seminairesList');
+                if (data && data.length > 0) {
+                    tbody.innerHTML = data.map(s => `
+                        <tr>
+                            <td>
+                                <div style="font-weight:600;color:#0f172a;">${s.titre}</div>
+                                <div style="font-size:0.85rem;color:#64748b;">${s.description?.substring(0, 50) || ''}...</div>
+                            </td>
+                            <td>${s.formations?.titre || '-'}</td>
+                            <td>${s.date_seminaire ? new Date(s.date_seminaire).toLocaleDateString('fr-FR') : '-'}</td>
+                            <td>${s.heure_debut || '-'} - ${s.heure_fin || '-'}</td>
+                            <td>${s.prix > 0 ? s.prix + ' HTG' : 'Gratuit'}</td>
+                            <td><span class="status-badge ${s.status}">${s.status || 'planifie'}</span></td>
+                            <td>
+                                <button class="action-btn edit" onclick="editSeminaire('${s.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete" onclick="deleteSeminaire('${s.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" class="no-data">Aucun séminaire</td></tr>';
+                }
+            } catch (err) {
+                console.error('Error loading seminaires:', err);
+            }
+        }
+
+        // Modal functions
+        function openModal(id = null) {
+            document.getElementById('seminaireModal').classList.remove('hidden');
+            document.getElementById('modalTitle').textContent = id ? 'Modifier Séminaire' : 'Nouveau Séminaire';
+            loadFormations();
+            
+            if (id) {
+                loadSeminaireData(id);
+            } else {
+                document.getElementById('seminaireForm').reset();
+                document.getElementById('seminaireId').value = '';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('seminaireModal').classList.add('hidden');
+        }
+
+        async function loadSeminaireData(id) {
+            try {
+                const { data, error } = await supabase.from('seminaires').select('*').eq('id', id).single();
+                if (error) throw error;
+                
+                document.getElementById('seminaireId').value = data.id;
+                document.getElementById('titre').value = data.titre;
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('formation').value = data.formation_id || '';
+                document.getElementById('date').value = data.date_seminaire || '';
+                document.getElementById('heureDebut').value = data.heure_debut || '';
+                document.getElementById('heureFin').value = data.heure_fin || '';
+                document.getElementById('prix').value = data.prix || 0;
+                document.getElementById('lienLive').value = data.lien_live || '';
+                document.getElementById('statut').value = data.status || 'planifie';
+            } catch (err) {
+                console.error('Error loading seminaire:', err);
+            }
+        }
+
+        async function editSeminaire(id) {
+            openModal(id);
+        }
+
+        async function deleteSeminaire(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce séminaire ?')) return;
+            
+            try {
+                const { error } = await supabase.from('seminaires').delete().eq('id', id);
+                if (error) throw error;
+                
+                loadSeminaires();
+            } catch (err) {
+                console.error('Error deleting seminaire:', err);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Form submission
+        document.getElementById('seminaireForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('seminaireId').value;
+            const formData = {
+                titre: document.getElementById('titre').value,
+                description: document.getElementById('description').value,
+                formation_id: document.getElementById('formation').value,
+                date_seminaire: document.getElementById('date').value,
+                heure_debut: document.getElementById('heureDebut').value,
+                heure_fin: document.getElementById('heureFin').value,
+                prix: parseInt(document.getElementById('prix').value),
+                lien_live: document.getElementById('lienLive').value,
+                status: document.getElementById('statut').value
+            };
+
+            try {
+                let error;
+                if (id) {
+                    const { error: updateError } = await supabase.from('seminaires').update(formData).eq('id', id);
+                    error = updateError;
+                } else {
+                    const { error: insertError } = await supabase.from('seminaires').insert([formData]);
+                    error = insertError;
+                }
+
+                if (error) throw error;
+
+                closeModal();
+                loadSeminaires();
+            } catch (err) {
+                console.error('Error saving seminaire:', err);
+                alert('Erreur lors de l\'enregistrement');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSeminaires();
+        });
+    </script>
+</body>
+</html>

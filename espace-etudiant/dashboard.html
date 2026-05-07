@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Espace Étudiant | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="student-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <span>Rasin Ayiti</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="mes-formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Mes Formations</span>
+                </a>
+                <a href="mes-seminaires.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Mes Séminaires</span>
+                </a>
+                <a href="certificats.html" class="nav-item">
+                    <i class="fas fa-certificate"></i>
+                    <span>Certificats</span>
+                </a>
+                <a href="profil.html" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    <span>Mon Profil</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Tableau de bord</h1>
+                    <p>Bienvenue, <span id="studentName">...</span></p>
+                </div>
+                <div class="header-right">
+                    <div class="notification-bell">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="user-menu">
+                        <img src="../assets/images/avatar-default.png" alt="Avatar" class="user-avatar">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statFormations">0</span>
+                        <span class="stat-label">Formations</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statSeminaires">0</span>
+                        <span class="stat-label">Séminaires</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statCertificats">0</span>
+                        <span class="stat-label">Certificats</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statHeures">0h</span>
+                        <span class="stat-label">Heures</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Formations en cours</h2>
+                        <a href="mes-formations.html" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body" id="recentFormations">
+                        <p class="no-data">Chargement...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Séminaires à venir</h2>
+                        <a href="mes-seminaires.html" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body" id="upcomingSeminaires">
+                        <p class="no-data">Chargement...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Progression globale</h2>
+                </div>
+                <div class="card-body">
+                    <div class="progress-overview">
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Formations complétées</span>
+                                <span class="progress-percent">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Modules terminés</span>
+                                <span class="progress-percent">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .student-dashboard {
+            display: flex;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+        }
+
+        .sidebar-header span {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #ef4444;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p {
+            color: #64748b;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notification-bell {
+            position: relative;
+            font-size: 1.25rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-header h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .view-all {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .no-data {
+            color: #94a3b8;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .progress-overview {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        let currentEtudiant = null;
+
+        // Check authentication
+        function checkAuth() {
+            const etudiant = sessionStorage.getItem('etudiant');
+            if (!etudiant) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            currentEtudiant = JSON.parse(etudiant);
+            return true;
+        }
+
+        // Load student data
+        async function loadStudentData() {
+            if (!currentEtudiant) return;
+
+            document.getElementById('studentName').textContent = 
+                `${currentEtudiant.prenom} ${currentEtudiant.nom}`;
+
+            // Load stats
+            await loadStats();
+            await loadRecentFormations();
+            await loadUpcomingSeminaires();
+        }
+
+        async function loadStats() {
+            try {
+                // Load formations count
+                const { count: formationsCount } = await supabase
+                    .from('inscriptions')
+                    .select('*', { count: 'exact' })
+                    .eq('etudiant_id', currentEtudiant.id)
+                    .not('formation_id', 'is', null);
+
+                // Load seminaires count
+                const { count: seminairesCount } = await supabase
+                    .from('inscriptions')
+                    .select('*', { count: 'exact' })
+                    .eq('etudiant_id', currentEtudiant.id)
+                    .not('seminaire_id', 'is', null);
+
+                document.getElementById('statFormations').textContent = formationsCount || 0;
+                document.getElementById('statSeminaires').textContent = seminairesCount || 0;
+
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        async function loadRecentFormations() {
+            try {
+                const { data, error } = await supabase
+                    .from('inscriptions')
+                    .select('*, formations(*)')
+                    .eq('etudiant_id', currentEtudiant.id)
+                    .not('formation_id', 'is', null)
+                    .order('date_inscription', { ascending: false })
+                    .limit(3);
+
+                const container = document.getElementById('recentFormations');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(ins => `
+                        <div class="formation-item">
+                            <div class="formation-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="formation-details">
+                                <h4>${ins.formations?.titre || 'Formation'}</h4>
+                                <p>Inscrit le ${new Date(ins.date_inscription).toLocaleDateString('fr-FR')}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="no-data">Aucune formation</p>';
+                }
+            } catch (err) {
+                console.error('Error loading formations:', err);
+            }
+        }
+
+        async function loadUpcomingSeminaires() {
+            try {
+                const { data, error } = await supabase
+                    .from('inscriptions')
+                    .select('*, seminaires(*)')
+                    .eq('etudiant_id', currentEtudiant.id)
+                    .not('seminaire_id', 'is', null)
+                    .order('date_inscription', { ascending: false })
+                    .limit(3);
+
+                const container = document.getElementById('upcomingSeminaires');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(ins => `
+                        <div class="seminaire-item">
+                            <div class="seminaire-icon">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <div class="seminaire-details">
+                                <h4>${ins.seminaires?.titre || 'Séminaire'}</h4>
+                                <p>${ins.seminaires?.date_seminaire ? new Date(ins.seminaires.date_seminaire).toLocaleDateString('fr-FR') : 'Date à venir'}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="no-data">Aucun séminaire</p>';
+                }
+            } catch (err) {
+                console.error('Error loading seminaires:', err);
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('etudiant');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadStudentData();
+            }
+        });
+    </script>
+</body>
+</html>

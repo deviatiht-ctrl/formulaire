@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Espace Étudiant | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="login-logo">
+                <h1>Espace Étudiant</h1>
+                <p>Connectez-vous pour accéder à vos formations</p>
+            </div>
+
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+                    </div>
+                    <span class="error-message" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" name="password" placeholder="••••••" required>
+                    </div>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember">
+                        <span>Se souvenir de moi</span>
+                    </label>
+                    <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">Se connecter</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <div class="btn-loader">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>Vous n'avez pas de compte ?</p>
+                <a href="../index.html">Inscrivez-vous à une formation</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i.input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-wrapper input.error {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            display: block;
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            min-height: 1.25rem;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .checkbox-label input {
+            accent-color: #2563eb;
+        }
+
+        .forgot-password {
+            font-size: 0.9rem;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-loader {
+            display: none;
+        }
+
+        .btn-submit.loading .btn-text {
+            display: none;
+        }
+
+        .btn-submit.loading .btn-loader {
+            display: block;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .login-footer p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 2rem;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        function validateForm() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            let isValid = true;
+
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.input-wrapper input').forEach(el => el.classList.remove('error'));
+
+            if (!email || !email.includes('@')) {
+                document.getElementById('emailError').textContent = 'Email invalide';
+                document.getElementById('email').classList.add('error');
+                isValid = false;
+            }
+
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'Mot de passe requis';
+                document.getElementById('password').classList.add('error');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            if (!validateForm()) return;
+
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                // Check if student exists
+                const { data: etudiant, error } = await supabase
+                    .from('etudiants')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
+
+                if (error || !etudiant) {
+                    document.getElementById('emailError').textContent = 'Aucun compte trouvé avec cet email';
+                    document.getElementById('email').classList.add('error');
+                    return;
+                }
+
+                // Store student info in session
+                sessionStorage.setItem('etudiant', JSON.stringify(etudiant));
+                
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Une erreur est survenue. Veuillez réessayer.');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loginForm').addEventListener('submit', handleSubmit);
+        });
+    </script>
+</body>
+</html>
