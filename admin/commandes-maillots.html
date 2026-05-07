@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commandes Maillots - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        :root { --primary: #2563eb; --bg-main: #f8fafc; --sidebar-bg: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); margin: 0; display: flex; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); min-height: 100vh; color: white; padding: 1.5rem; position: fixed; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 0.5rem; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .main-content { flex: 1; margin-left: 280px; padding: 2.5rem; }
+        .table-card { background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 1rem 1.5rem; background: #f8fafc; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
+        .data-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .badge-en_attente { background: #fef3c7; color: #92400e; }
+        .badge-confirme { background: #dcfce7; color: #166534; }
+        .badge-livre { background: #dbeafe; color: #1e40af; }
+        .proof-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header" style="display:flex; align-items:center; gap:10px; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1);">
+            <img src="../assets/logorasin.PNG" width="40" style="border-radius:8px;">
+            <span style="font-weight:800;">Rasin Ayiti Admin</span>
+        </div>
+        <nav>
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
+            <a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i> <span>Événements</span></a>
+            <a href="commandes-maillots.html" class="nav-item active"><i class="fas fa-shopping-cart"></i> <span>Commandes Maillots</span></a>
+            <a href="inscriptions-evenements.html" class="nav-item"><i class="fas fa-users-viewfinder"></i> <span>Inscriptions Évèn.</span></a>
+            <a href="quiz-manager.html" class="nav-item"><i class="fas fa-question-circle"></i> <span>Gestion Quiz</span></a>
+            <a href="parametres.html" class="nav-item"><i class="fas fa-cog"></i> <span>Paramètres</span></a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+            <h1>Commandes de Maillots</h1>
+            <p style="color:#64748b;">Gérez les ventes et vérifiez les paiements</p>
+        </div>
+
+        <div class="table-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Maillot / Taille</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                        <th>Preuve</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody">
+                    <tr><td colspan="7" style="text-align:center; padding:3rem;">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script>
+        async function loadOrders() {
+            const { data, error } = await window.supabaseClient
+                .from('maillot_orders')
+                .select('*, maillots(nom)')
+                .order('created_at', { ascending: false });
+
+            if (error) return;
+            const tbody = document.getElementById('ordersBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3rem;">Aucune commande pour le moment.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(o => `
+                <tr>
+                    <td>
+                        <div style="font-weight:700;">${o.prenom} ${o.nom}</div>
+                        <div style="font-size:0.8rem; color:#64748b;">${o.email}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">${o.maillots?.nom || 'Pwodwi efase'}</div>
+                        <div style="color:var(--primary); font-weight:800;">Taille: ${o.taille}</div>
+                    </td>
+                    <td>${o.quantite}</td>
+                    <td style="font-weight:800;">${o.montant_total} HTG</td>
+                    <td>
+                        ${o.preuve_paiement_url ? `<img src="${o.preuve_paiement_url}" class="proof-img" onclick="window.open('${o.preuve_paiement_url}', '_blank')">` : 'Pas de preuve'}
+                    </td>
+                    <td><span class="badge badge-${o.statut}">${o.statut.replace('_', ' ')}</span></td>
+                    <td>
+                        <select onchange="updateStatus('${o.id}', this.value)" style="padding:0.4rem; border-radius:6px; border:1px solid #e2e8f0;">
+                            <option value="en_attente" ${o.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
+                            <option value="confirme" ${o.statut === 'confirme' ? 'selected' : ''}>Confirmé</option>
+                            <option value="livre" ${o.statut === 'livre' ? 'selected' : ''}>Livré</option>
+                            <option value="annule" ${o.statut === 'annule' ? 'selected' : ''}>Annulé</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateStatus(id, status) {
+            const { error } = await window.supabaseClient.from('maillot_orders').update({ statut: status }).eq('id', id);
+            if (!error) loadOrders();
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>

@@ -15,8 +15,8 @@
         <div class="login-card">
             <div class="login-header">
                 <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="login-logo">
-                <h1>Espace Étudiant</h1>
-                <p>Connectez-vous pour accéder à vos formations</p>
+                <h1>Connexion</h1>
+                <p>Accédez à votre espace (Étudiant ou Admin)</p>
             </div>
 
             <form id="loginForm" novalidate>
@@ -309,14 +309,42 @@
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
 
+                // Use Supabase Auth for login
+                const { data: authData, error: authError } = await window.supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) {
+                    document.getElementById('emailError').textContent = 'Email ou mot de passe incorrect';
+                    document.getElementById('email').classList.add('error');
+                    return;
+                }
+
+                // Check if admin
+                const { data: admin, error: adminError } = await window.supabaseClient
+                    .from('administrateurs')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('actif', true)
+                    .single();
+
+                if (admin && !adminError) {
+                    // Admin found
+                    sessionStorage.setItem('admin', JSON.stringify(admin));
+                    sessionStorage.removeItem('etudiant');
+                    window.location.href = '../admin/dashboard.html';
+                    return;
+                }
+
                 // Check if student exists
-                const { data: etudiant, error } = await supabase
+                const { data: etudiant, error: studentError } = await window.supabaseClient
                     .from('etudiants')
                     .select('*')
                     .eq('email', email)
                     .single();
 
-                if (error || !etudiant) {
+                if (studentError || !etudiant) {
                     document.getElementById('emailError').textContent = 'Aucun compte trouvé avec cet email';
                     document.getElementById('email').classList.add('error');
                     return;
@@ -324,8 +352,9 @@
 
                 // Store student info in session
                 sessionStorage.setItem('etudiant', JSON.stringify(etudiant));
+                sessionStorage.removeItem('admin');
                 
-                // Redirect to dashboard
+                // Redirect to student dashboard
                 window.location.href = 'dashboard.html';
 
             } catch (error) {

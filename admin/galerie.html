@@ -523,7 +523,7 @@
         // Load gallery
         async function loadGallery() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('galerie')
                     .select('*')
                     .order('created_at', { ascending: false });
@@ -583,7 +583,7 @@
 
         async function loadMediaData(id) {
             try {
-                const { data, error } = await supabase.from('galerie').select('*').eq('id', id).single();
+                const { data, error } = await window.supabaseClient.from('galerie').select('*').eq('id', id).single();
                 if (error) throw error;
                 
                 document.getElementById('mediaId').value = data.id;
@@ -605,7 +605,7 @@
             if (!confirm('Êtes-vous sûr de vouloir supprimer ce média ?')) return;
             
             try {
-                const { error } = await supabase.from('galerie').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('galerie').delete().eq('id', id);
                 if (error) throw error;
                 
                 loadGallery();
@@ -631,10 +631,10 @@
             try {
                 let error;
                 if (id) {
-                    const { error: updateError } = await supabase.from('galerie').update(formData).eq('id', id);
+                    const { error: updateError } = await window.supabaseClient.from('galerie').update(formData).eq('id', id);
                     error = updateError;
                 } else {
-                    const { error: insertError } = await supabase.from('galerie').insert([formData]);
+                    const { error: insertError } = await window.supabaseClient.from('galerie').insert([formData]);
                     error = insertError;
                 }
 

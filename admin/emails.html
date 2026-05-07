@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emails - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <div>
+                    <span class="sidebar-title">Rasin Ayiti</span>
+                    <span class="sidebar-subtitle">Administration</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations</span>
+                </a>
+                <a href="seminaires.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Séminaires</span>
+                </a>
+                <a href="etudiants.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Étudiants</span>
+                </a>
+                <a href="inscriptions.html" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Inscriptions</span>
+                </a>
+                <a href="emails.html" class="nav-item active">
+                    <i class="fas fa-envelope"></i>
+                    <span>Emails</span>
+                </a>
+                <a href="galerie.html" class="nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Galerie</span>
+                </a>
+                <a href="parametres.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-home"></i>
+                    <span>Retour site</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Envoyer Emails</h1>
+                    <p>Campagnes d'emails bulk et notifications</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-primary" onclick="selectEmailType('custom')">
+                        <i class="fas fa-plus"></i>
+                        <span>Nouvel Email</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Email Type Selection -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="email-types-grid">
+                            <div class="email-type-card" data-type="inscription" onclick="selectEmailType('inscription')">
+                                <div class="email-type-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <h3>Inscription</h3>
+                                <p>Email de confirmation d'inscription</p>
+                            </div>
+                            <div class="email-type-card" data-type="whatsapp" onclick="selectEmailType('whatsapp')">
+                                <div class="email-type-icon">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <h3>Groupe WhatsApp</h3>
+                                <p>Invitation à rejoindre le groupe</p>
+                            </div>
+                            <div class="email-type-card" data-type="evenement" onclick="selectEmailType('evenement')">
+                                <div class="email-type-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <h3>Annonce Événement</h3>
+                                <p>Nouvelle formation ou séminaire</p>
+                            </div>
+                            <div class="email-type-card" data-type="rappel" onclick="selectEmailType('rappel')">
+                                <div class="email-type-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h3>Rappel Paiement</h3>
+                                <p>Rappel pour paiement en attente</p>
+                            </div>
+                            <div class="email-type-card" data-type="certificat" onclick="selectEmailType('certificat')">
+                                <div class="email-type-icon">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <h3>Certificat</h3>
+                                <p>Notification certificat disponible</p>
+                            </div>
+                            <div class="email-type-card" data-type="custom" onclick="selectEmailType('custom')">
+                                <div class="email-type-icon">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <h3>Email Personnalisé</h3>
+                                <p>Créer votre propre email</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Composer -->
+                <div class="card" id="emailComposer" style="display: none;">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Cible:</label>
+                            <select id="targetSelect" class="filter-select">
+                                <option value="all">Tous les étudiants</option>
+                                <option value="inscrits">Étudiants inscrits</option>
+                                <option value="pending">Paiement en attente</option>
+                                <option value="confirmed">Paiement confirmé</option>
+                                <option value="specific">Événement spécifique</option>
+                                <option value="custom">Sélection manuelle</option>
+                            </select>
+                            <select id="eventSelect" class="filter-select" style="display: none;">
+                                <option value="">Sélectionner un événement</option>
+                            </select>
+                            <textarea id="customEmails" class="search-input" placeholder="Entrez les emails (un par ligne)" style="display: none;"></textarea>
+                            <div class="target-count">
+                                <span id="targetCount">0</span> destinataires
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sujet:</label>
+                            <input type="text" id="emailSubject" class="search-input" placeholder="Sujet de l'email">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Contenu:</label>
+                            <textarea id="emailContent" class="search-input" rows="10" placeholder="Contenu de l'email..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Aperçu:</label>
+                            <div class="email-preview" id="emailPreview">
+                                <div class="preview-header">
+                                    <strong>Sujet:</strong> <span id="previewSubject">-</span>
+                                </div>
+                                <div class="preview-body" id="previewBody">
+                                    L'aperçu apparaîtra ici...
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn-secondary" onclick="previewEmail()">
+                                <i class="fas fa-eye"></i>
+                                Aperçu
+                            </button>
+                            <button class="btn-secondary" onclick="saveTemplate()">
+                                <i class="fas fa-save"></i>
+                                Sauvegarder Template
+                            </button>
+                            <button class="btn-primary" onclick="sendEmail()">
+                                <i class="fas fa-paper-plane"></i>
+                                Envoyer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email History -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Historique des Emails</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Sujet</th>
+                                        <th>Destinataires</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="emailHistoryList">
+                                    <tr>
+                                        <td colspan="6" class="no-data">Aucun email envoyé</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        /* ===== ADMIN LAYOUT ===== */
+        body {
+            overflow: hidden;
+            display: flex;
+        }
+
+        .admin-dashboard {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            background: #f1f5f9;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .sidebar-title {
+            display: block;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p {
+            color: #64748b;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input,
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: white;
+        }
+
+        .search-input { flex: 1; max-width: 300px; }
+        .filter-select { min-width: 150px; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Email Types Grid */
+        .email-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .email-type-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .email-type-card:hover {
+            transform: translateY(-2px);
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.15);
+        }
+
+        .email-type-card.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .email-type-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .email-type-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0 0 0.4rem;
+        }
+
+        .email-type-card p {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .target-count {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        /* Email Preview */
+        .email-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .preview-header {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .preview-body {
+            font-size: 0.95rem;
+            color: #0f172a;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            border-color: #2563eb;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: #f8fafc;
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-sent { background: #dcfce7; color: #166534; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-failed { background: #fee2e2; color: #991b1b; }
+
+        .btn-action {
+            padding: 0.35rem 0.6rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.25rem;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover { opacity: 0.85; }
+        .btn-view { background: #2563eb; }
+        .btn-cancel { background: #ef4444; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 100; }
+            .main-content { margin-left: 0; }
+            .email-types-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        let currentAdmin = null;
+        let selectedEmailType = null;
+        let allEvents = [];
+
+        // Email templates
+        const emailTemplates = {
+            inscription: {
+                subject: '✅ Inscription confirmée - Rasin Ayiti',
+                content: `Bonjour {prenom} {nom},
+
+Votre inscription a été confirmée avec succès !
+
+Détails de votre inscription:
+- Événement: {evenement}
+- Date: {date}
+- Statut: {statut}
+
+Pour toute question, n'hésitez pas à nous contacter.
+
+Cordialement,
+L'équipe Rasin Ayiti`
+            },
+            whatsapp: {
+                subject: '📱 Rejoignez notre Groupe WhatsApp',
+                content: `Bonjour {prenom} {nom},
+
+Nous vous invitons à rejoindre notre groupe WhatsApp officiel pour rester informé(e) de toutes les actualités.
+
+🔗 Lien: {whatsapp_link}
+
+Important: Utilisez le numéro WhatsApp que vous avez enregistré lors de votre inscription.
+
+Cordialement,
+L'équipe Rasin Ayiti`
+            },
+            evenement: {
+                subject: '🎉 Nouvel Événement - {titre}',
+                content: `Bonjour {prenom} {nom},
+
+Nous sommes ravis de vous annoncer un nouvel événement:
+
+📚 {titre}
+📅 {date}
+🕐 {heure}
+💻 {type}
+
+Inscrivez-vous maintenant pour réserver votre place !
+
+Cordialement,
+L'équipe Rasin Ayiti`
+            },
+            rappel: {
+                subject: '⏰ Rappel - Paiement en attente',
+                content: `Bonjour {prenom} {nom},
+
+Nous n'avons pas encore reçu votre paiement de {montant} HTG.
+
+Pour confirmer votre inscription, veuillez effectuer le paiement:
+- Moncash: +509 46807922
+- Natcash: +509 46807922
+
+Envoyez la capture d'écran à notre WhatsApp.
+
+Cordialement,
+L'équipe Rasin Ayiti`
+            },
+            certificat: {
+                subject: '🏆 Votre Certificat est disponible',
+                content: `Félicitations {prenom} {nom} !
+
+Votre certificat est maintenant disponible pour téléchargement.
+
+📄 Certificat: {certificat}
+📅 Date: {date}
+
+Téléchargez-le depuis votre espace étudiant.
+
+Cordialement,
+L'équipe Rasin Ayiti`
+            },
+            custom: {
+                subject: '',
+                content: ''
+            }
+        };
+
+        // Check admin authentication
+        function checkAuth() {
+            const adminData = sessionStorage.getItem('admin');
+            if (!adminData) {
+                window.location.href = '../espace-etudiant/login.html';
+                return false;
+            }
+            currentAdmin = JSON.parse(adminData);
+            return true;
+        }
+
+        // Load events
+        async function loadEvents() {
+            try {
+                const { data: formations } = await window.supabaseClient
+                    .from('formations')
+                    .select('id, titre, date_debut')
+                    .eq('status', 'publie');
+                
+                const { data: seminaires } = await window.supabaseClient
+                    .from('seminaires')
+                    .select('id, titre, date_seminaire')
+                    .eq('status', 'planifie');
+                
+                allEvents = [...(formations || []), ...(seminaires || [])];
+                
+                const eventSelect = document.getElementById('eventSelect');
+                eventSelect.innerHTML = '<option value="">Sélectionner un événement</option>';
+                allEvents.forEach(e => {
+                    eventSelect.innerHTML += `<option value="${e.id}">${e.titre}</option>`;
+                });
+            } catch (err) {
+                console.error('Error loading events:', err);
+            }
+        }
+
+        // Select email type
+        function selectEmailType(type) {
+            selectedEmailType = type;
+            
+            // Update card selection
+            document.querySelectorAll('.email-type-card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.dataset.type === type) {
+                    card.classList.add('selected');
+                }
+            });
+            
+            // Show composer
+            document.getElementById('emailComposer').style.display = 'block';
+            document.getElementById('composerTitle').textContent = getEmailTypeTitle(type);
+            
+            // Load template
+            const template = emailTemplates[type];
+            document.getElementById('emailSubject').value = template.subject || '';
+            document.getElementById('emailContent').value = template.content || '';
+            
+            // Update preview
+            updatePreview();
+            
+            // Update target options based on type
+            updateTargetOptions(type);
+        }
+
+        function getEmailTypeTitle(type) {
+            const titles = {
+                inscription: 'Email d\'Inscription',
+                whatsapp: 'Invitation WhatsApp',
+                evenement: 'Annonce Événement',
+                rappel: 'Rappel Paiement',
+                certificat: 'Notification Certificat',
+                custom: 'Email Personnalisé'
+            };
+            return titles[type] || 'Composer Email';
+        }
+
+        function updateTargetOptions(type) {
+            const targetSelect = document.getElementById('targetSelect');
+            const eventSelect = document.getElementById('eventSelect');
+            const customEmails = document.getElementById('customEmails');
+            
+            // Reset
+            eventSelect.style.display = 'none';
+            customEmails.style.display = 'none';
+            
+            if (type === 'evenement' || type === 'inscription') {
+                eventSelect.style.display = 'block';
+            }
+            
+            if (type === 'custom') {
+                targetSelect.value = 'custom';
+                customEmails.style.display = 'block';
+            }
+            
+            updateTargetCount();
+        }
+
+        function updateTargetCount() {
+            const targetSelect = document.getElementById('targetSelect').value;
+            // In a real implementation, this would query the database
+            document.getElementById('targetCount').textContent = targetSelect === 'custom' ? '0' : '---';
+        }
+
+        function closeComposer() {
+            document.getElementById('emailComposer').style.display = 'none';
+            document.querySelectorAll('.email-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            selectedEmailType = null;
+        }
+
+        function updatePreview() {
+            const subject = document.getElementById('emailSubject').value;
+            const content = document.getElementById('emailContent').value;
+            
+            document.getElementById('previewSubject').textContent = subject || '-';
+            document.getElementById('previewBody').textContent = content || 'L\'aperçu apparaîtra ici...';
+        }
+
+        function previewEmail() {
+            alert('Fonctionnalité d\'aperçu complet à implémenter');
+        }
+
+        function saveTemplate() {
+            alert('Template sauvegardé !');
+        }
+
+        async function sendEmail() {
+            const subject = document.getElementById('emailSubject').value;
+            const content = document.getElementById('emailContent').value;
+            const target = document.getElementById('targetSelect').value;
+            
+            if (!subject || !content) {
+                alert('Veuillez remplir le sujet et le contenu');
+                return;
+            }
+            
+            if (!confirm(`Envoyer cet email à ${target} destinataires ?`)) {
+                return;
+            }
+            
+            // In a real implementation, this would call the email API
+            alert('Email envoyé avec succès ! (Simulation)');
+            
+            // Add to history
+            addToHistory(selectedEmailType, subject, target);
+            closeComposer();
+        }
+
+        function addToHistory(type, subject, target) {
+            const tbody = document.getElementById('emailHistoryList');
+            const now = new Date().toLocaleDateString('fr-FR');
+            
+            // Remove "no data" row if exists
+            if (tbody.querySelector('.no-data')) {
+                tbody.innerHTML = '';
+            }
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${now}</td>
+                <td>${type}</td>
+                <td>${subject}</td>
+                <td>${target}</td>
+                <td><span class="status-badge status-sent">Envoyé</span></td>
+                <td>
+                    <button class="btn-action btn-view"><i class="fas fa-eye"></i></button>
+                    <button class="btn-action btn-cancel"><i class="fas fa-redo"></i></button>
+                </td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+
+        // Event listeners
+        document.getElementById('targetSelect').addEventListener('change', updateTargetCount);
+        document.getElementById('emailSubject').addEventListener('input', updatePreview);
+        document.getElementById('emailContent').addEventListener('input', updatePreview);
+
+        // Logout
+        document.querySelector('.logout-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.clear();
+            window.location.href = '../espace-etudiant/login.html';
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadEvents();
+            }
+        });
+    </script>
+</body>
+</html>

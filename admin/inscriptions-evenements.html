@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscriptions Événements - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Modern Admin Styles */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar - Same as other admin pages */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            min-height: 100vh;
+            color: white;
+            padding: 1.5rem;
+            position: fixed;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo { width: 45px; border-radius: 8px; }
+        .sidebar-title { font-weight: 800; font-size: 1.2rem; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.3s;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 { font-size: 1.8rem; font-weight: 800; margin: 0; color: #0f172a; }
+        .page-title p { color: var(--secondary); margin: 0.25rem 0 0; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 { margin: 0; font-size: 1.5rem; font-weight: 800; }
+        .stat-info p { margin: 0; font-size: 0.85rem; color: var(--secondary); }
+
+        /* Table Section */
+        .table-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table-filters {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: #f8fafc;
+        }
+
+        .filter-select, .search-input {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .filter-select:focus, .search-input:focus { border-color: var(--primary); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            color: var(--secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .data-table td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 700; color: #0f172a; }
+        .user-email { font-size: 0.8rem; color: var(--secondary); }
+
+        .badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .badge-en_attente { background: #fef3c7; color: #92400e; }
+        .badge-confirme { background: #dcfce7; color: #166534; }
+        .badge-annule { background: #fee2e2; color: #991b1b; }
+
+        .actions { display: flex; gap: 0.5rem; }
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+        }
+        .btn-check { background: var(--success); }
+        .btn-delete { background: var(--danger); }
+        .btn-action:hover { transform: scale(1.1); opacity: 0.9; }
+
+        .loading-state { text-align: center; padding: 4rem; color: var(--secondary); }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; padding: 1rem; }
+            .sidebar-title, .nav-item span { display: none; }
+            .main-content { margin-left: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/logorasin.PNG" alt="Logo" class="sidebar-logo">
+            <span class="sidebar-title">Rasin Ayiti</span>
+        </div>
+        <nav>
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+            </a>
+            <a href="events.html" class="nav-item">
+                <i class="fas fa-calendar-alt"></i> <span>Événements</span>
+            </a>
+            <a href="inscriptions-evenements.html" class="nav-item active">
+                <i class="fas fa-users"></i> <span>Inscriptions Évèn.</span>
+            </a>
+            <a href="etudiants.html" class="nav-item">
+                <i class="fas fa-user-graduate"></i> <span>Étudiants</span>
+            </a>
+            <a href="inscriptions.html" class="nav-item">
+                <i class="fas fa-clipboard-list"></i> <span>Inscriptions Form.</span>
+            </a>
+            <a href="parametres.html" class="nav-item">
+                <i class="fas fa-cog"></i> <span>Paramètres</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>Inscriptions aux Événements</h1>
+                <p>Gérez les participants et confirmez leurs présences</p>
+            </div>
+            <button onclick="exportToExcel()" class="nav-item active" style="border:none; cursor:pointer;">
+                <i class="fas fa-file-export"></i> Exporter
+            </button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#e0f2fe; color:#0369a1;"><i class="fas fa-user-plus"></i></div>
+                <div class="stat-info">
+                    <h3 id="statTotal">0</h3>
+                    <p>Total inscrits</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#dcfce7; color:#15803d;"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3 id="statConfirme">0</h3>
+                    <p>Confirmés</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fef3c7; color:#a16207;"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3 id="statAttente">0</h3>
+                    <p>En attente</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div class="table-card" style="margin-bottom: 2rem;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-trophy" style="color: var(--warning); font-size: 1.25rem;"></i>
+                <h2 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Classement par Ville (Commune)</h2>
+            </div>
+            <div id="leaderboardList" style="padding: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <p style="color: var(--secondary); font-size: 0.9rem;">Chargement du classement...</p>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-filters">
+                <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un nom ou email..." style="width: 300px;">
+                <select id="eventFilter" class="filter-select">
+                    <option value="">Tous les événements</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="en_attente">En attente</option>
+                    <option value="confirme">Confirmé</option>
+                    <option value="annule">Annulé</option>
+                </select>
+            </div>
+
+            <div id="tableContainer">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Événement</th>
+                            <th>Contact</th>
+                            <th>Ville</th>
+                            <th>Quiz Score</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inscriptionsBody">
+                        <tr>
+                            <td colspan="7" class="loading-state">Chargement des données...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script>
+        let allInscriptions = [];
+        let allEvents = [];
+
+        async function init() {
+            if (!sessionStorage.getItem('admin')) {
+                window.location.href = '../espace-etudiant/login.html';
+                return;
+            }
+            await loadEvents();
+            await loadInscriptions();
+        }
+
+        async function loadEvents() {
+            const { data } = await window.supabaseClient.from('events').select('id, titre');
+            allEvents = data || [];
+            const select = document.getElementById('eventFilter');
+            allEvents.forEach(ev => {
+                const opt = document.createElement('option');
+                opt.value = ev.id;
+                opt.textContent = ev.titre;
+                select.appendChild(opt);
+            });
+        }
+
+        async function loadInscriptions() {
+            const { data, error } = await window.supabaseClient
+                .from('inscriptions_evenements')
+                .select('*, events(titre)')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            allInscriptions = data || [];
+            
+            // Check for event ID in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('event');
+            if (eventId) {
+                document.getElementById('eventFilter').value = eventId;
+            }
+
+            renderTable();
+            updateStats();
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const leaderboard = {};
+            allInscriptions.forEach(ins => {
+                const ville = (ins.ville || 'Inconnue').trim();
+                if (!leaderboard[ville]) leaderboard[ville] = 0;
+                leaderboard[ville] += (ins.quiz_score || 0);
+            });
+
+            // Sort by score
+            const sorted = Object.entries(leaderboard)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5); // Top 5
+
+            const container = document.getElementById('leaderboardList');
+            if (sorted.length === 0) {
+                container.innerHTML = '<p style="color: var(--secondary); font-size: 0.9rem;">Aucun point enregistré</p>';
+                return;
+            }
+
+            container.innerHTML = sorted.map(([ville, score], idx) => `
+                <div style="background: #f8fafc; padding: 0.75rem 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-weight: 800; color: ${idx === 0 ? 'var(--warning)' : 'var(--secondary)'}; font-size: 1.1rem;">#${idx + 1}</span>
+                    <div>
+                        <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">${ville}</div>
+                        <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">${score} points</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('inscriptionsBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const eventId = document.getElementById('eventFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            const filtered = allInscriptions.filter(ins => {
+                const matchesSearch = (ins.nom + ins.prenom + ins.email).toLowerCase().includes(search);
+                const matchesEvent = !eventId || ins.event_id === eventId;
+                const matchesStatus = !status || ins.statut === status;
+                return matchesSearch && matchesEvent && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading-state">Aucun inscrit trouvé</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(ins => `
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <span class="user-name">${ins.prenom} ${ins.nom}</span>
+                            <span class="user-email">${ins.email}</span>
+                        </div>
+                    </td>
+                    <td><span style="font-weight:600; color:var(--primary);">${ins.events?.titre || 'Événement supprimé'}</span></td>
+                    <td>
+                        <div style="font-size:0.85rem;">
+                            <i class="fab fa-whatsapp" style="color:#25D366;"></i> ${ins.telephone || '-'}
+                        </div>
+                    </td>
+                    <td>${ins.ville || '-'}</td>
+                    <td>
+                        <div style="font-weight: 800; color: var(--primary); font-size: 1rem; text-align: center;">
+                            ${ins.quiz_score || 0} <small style="font-size: 0.65rem; font-weight: 500;">pts</small>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-${ins.statut}">${ins.statut.replace('_', ' ')}</span></td>
+                    <td>
+                        <div class="actions">
+                            ${ins.statut !== 'confirme' ? `
+                                <button class="btn-action btn-check" title="Confirmer" onclick="updateStatus('${ins.id}', 'confirme')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : ''}
+                            <button class="btn-action btn-delete" title="Supprimer" onclick="deleteInscription('${ins.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateStatus(id, newStatus) {
+            const { error } = await window.supabaseClient
+                .from('inscriptions_evenements')
+                .update({ statut: newStatus })
+                .eq('id', id);
+            
+            if (!error) loadInscriptions();
+        }
+
+        async function deleteInscription(id) {
+            if (!confirm('Voulez-vous vraiment supprimer cet inscrit ?')) return;
+            const { error } = await window.supabaseClient
+                .from('inscriptions_evenements')
+                .delete()
+                .eq('id', id);
+            
+            if (!error) loadInscriptions();
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = allInscriptions.length;
+            document.getElementById('statConfirme').textContent = allInscriptions.filter(i => i.statut === 'confirme').length;
+            document.getElementById('statAttente').textContent = allInscriptions.filter(i => i.statut === 'en_attente').length;
+        }
+
+        function exportToExcel() {
+            // Simple CSV export
+            const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Ville', 'Événement', 'Statut', 'Date'];
+            const rows = allInscriptions.map(i => [
+                i.nom, i.prenom, i.email, i.telephone, i.ville, i.events?.titre, i.statut, i.created_at
+            ]);
+            
+            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "inscriptions_evenements.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', renderTable);
+        document.getElementById('eventFilter').addEventListener('change', renderTable);
+        document.getElementById('statusFilter').addEventListener('change', renderTable);
+
+        init();
+    </script>
+</body>
+</html>

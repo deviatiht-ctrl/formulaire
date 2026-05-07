@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscriptions - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <div>
+                    <span class="sidebar-title">Rasin Ayiti</span>
+                    <span class="sidebar-subtitle">Administration</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations</span>
+                </a>
+                <a href="seminaires.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Séminaires</span>
+                </a>
+                <a href="etudiants.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Étudiants</span>
+                </a>
+                <a href="inscriptions.html" class="nav-item active">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Inscriptions</span>
+                </a>
+                <a href="emails.html" class="nav-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Emails</span>
+                </a>
+                <a href="galerie.html" class="nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Galerie</span>
+                </a>
+                <a href="parametres.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-home"></i>
+                    <span>Retour site</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Inscriptions</h1>
+                    <p>Gérer les inscriptions aux formations et séminaires</p>
+                </div>
+                <div class="header-right">
+                    <button id="exportBtn" class="btn-primary">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Exporter Excel</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <select id="eventTypeFilter" class="filter-select">
+                    <option value="all">Tous les types</option>
+                    <option value="formation">Formations</option>
+                    <option value="seminaire">Séminaires</option>
+                </select>
+                <select id="eventFilter" class="filter-select">
+                    <option value="">Tous les événements</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">Tous les statuts</option>
+                    <option value="en_attente">En attente</option>
+                    <option value="confirme">Confirmé</option>
+                    <option value="annule">Annulé</option>
+                    <option value="termine">Terminé</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Rechercher..." class="search-input">
+            </div>
+
+            <!-- Stats -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Total Inscriptions</span>
+                                <span class="stat-value" id="statTotal">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Confirmées</span>
+                                <span class="stat-value" id="statConfirme">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">En attente</span>
+                                <span class="stat-value" id="statEnAttente">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Revenus (HTG)</span>
+                                <span class="stat-value" id="statRevenus">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inscriptions Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Événement</th>
+                                    <th>Type</th>
+                                    <th>Date inscription</th>
+                                    <th>Statut</th>
+                                    <th>Paiement</th>
+                                    <th>Montant</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inscriptionsList">
+                                <tr>
+                                    <td colspan="8" class="no-data">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        /* ===== ADMIN LAYOUT ===== */
+        body {
+            overflow: hidden;
+            display: flex;
+        }
+
+        .admin-dashboard {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            background: #f1f5f9;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .sidebar-title {
+            display: block;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p { color: #64748b; }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input, .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: white;
+        }
+
+        .search-input { flex: 1; max-width: 280px; }
+        .filter-select { min-width: 160px; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-body { padding: 1.5rem; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            flex-shrink: 0;
+        }
+
+        .stat-content { flex: 1; }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: #64748b;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Table */
+        .table-container { overflow-x: auto; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead { background: #f8fafc; }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f8fafc; }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-confirme { background: #dcfce7; color: #166534; }
+        .status-en_attente { background: #fef3c7; color: #92400e; }
+        .status-annule { background: #fee2e2; color: #991b1b; }
+        .status-termine { background: #dbeafe; color: #1e40af; }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 0.35rem 0.6rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.25rem;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover { opacity: 0.85; }
+        .btn-view { background: #2563eb; }
+        .btn-confirm { background: #10b981; }
+        .btn-cancel { background: #ef4444; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 100; }
+            .main-content { margin-left: 0; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        let currentAdmin = null;
+        let allInscriptions = [];
+        let allFormations = [];
+        let allSeminaires = [];
+
+        // Check admin authentication
+        function checkAuth() {
+            const adminData = sessionStorage.getItem('admin');
+            if (!adminData) {
+                window.location.href = '../espace-etudiant/login.html';
+                return false;
+            }
+            currentAdmin = JSON.parse(adminData);
+            return true;
+        }
+
+        // Load events (formations and seminaires)
+        async function loadEvents() {
+            try {
+                const { data: formations } = await window.supabaseClient
+                    .from('formations')
+                    .select('id, titre')
+                    .eq('status', 'publie');
+                
+                const { data: seminaires } = await window.supabaseClient
+                    .from('seminaires')
+                    .select('id, titre, formation_id')
+                    .eq('status', 'planifie');
+                
+                allFormations = formations || [];
+                allSeminaires = seminaires || [];
+                
+                // Populate event filter
+                const eventFilter = document.getElementById('eventFilter');
+                eventFilter.innerHTML = '<option value="">Tous les événements</option>';
+                
+                allFormations.forEach(f => {
+                    eventFilter.innerHTML += `<option value="formation:${f.id}">${f.titre}</option>`;
+                });
+                
+                allSeminaires.forEach(s => {
+                    eventFilter.innerHTML += `<option value="seminaire:${s.id}">${s.titre}</option>`;
+                });
+            } catch (err) {
+                console.error('Error loading events:', err);
+            }
+        }
+
+        // Load inscriptions
+        async function loadInscriptions() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('inscriptions')
+                    .select('*, etudiants(prenom, nom, email), formations(titre), seminaires(titre)')
+                    .order('date_inscription', { ascending: false });
+
+                if (error) throw error;
+                
+                allInscriptions = data || [];
+                filterAndDisplayInscriptions();
+                updateStats();
+            } catch (err) {
+                console.error('Error loading inscriptions:', err);
+                document.getElementById('inscriptionsList').innerHTML = '<tr><td colspan="8" class="no-data">Erreur de chargement</td></tr>';
+            }
+        }
+
+        // Filter and display
+        function filterAndDisplayInscriptions() {
+            const eventType = document.getElementById('eventTypeFilter').value;
+            const eventFilter = document.getElementById('eventFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allInscriptions.filter(ins => {
+                // Event type filter
+                if (eventType === 'formation' && !ins.formation_id) return false;
+                if (eventType === 'seminaire' && !ins.seminaire_id) return false;
+                
+                // Event filter
+                if (eventFilter) {
+                    const [type, id] = eventFilter.split(':');
+                    if (type === 'formation' && ins.formation_id !== id) return false;
+                    if (type === 'seminaire' && ins.seminaire_id !== id) return false;
+                }
+                
+                // Status filter
+                if (statusFilter !== 'all' && ins.status_inscription !== statusFilter) return false;
+                
+                // Search
+                if (searchInput) {
+                    const student = ins.etudiants || {};
+                    const event = ins.formations || ins.seminaires || {};
+                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre}`.toLowerCase();
+                    if (!searchStr.includes(searchInput)) return false;
+                }
+                
+                return true;
+            });
+
+            displayInscriptions(filtered);
+        }
+
+        // Display inscriptions
+        function displayInscriptions(inscriptions) {
+            const tbody = document.getElementById('inscriptionsList');
+            
+            if (!inscriptions || inscriptions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="no-data">Aucune inscription trouvée</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = inscriptions.map(ins => {
+                const student = ins.etudiants || {};
+                const event = ins.formations || ins.seminaires || {};
+                const eventType = ins.formation_id ? 'Formation' : 'Séminaire';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${student.prenom || ''} ${student.nom || ''}</div>
+                            <div style="font-size: 0.85rem; color: #64748b;">${student.email || ''}</div>
+                        </td>
+                        <td>${event.titre || '-'}</td>
+                        <td>${eventType}</td>
+                        <td>${new Date(ins.date_inscription).toLocaleDateString('fr-FR')}</td>
+                        <td>
+                            <span class="status-badge status-${ins.status_inscription}">${ins.status_inscription || 'en_attente'}</span>
+                        </td>
+                        <td>${ins.status_paiement || '-'}</td>
+                        <td>${ins.montant_paye || 0} HTG</td>
+                        <td>
+                            <button class="btn-action btn-view" onclick="viewDetails('${ins.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${ins.status_inscription === 'en_attente' ? `
+                                <button class="btn-action btn-confirm" onclick="confirmInscription('${ins.id}')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Update stats
+        function updateStats() {
+            const total = allInscriptions.length;
+            const confirme = allInscriptions.filter(i => i.status_inscription === 'confirme').length;
+            const enAttente = allInscriptions.filter(i => i.status_inscription === 'en_attente').length;
+            const revenus = allInscriptions.reduce((sum, i) => sum + (i.montant_paye || 0), 0);
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statConfirme').textContent = confirme;
+            document.getElementById('statEnAttente').textContent = enAttente;
+            document.getElementById('statRevenus').textContent = revenus.toLocaleString();
+        }
+
+        // Confirm inscription
+        async function confirmInscription(id) {
+            if (!confirm('Confirmer cette inscription?')) return;
+            
+            try {
+                const { error } = await window.supabaseClient
+                    .from('inscriptions')
+                    .update({ status_inscription: 'confirme', date_confirmation: new Date().toISOString() })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                loadInscriptions();
+            } catch (err) {
+                console.error('Error confirming inscription:', err);
+                alert('Erreur lors de la confirmation');
+            }
+        }
+
+        // View details (placeholder)
+        function viewDetails(id) {
+            alert('Détails inscription ID: ' + id);
+        }
+
+        // Export to Excel (CSV)
+        function exportToExcel() {
+            if (!allInscriptions || allInscriptions.length === 0) {
+                alert('Aucune donnée à exporter');
+                return;
+            }
+
+            // Get current filtered data
+            const eventType = document.getElementById('eventTypeFilter').value;
+            const eventFilter = document.getElementById('eventFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allInscriptions.filter(ins => {
+                if (eventType === 'formation' && !ins.formation_id) return false;
+                if (eventType === 'seminaire' && !ins.seminaire_id) return false;
+                if (eventFilter) {
+                    const [type, id] = eventFilter.split(':');
+                    if (type === 'formation' && ins.formation_id !== id) return false;
+                    if (type === 'seminaire' && ins.seminaire_id !== id) return false;
+                }
+                if (statusFilter !== 'all' && ins.status_inscription !== statusFilter) return false;
+                if (searchInput) {
+                    const student = ins.etudiants || {};
+                    const event = ins.formations || ins.seminaires || {};
+                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre}`.toLowerCase();
+                    if (!searchStr.includes(searchInput)) return false;
+                }
+                return true;
+            });
+
+            // Create CSV header
+            const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Événement', 'Type', 'Date Inscription', 'Statut', 'Statut Paiement', 'Montant Payé', 'Date Confirmation'];
+            
+            // Create CSV rows
+            const rows = filtered.map(ins => {
+                const student = ins.etudiants || {};
+                const event = ins.formations || ins.seminaires || {};
+                const eventType = ins.formation_id ? 'Formation' : 'Séminaire';
+                
+                return [
+                    student.prenom || '',
+                    student.nom || '',
+                    student.email || '',
+                    student.telephone || '',
+                    event.titre || '',
+                    eventType,
+                    new Date(ins.date_inscription).toLocaleDateString('fr-FR'),
+                    ins.status_inscription || '',
+                    ins.status_paiement || '',
+                    ins.montant_paye || 0,
+                    ins.date_confirmation ? new Date(ins.date_confirmation).toLocaleDateString('fr-FR') : ''
+                ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+            });
+
+            // Combine header and rows
+            const csvContent = [headers.join(','), ...rows].join('\n');
+
+            // Create download link
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `inscriptions_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Event listeners
+        document.getElementById('eventTypeFilter').addEventListener('change', filterAndDisplayInscriptions);
+        document.getElementById('eventFilter').addEventListener('change', filterAndDisplayInscriptions);
+        document.getElementById('statusFilter').addEventListener('change', filterAndDisplayInscriptions);
+        document.getElementById('searchInput').addEventListener('input', filterAndDisplayInscriptions);
+        document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadEvents();
+                loadInscriptions();
+            }
+        });
+    </script>
+</body>
+</html>

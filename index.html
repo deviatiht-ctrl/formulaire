@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rasin Ayiti - École de Formation en Ligne | Haïti</title>
-    <meta name="description" content="Plateforme de formation et séminaires en ligne pour développer vos compétences professionnelles et personnelles en Haïti.">
+    <title>Rasin Ayiti - Mobilisation pour le Développement Juvénile | Haïti</title>
+    <meta name="description" content="Une grande mobilisation pour la jeunesse haïtienne. Développement Juvénile à travers le leadership, l'engagement et l'excellence.">
     
     <!-- Favicon -->
     <link rel="icon" href="assets/logorasin.PNG" type="image/png">
@@ -20,6 +20,485 @@
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/css/landing-2026.css">
+    <style>
+        /* Events Section Styles */
+        .section-events {
+            padding: 80px 0;
+            background: #f8fafc;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+
+        .event-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-flyer {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .event-flyer:hover {
+            transform: scale(1.05);
+        }
+
+        .event-content {
+            padding: 1.5rem;
+        }
+
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .event-description {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .event-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-meta i {
+            color: #2563eb;
+            width: 16px;
+        }
+
+        .event-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .event-price.paid {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .event-price.free {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .event-sponsors {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .sponsors-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .sponsors-list {
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .events-loading,
+        .events-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .btn-event-reg {
+            display: block;
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-event-reg:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+
+        .btn-event-reg:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Progress Bar Styles */
+        .event-progress-container {
+            margin: 1rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.4rem;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            border-radius: 10px;
+            transition: width 1s ease-out;
+        }
+
+        .progress-bar-fill.full { background: #ef4444; }
+        .progress-bar-fill.warning { background: #f59e0b; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.hidden { display: none; }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalIn 0.3s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; }
+
+        .modal-body { padding: 1.5rem; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .form-input:focus { outline: none; border-color: #2563eb; background: #f0f7ff; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover { background: #1d4ed8; }
+
+        /* Quiz Styles */
+        .quiz-q-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .quiz-q-text {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .quiz-opt {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 1rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-opt:hover { background: #f0f7ff; border-color: #3b82f6; }
+        .quiz-opt input { cursor: pointer; }
+
+        /* Success Modal Styles */
+        .success-content {
+            text-align: center;
+            padding: 2.5rem 2rem;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .success-content h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+
+        .success-content p {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .success-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-wa-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-wa-group:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        }
+
+        .btn-close-success {
+            padding: 0.75rem;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation 2026 Responsive */
+        .nav-2026 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        /* Carousel Swipe Styles */
+        .card-image-carousel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+        .card-image-carousel::-webkit-scrollbar { display: none; }
+        .carousel-item {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            object-fit: cover;
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            z-index: 5;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background: white;
+            width: 12px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-actions { display: none; }
+            .nav-toggle { display: block; }
+            .nav-links {
+                position: fixed;
+                top: 75px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 75px);
+                background: white;
+                flex-direction: column;
+                padding: 40px 20px;
+                gap: 20px;
+                transition: 0.4s;
+                box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+                overflow-y: auto;
+            }
+            .nav-links.active { left: 0; }
+            .nav-links li { width: 100%; }
+            .nav-links a { display: block; text-align: center; padding: 15px; font-size: 1.1rem; }
+        }
+
+        @media (max-width: 768px) {
+            .section-events { padding: 60px 0; }
+            .events-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body class="landing-2026">
     <!-- NAVIGATION MODERNE -->
@@ -27,23 +506,28 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
-                <span>Rasin Ayiti</span>
+                <div style="display:flex; flex-direction:column;">
+                    <span style="font-weight:900; font-size:1.4rem; line-height:1;">Rasin Ayiti</span>
+                    <span style="font-size:0.65rem; color:var(--primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Développement Juvénile/RASINAYITI</span>
+                </div>
             </div>
-            <ul class="nav-links">
-                <li><a href="#hero">Accueil</a></li>
-                <li><a href="#formations">Nos Formations</a></li>
-                <li><a href="#seminaires">Séminaires</a></li>
-                <li><a href="#galerie">Galerie</a></li>
-                <li><a href="#contact">Contact</a></li>
+            <div class="nav-toggle" id="navToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#hero" onclick="closeMenu()">Accueil</a></li>
+                <li><a href="#formations" onclick="closeMenu()">Formations</a></li>
+                <li><a href="#seminaires" onclick="closeMenu()">Séminaires</a></li>
+                <li><a href="#evenements" onclick="closeMenu()">Événements</a></li>
+                <li><a href="#boutique" onclick="closeMenu()">Boutique</a></li>
+                <li><a href="#galerie" onclick="closeMenu()">Galerie</a></li>
+                <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+                <!-- Dynamic Auth Buttons -->
+                <li id="authContainer">
+                    <a href="espace-etudiant/login.html" class="btn-login" style="background:var(--primary); color:white; padding:12px 24px; border-radius:12px; font-weight:700;">Connexion</a>
+                </li>
             </ul>
-            <div class="nav-actions">
-                <a href="espace-etudiant/login.html" class="btn-nav-secondary">
-                    <i class="fas fa-user"></i> Connexion
-                </a>
-                <a href="#formations" class="btn-nav-primary">
-                    <i class="fas fa-graduation-cap"></i> Formations
-                </a>
-            </div>
         </div>
     </nav>
 
@@ -63,28 +547,27 @@
                 </div>
                 
                 <h1 class="hero-title">
-                    <span class="title-line">Développez vos</span>
-                    <span class="title-line accent">Compétences</span>
-                    <span class="title-line">pour l'avenir</span>
+                    <span class="title-line">Rasin Ayiti</span>
+                    <span class="title-line accent" style="font-size:0.4em; display:block; margin-top:0.5rem; letter-spacing:2px;">DÉPARTEMENT DE DÉVELOPPEMENT JUVÉNILE</span>
                 </h1>
                 
                 <p class="hero-description">
-                    Rejoignez <strong>Rasin Ayiti</strong>, la première école de formation en ligne en Haïti. 
-                    Développement personnel, leadership, entrepreneuriat et bien plus.
+                    Rejoignez <strong>Rasin Ayiti</strong>, une grande mobilisation pour la jeunesse haïtienne. 
+                    Nous œuvrons pou le <strong>Développement Juvénile</strong> à travers le leadership, l'engagement et l'excellence.
                 </p>
                 
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <span class="stat-number" id="stat-etudiants">1,250+</span>
-                        <span class="stat-label">Étudiants formés</span>
+                        <span class="stat-number" id="stat-members">0</span>
+                        <span class="stat-label">Membres</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" id="stat-formations">25+</span>
+                        <span class="stat-number" id="stat-courses">0</span>
                         <span class="stat-label">Formations</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" id="stat-taux">95%</span>
-                        <span class="stat-label">Taux de satisfaction</span>
+                        <span class="stat-number" id="stat-events">0</span>
+                        <span class="stat-label">Événements</span>
                     </div>
                 </div>
                 
@@ -101,26 +584,41 @@
             </div>
             
             <div class="hero-visual">
-                <div class="hero-card-float">
-                    <div class="float-badge live">LIVE</div>
-                    <div class="float-content">
-                        <div class="float-icon">
-                            <i class="fas fa-video"></i>
-                        </div>
-                        <h3>Séminaire en cours</h3>
-                        <p>Compétences de Vie</p>
-                        <a href="seminar/room.html" class="btn-float">Rejoindre →</a>
-                    </div>
-                </div>
-                
                 <div class="hero-images">
                     <div class="hero-img img-1">
-                        <img src="assets/images/formation-1.jpg" alt="Formation">
+                        <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=800&auto=format&fit=crop" alt="Formation">
                     </div>
                     <div class="hero-img img-2">
-                        <img src="assets/images/formation-2.jpg" alt="Séminaire">
+                        <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=800&auto=format&fit=crop" alt="Séminaire">
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: ÉVÉNEMENTS -->
+    <section class="section-events" id="evenements">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Nos Événements</h2>
+                <p>Découvrez nos événements et activités à venir</p>
+            </div>
+            <div class="events-grid" id="eventsGrid">
+                <div class="events-loading">Chargement des événements...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: BOUTIQUE MAILLOTS -->
+    <section class="section-events" id="boutique" style="background:#fff;">
+        <div class="section-container">
+            <div class="section-header">
+                <span style="color:var(--primary); font-weight:800; letter-spacing:2px; text-transform:uppercase; font-size:0.9rem;">Boutique Officielle</span>
+                <h2>Nos Maillots</h2>
+                <p>Portez fièrement les couleurs de Rasin Ayiti</p>
+            </div>
+            <div class="events-grid" id="maillotsGrid">
+                <p style="text-align:center; grid-column:1/-1;">Chargement de la boutique...</p>
             </div>
         </div>
     </section>
@@ -251,17 +749,7 @@
         </div>
     </section>
 
-    <!-- 🔴 LIVE BUTTON -->
-    <a href="seminar/room.html?live=1" class="zoom-float zoom-live-pulse" title="Entrer directement dans le séminaire LIVE">
-        <div class="live-indicator">
-            <span class="live-dot"></span>
-            <span class="live-text">LIVE</span>
-        </div>
-        <div class="zoom-float-inner">
-            <span class="zoom-icon-circle"><i class="fas fa-play"></i></span>
-            <span><strong>Entrer dans le Séminaire</strong></span>
-        </div>
-    </a>
+
 
     <!-- Admin Modal -->
     <div class="modal-overlay hidden" id="adminModal">
@@ -271,8 +759,143 @@
                 <button class="modal-close" onclick="closeAdminLogin()">&times;</button>
             </div>
             <div class="modal-body">
-                <input type="password" id="adminPin" class="modal-input" placeholder="Entrez le code PIN admin" />
-                <button onclick="verifyAdminPin()" class="modal-btn">Se connecter</button>
+                <input type="password" id="adminPin" class="form-input" placeholder="Entrez le code PIN admin" />
+                <button onclick="verifyAdminPin()" class="btn-submit" style="margin-top:1rem;">Se connecter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Registration Modal -->
+    <div class="modal-overlay hidden" id="eventRegModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="regModalTitle">Inscription à l'événement</h2>
+                <button class="modal-close" onclick="closeRegModal()">&times;</button>
+            </div>
+            <form id="eventRegForm" class="modal-body">
+                <input type="hidden" id="regEventId">
+                <div class="form-group">
+                    <label>Prénom *</label>
+                    <input type="text" id="regPrenom" class="form-input" required placeholder="Votre prénom">
+                </div>
+                <div class="form-group">
+                    <label>Nom *</label>
+                    <input type="text" id="regNom" class="form-input" required placeholder="Votre nom">
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="regEmail" class="form-input" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone / WhatsApp</label>
+                    <input type="tel" id="regPhone" class="form-input" placeholder="+509 ...">
+                </div>
+                <div class="form-group">
+                    <label>Ville</label>
+                    <input type="text" id="regVille" class="form-input" placeholder="Ex: Port-au-Prince">
+                </div>
+
+                <!-- Quiz Section -->
+                <div id="quizSection" class="hidden" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px dashed #e2e8f0;">
+                    <h3 style="font-size: 1.1rem; color: #1e40af; margin-bottom: 1rem;"><i class="fas fa-brain"></i> Quiz sur Haïti (Gagnez des points pour votre ville !)</h3>
+                    <div id="quizQuestions">
+                        <!-- Questions will load here -->
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmitReg" style="margin-top: 1.5rem;">
+                    <i class="fas fa-paper-plane"></i> Confirmer mon inscription
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Maillot Modal -->
+    <div class="modal-overlay hidden" id="orderModal">
+        <div class="modal-content" style="max-width:600px;">
+            <div class="modal-header">
+                <h2 id="orderTitle">Commander votre Maillot</h2>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <form id="orderForm" class="modal-body">
+                <input type="hidden" id="orderMaillotId">
+                <input type="hidden" id="orderPrice">
+                
+                <div id="maillotImagesPreview" style="display:flex; gap:10px; overflow-x:auto; margin-bottom:1.5rem; padding-bottom:10px;">
+                    <!-- Images go here -->
+                </div>
+
+                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group">
+                        <label>Prénom *</label>
+                        <input type="text" id="orderPrenom" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="orderNom" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="orderEmail" class="form-input" required>
+                </div>
+
+                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group">
+                        <label>Taille *</label>
+                        <select id="orderTaille" class="form-input" required>
+                            <option value="S">Small (S)</option>
+                            <option value="M">Medium (M)</option>
+                            <option value="L" selected>Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                            <option value="XXL">XXL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantité *</label>
+                        <input type="number" id="orderQty" class="form-input" value="1" min="1" required oninput="calculateTotal()">
+                    </div>
+                </div>
+
+                <div style="background:#f0f9ff; padding:1.5rem; border-radius:15px; border:1px solid #bae6fd; margin:1.5rem 0;">
+                    <h4 style="margin:0 0 1rem 0; color:#0369a1;"><i class="fas fa-wallet"></i> Paiement MonCash / Natcash</h4>
+                    <p style="font-size:0.9rem; margin-bottom:0.5rem;">Veuillez effectuer le paiement au numéro suivant :</p>
+                    <div style="font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:1rem;">+509 4680-7922</div>
+                    <div style="display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #bae6fd; pt:1rem;">
+                        <span>Total à payer :</span>
+                        <span id="orderTotal" style="color:#2563eb;">0 HTG</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Preuve de paiement (Image/Capture d'écran) *</label>
+                    <input type="file" id="orderProof" class="form-input" accept="image/*" required>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmitOrder">
+                    <i class="fas fa-shopping-bag"></i> Confirmer la commande
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-overlay hidden" id="successModal">
+        <div class="modal-content">
+            <div class="success-content">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h2>Inscription Reçue ! 🎉</h2>
+                <p>
+                    Merci pour votre inscription ! Vous recevrez bientôt un <strong>e-mail de confirmation</strong> avec tous les détails.<br><br>
+                    En attendant, rejoignez le groupe officiel de l'événement pour ne rien rater :
+                </p>
+                <div class="success-actions">
+                    <a href="#" id="waGroupBtn" target="_blank" class="btn-wa-group">
+                        <i class="fab fa-whatsapp"></i> Rejoindre le groupe
+                    </a>
+                    <a href="#" class="btn-close-success" onclick="closeSuccessModal()">Fermer</a>
+                </div>
             </div>
         </div>
     </div>
@@ -286,7 +909,8 @@
                         <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
                         <span>Rasin Ayiti</span>
                     </div>
-                    <p>La première école de formation en ligne en Haïti.</p>
+                    <p style="font-weight:700; color:var(--primary); margin-top:-0.5rem; margin-bottom:1rem; font-size:0.8rem;">Département de développement Juvénile</p>
+                    <p>Développement Juvénile/RASINAYITI - Une grande mobilisation pour la jeunesse haïtienne.</p>
                     <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
@@ -306,7 +930,7 @@
                     <h4>Administration</h4>
                     <ul>
                         <li><a href="admin/dashboard.html">Dashboard</a></li>
-                        <li><a href="seminar/room.html">Séminaire Live</a></li>
+
                         <li><a href="#" onclick="openAdminLogin()">Connexion Admin</a></li>
                     </ul>
                 </div>
@@ -325,13 +949,13 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
+    <script src="supabase.js?v=2026.1"></script>
     
     <script>
         // Load dynamic content
         async function loadFormations() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('formations')
                     .select('*')
                     .eq('status', 'publie')
@@ -342,10 +966,23 @@
                 
                 const container = document.getElementById('formationsGrid');
                 if (data && data.length > 0) {
-                    container.innerHTML = data.map(f => `
+                    container.innerHTML = data.map(f => {
+                        const images = f.images && f.images.length > 0 ? f.images : (f.image_principale ? [f.image_principale] : []);
+                        return `
                         <div class="formation-card" data-aos="fade-up">
-                            <div class="card-image" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'});">
-                                <i class="fas fa-graduation-cap"></i>
+                            <div class="card-image">
+                                <div class="card-image-carousel">
+                                    ${images.length > 0 ? images.map(img => `<img src="${img}" class="carousel-item" alt="${f.titre}">`).join('') : `
+                                        <div class="carousel-item" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'}); display:flex; align-items:center; justify-content:center;">
+                                            <i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>
+                                        </div>
+                                    `}
+                                </div>
+                                ${images.length > 1 ? `
+                                    <div class="carousel-dots">
+                                        ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                                    </div>
+                                ` : ''}
                                 <span class="card-type">${f.type_formation}</span>
                             </div>
                             <div class="card-content">
@@ -358,7 +995,9 @@
                                 <a href="pages/inscription.html?id=${f.id}&type=formation" class="btn-card">S'inscrire</a>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
+                } else {
+                    container.innerHTML = '<p class="no-data">Aucune formation disponible pour le moment.</p>';
                 }
             } catch (err) {
                 console.error('Error loading formations:', err);
@@ -367,7 +1006,7 @@
 
         async function loadSeminaires() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('seminaires')
                     .select('*, formations(titre)')
                     .in('status', ['planifie', 'en_cours'])
@@ -378,13 +1017,20 @@
                 
                 const container = document.getElementById('seminairesList');
                 if (data && data.length > 0) {
-                    container.innerHTML = data.map(s => `
+                    container.innerHTML = data.map(s => {
+                        const images = s.images && s.images.length > 0 ? s.images : (s.image_url ? [s.image_url] : []);
+                        return `
                         <div class="seminaire-item" data-aos="fade-up">
                             <div class="seminaire-date">
                                 <span class="date-day">${new Date(s.date_seminaire).getDate()}</span>
                                 <span class="date-month">${new Date(s.date_seminaire).toLocaleDateString('fr-FR', {month: 'short'})}</span>
                             </div>
-                            <div class="seminaire-info">
+                            <div class="seminaire-thumb" style="width:80px; height:80px; border-radius:10px; overflow:hidden; margin:0 15px; position:relative;">
+                                <div class="card-image-carousel">
+                                    ${images.length > 0 ? images.map(img => `<img src="${img}" class="carousel-item">`).join('') : '<img src="assets/images/placeholder.jpg" class="carousel-item">'}
+                                </div>
+                            </div>
+                            <div class="seminaire-info" style="flex:1;">
                                 <h4>${s.titre}</h4>
                                 <p>${s.formations?.titre || 'Formation'}</p>
                                 <span class="seminaire-time">
@@ -395,7 +1041,8 @@
                                 ${s.status === 'en_cours' ? '<span class="live-badge">LIVE</span>' : 'S\'inscrire'}
                             </a>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
                 } else {
                     container.innerHTML = '<p class="no-data">Aucun séminaire planifié pour le moment.</p>';
                 }
@@ -406,7 +1053,7 @@
 
         async function loadGalerie() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('galerie')
                     .select('*')
                     .eq('publie', true)
@@ -478,12 +1125,447 @@
             }
         }
 
+        // Load events
+        async function loadEvents() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('events')
+                    .select('*')
+                    .eq('status', 'actif')
+                    .eq('afficher_sur_site', true)
+                    .order('date_evenement', { ascending: true });
+
+                if (error) throw error;
+
+                const eventsGrid = document.getElementById('eventsGrid');
+                if (!data || data.length === 0) {
+                    eventsGrid.innerHTML = '<div class="events-empty">Aucun événement à venir</div>';
+                    return;
+                }
+
+                eventsGrid.innerHTML = data.map(event => {
+                    const date = event.date_evenement ? new Date(event.date_evenement).toLocaleDateString('fr-FR', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'Date non définie';
+
+                    const price = event.est_payant ? `${event.prix} ${event.devise}` : 'Gratuit';
+                    const typeIcon = event.type_evenement === 'online' ? 'video' : event.type_evenement === 'hybrid' ? 'laptop' : 'map-marker-alt';
+                    const typeLabel = event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne';
+
+                    return `
+                        <div class="event-card">
+                            ${event.flyer_url ? `<img src="${event.flyer_url}" alt="${event.titre}" class="event-flyer" onclick="window.open('${event.flyer_url}', '_blank')">` : ''}
+                            <div class="event-content">
+                                <h3 class="event-title">${event.titre}</h3>
+                                <p class="event-description">${event.description || ''}</p>
+                                <div class="event-meta">
+                                    <i class="fas fa-calendar"></i> ${date}
+                                </div>
+                                <div class="event-meta">
+                                    <i class="fas fa-${typeIcon}"></i> ${typeLabel}
+                                </div>
+                                ${event.lieu ? `<div class="event-meta"><i class="fas fa-map-marker-alt"></i> ${event.lieu}</div>` : ''}
+                                <div class="event-price ${event.est_payant ? 'paid' : 'free'}">${price}</div>
+                                ${event.sponsors && event.sponsors.length > 0 ? `
+                                    <div class="event-sponsors">
+                                        <span class="sponsors-label">Sponsors:</span>
+                                        <div class="sponsors-list">${event.sponsors.join(', ')}</div>
+                                    </div>
+                                ` : ''}
+
+                                <div class="event-progress-container" id="prog-container-${event.id}">
+                                    <div class="progress-label">
+                                        <span id="prog-text-${event.id}">Calculant les places...</span>
+                                        <span id="prog-percent-${event.id}">0%</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" id="prog-fill-${event.id}" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <button class="btn-event-reg" 
+                                    id="btn-reg-${event.id}"
+                                    onclick="openRegModal('${event.id}', '${event.titre.replace(/'/g, "\\'")}', '${event.whatsapp_link || ''}', '${event.has_quiz}')"
+                                    ${event.inscription_ouverte === false ? 'disabled' : ''}>
+                                    ${event.inscription_ouverte === false ? 'Inscriptions fermées' : 'S\'inscrire à l\'événement'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Update progress for each event
+                data.forEach(event => updateEventProgress(event));
+            } catch (err) {
+                console.error('Error loading events:', err);
+                document.getElementById('eventsGrid').innerHTML = '<div class="events-empty">Erreur de chargement</div>';
+            }
+        }
+
+        async function updateEventProgress(event) {
+            try {
+                const { count, error } = await window.supabaseClient
+                    .from('inscriptions_evenements')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('event_id', event.id)
+                    .eq('statut', 'confirme');
+
+                if (error) throw error;
+
+                const current = count || 0;
+                const max = event.places_max;
+                const textEl = document.getElementById(`prog-text-${event.id}`);
+                const percentEl = document.getElementById(`prog-percent-${event.id}`);
+                const fillEl = document.getElementById(`prog-fill-${event.id}`);
+                const btnReg = document.getElementById(`btn-reg-${event.id}`);
+
+                if (!max) {
+                    textEl.textContent = `👥 ${current} inscrit(s)`;
+                    percentEl.textContent = 'Libre';
+                    fillEl.style.width = '100%';
+                    return;
+                }
+
+                const percent = Math.min(Math.round((current / max) * 100), 100);
+                const remaining = max - current;
+
+                textEl.textContent = remaining > 0 ? `${remaining} places restantes` : 'Complet !';
+                percentEl.textContent = `${percent}%`;
+                fillEl.style.width = `${percent}%`;
+
+                if (percent >= 100) {
+                    fillEl.classList.add('full');
+                    if (btnReg) {
+                        btnReg.disabled = true;
+                        btnReg.textContent = 'Événement Complet';
+                    }
+                } else if (percent >= 80) {
+                    fillEl.classList.add('warning');
+                }
+            } catch (err) {
+                console.error('Error updating progress:', err);
+            }
+        }
+
+        // Registration Modal Logic
+        let currentEventWALink = "";
+        let currentEventQuiz = false;
+        let quizQuestionsData = [];
+
+        async function openRegModal(id, titre, waLink, hasQuiz) {
+            document.getElementById('regEventId').value = id;
+            document.getElementById('regModalTitle').textContent = `S'inscrire : ${titre}`;
+            currentEventWALink = waLink;
+            currentEventQuiz = (hasQuiz === 'true' || hasQuiz === true);
+            
+            const quizDiv = document.getElementById('quizSection');
+            const questionsDiv = document.getElementById('quizQuestions');
+            
+            if (currentEventQuiz) {
+                quizDiv.classList.remove('hidden');
+                questionsDiv.innerHTML = '<p style="text-align:center; padding:1rem; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Chargement des questions...</p>';
+                
+                try {
+                    const { data, error } = await window.supabaseClient
+                        .from('event_questions')
+                        .select('*')
+                        .eq('is_active', true)
+                        .limit(3);
+                    
+                    if (error) throw error;
+                    quizQuestionsData = data || [];
+                    
+                    questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
+                        <div class="quiz-q-item">
+                            <span class="quiz-q-text">${idx + 1}. ${q.question_text}</span>
+                            <div class="quiz-options">
+                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="A" required> ${q.option_a}</label>
+                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="B"> ${q.option_b}</label>
+                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="C"> ${q.option_c}</label>
+                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="D"> ${q.option_d}</label>
+                            </div>
+                        </div>
+                    `).join('');
+                } catch (err) {
+                    console.error(err);
+                    questionsDiv.innerHTML = '<p style="color:#ef4444;">Erreur de chargement du quiz.</p>';
+                }
+            } else {
+                quizDiv.classList.add('hidden');
+                questionsDiv.innerHTML = '';
+                quizQuestionsData = [];
+            }
+
+            document.getElementById('eventRegModal').classList.remove('hidden');
+        }
+
+        function closeRegModal() {
+            document.getElementById('eventRegModal').classList.add('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        document.getElementById('eventRegForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitReg');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+
+            let score = 0;
+            if (currentEventQuiz && quizQuestionsData.length > 0) {
+                quizQuestionsData.forEach(q => {
+                    const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                    if (selected && selected.value === q.correct_option) {
+                        score += q.points;
+                    }
+                });
+            }
+
+            const payload = {
+                event_id: document.getElementById('regEventId').value,
+                prenom: document.getElementById('regPrenom').value,
+                nom: document.getElementById('regNom').value,
+                email: document.getElementById('regEmail').value,
+                telephone: document.getElementById('regPhone').value,
+                ville: document.getElementById('regVille').value,
+                quiz_score: score,
+                statut: 'en_attente'
+            };
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('inscriptions_evenements')
+                    .insert([payload]);
+
+                if (error) throw error;
+
+                // Close registration modal
+                closeRegModal();
+
+                // Setup success modal with WhatsApp link
+                const waBtn = document.getElementById('waGroupBtn');
+                if (currentEventWALink) {
+                    waBtn.href = currentEventWALink;
+                    waBtn.style.display = 'flex';
+                } else {
+                    // Default to global admin WhatsApp if event specific is not set
+                    waBtn.href = "https://wa.me/50946807922";
+                }
+
+                // Show success modal
+                document.getElementById('successModal').classList.remove('hidden');
+                
+                document.getElementById('eventRegForm').reset();
+            } catch (err) {
+                console.error(err);
+                alert('Erreur lors de l\'inscription. Veuillez réessayer.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer mon inscription';
+            }
+        });
+
+        // Responsive Menu Logic
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const icon = navToggle.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        function closeMenu() {
+            navLinks.classList.remove('active');
+            const icon = navToggle.querySelector('i');
+            icon.classList.add('fa-bars');
+            icon.classList.remove('fa-times');
+        }
+
+        // --- DYNAMIC STATS LOGIC ---
+        async function loadHeroStats() {
+            try {
+                // Count Students
+                const { count: studentCount } = await window.supabaseClient
+                    .from('etudiants').select('*', { count: 'exact', head: true });
+                
+                // Count Formations
+                const { count: courseCount } = await window.supabaseClient
+                    .from('formations').select('*', { count: 'exact', head: true });
+                
+                // Count Events
+                const { count: eventCount } = await window.supabaseClient
+                    .from('events').select('*', { count: 'exact', head: true });
+
+                document.getElementById('stat-members').textContent = (studentCount || 0) + '+';
+                document.getElementById('stat-courses').textContent = (courseCount || 0);
+                document.getElementById('stat-events').textContent = (eventCount || 0);
+            } catch (err) {
+                console.error("Error loading stats:", err);
+            }
+        }
+
+        // --- AUTH NAVBAR LOGIC ---
+        function updateNavbarAuth() {
+            const authContainer = document.getElementById('authContainer');
+            const studentData = localStorage.getItem('etudiant');
+            const adminData = sessionStorage.getItem('admin');
+
+            let html = '';
+
+            if (adminData) {
+                // Admin is logged in
+                html = `
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="admin/dashboard.html" class="btn-login" style="background:#0f172a; color:white; padding:10px 15px; border-radius:10px; font-size:0.85rem;"><i class="fas fa-lock"></i> Admin</a>
+                        <a href="#" onclick="logout()" style="color:#ef4444; font-weight:700; font-size:0.9rem;">Déconnexion</a>
+                    </div>
+                `;
+            } else if (studentData) {
+                // Student is logged in
+                html = `
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <a href="espace-etudiant/dashboard.html" style="color:var(--primary); font-weight:700;">Mon Profil</a>
+                        <a href="#" onclick="logout()" style="color:#ef4444; font-weight:700;">Déconnexion</a>
+                    </div>
+                `;
+            } else {
+                // Nobody logged in
+                html = `<a href="espace-etudiant/login.html" class="btn-login" style="background:var(--primary); color:white; padding:12px 24px; border-radius:12px; font-weight:700;">Connexion</a>`;
+            }
+
+            authContainer.innerHTML = html;
+        }
+
+        function logout() {
+            localStorage.removeItem('etudiant');
+            sessionStorage.removeItem('admin');
+            window.location.reload();
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadFormations();
             loadSeminaires();
             loadGalerie();
+            loadEvents();
+            loadMaillots();
+            loadHeroStats();
+            updateNavbarAuth(); // Check auth state
             setTimeout(animateNumbers, 500);
+        });
+
+        // --- MAILLOT SHOP LOGIC ---
+        async function loadMaillots() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('maillots')
+                    .select('*')
+                    .eq('est_disponible', true);
+                
+                if (error) throw error;
+                const grid = document.getElementById('maillotsGrid');
+                if (!data || data.length === 0) {
+                    grid.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Boutique vide pour le moment.</p>';
+                    return;
+                }
+
+                grid.innerHTML = data.map(m => `
+                    <div class="event-card">
+                        <img src="${m.image_url_1}" class="event-flyer" style="height:250px;">
+                        <div class="event-content">
+                            <h3 class="event-title">${m.nom}</h3>
+                            <p class="event-description">${m.description || ''}</p>
+                            <div class="event-price paid" style="margin-bottom:1rem;">${m.prix} ${m.devise}</div>
+                            <button class="btn-event-reg" onclick="openOrderModal('${m.id}', '${m.nom.replace(/'/g, "\\'")}', ${m.prix}, '${m.image_url_1}', '${m.image_url_2 || ''}', '${m.image_url_3 || ''}')">
+                                <i class="fas fa-cart-plus"></i> Commander
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function openOrderModal(id, nom, prix, img1, img2, img3) {
+            document.getElementById('orderMaillotId').value = id;
+            document.getElementById('orderPrice').value = prix;
+            document.getElementById('orderTitle').textContent = `Commander : ${nom}`;
+            
+            const preview = document.getElementById('maillotImagesPreview');
+            preview.innerHTML = [img1, img2, img3].filter(i => i).map(i => `
+                <img src="${i}" style="height:80px; border-radius:8px; border:2px solid #e2e8f0; cursor:pointer;" onclick="window.open('${i}', '_blank')">
+            `).join('');
+
+            calculateTotal();
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+        }
+
+        function calculateTotal() {
+            const price = parseFloat(document.getElementById('orderPrice').value) || 0;
+            const qty = parseInt(document.getElementById('orderQty').value) || 1;
+            document.getElementById('orderTotal').textContent = (price * qty).toLocaleString() + ' HTG';
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitOrder');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+
+            try {
+                const file = document.getElementById('orderProof').files[0];
+                let proofUrl = null;
+
+                if (file) {
+                    const fileName = `${Date.now()}_proof_${file.name}`;
+                    const { data, error: uploadError } = await window.supabaseClient.storage
+                        .from('maillots')
+                        .upload(fileName, file);
+                    
+                    if (uploadError) throw uploadError;
+                    const { data: { publicUrl } } = window.supabaseClient.storage.from('maillots').getPublicUrl(fileName);
+                    proofUrl = publicUrl;
+                }
+
+                const payload = {
+                    maillot_id: document.getElementById('orderMaillotId').value,
+                    prenom: document.getElementById('orderPrenom').value,
+                    nom: document.getElementById('orderNom').value,
+                    email: document.getElementById('orderEmail').value,
+                    quantite: parseInt(document.getElementById('orderQty').value),
+                    taille: document.getElementById('orderTaille').value,
+                    montant_total: parseFloat(document.getElementById('orderPrice').value) * parseInt(document.getElementById('orderQty').value),
+                    preuve_paiement_url: proofUrl,
+                    statut: 'en_attente'
+                };
+
+                const { error } = await window.supabaseClient.from('maillot_orders').insert([payload]);
+                if (error) throw error;
+
+                closeOrderModal();
+                alert('Commande reçue avec succès ! Nous vérifions votre paiement.');
+                document.getElementById('orderForm').reset();
+            } catch (err) {
+                console.error(err);
+                alert('Erreur lors de la commande.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-shopping-bag"></i> Confirmer la commande';
+            }
         });
     </script>
 </body>

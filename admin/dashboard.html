@@ -39,6 +39,18 @@
                     <i class="fas fa-users"></i>
                     <span>Étudiants</span>
                 </a>
+                <a href="inscriptions.html" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Inscriptions</span>
+                </a>
+                <a href="events.html" class="nav-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Événements</span>
+                </a>
+                <a href="emails.html" class="nav-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Emails</span>
+                </a>
                 <a href="galerie.html" class="nav-item">
                     <i class="fas fa-images"></i>
                     <span>Galerie</span>
@@ -494,22 +506,22 @@
         async function loadStats() {
             try {
                 // Formations count
-                const { count: formationsCount } = await supabase
+                const { count: formationsCount } = await window.supabaseClient
                     .from('formations')
                     .select('*', { count: 'exact' });
                 
                 // Seminaires count
-                const { count: seminairesCount } = await supabase
+                const { count: seminairesCount } = await window.supabaseClient
                     .from('seminaires')
                     .select('*', { count: 'exact' });
                 
                 // Etudiants count
-                const { count: etudiantsCount } = await supabase
+                const { count: etudiantsCount } = await window.supabaseClient
                     .from('etudiants')
                     .select('*', { count: 'exact' });
                 
                 // Inscriptions count
-                const { count: inscriptionsCount } = await supabase
+                const { count: inscriptionsCount } = await window.supabaseClient
                     .from('inscriptions')
                     .select('*', { count: 'exact' });
 
@@ -526,7 +538,7 @@
         // Load recent formations
         async function loadRecentFormations() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('formations')
                     .select('*')
                     .order('created_at', { ascending: false })
@@ -557,7 +569,7 @@
         // Load recent inscriptions
         async function loadRecentInscriptions() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('inscriptions')
                     .select('*, etudiants(prenom, nom)')
                     .order('date_inscription', { ascending: false })

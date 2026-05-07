@@ -4,8 +4,8 @@
 --  Deskripsyon: Tout tablo pou sistèm lekòl anlèy la
 -- ============================================================
 
--- Aktive RLS (Row Level Security)
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'votre-cle-jwt-tres-securisee-2026';
+-- Note: JWT secret managed by Supabase automatically
+-- ALTER DATABASE postgres SET "app.jwt_secret" TO 'votre-cle-jwt-tres-securisee-2026';
 
 -- ============================================================
 --  TABLO: KATEGORI FORMATION
@@ -410,60 +410,68 @@ $$ language 'plpgsql';
 -- ============================================================
 --  TRIGGER POU UPDATE updated_at
 -- ============================================================
+DROP TRIGGER IF EXISTS update_formations_updated_at ON formations;
 CREATE TRIGGER update_formations_updated_at BEFORE UPDATE ON formations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_seminaires_updated_at ON seminaires;
 CREATE TRIGGER update_seminaires_updated_at BEFORE UPDATE ON seminaires
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_etudiants_updated_at ON etudiants;
 CREATE TRIGGER update_etudiants_updated_at BEFORE UPDATE ON etudiants
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_inscriptions_updated_at ON inscriptions;
 CREATE TRIGGER update_inscriptions_updated_at BEFORE UPDATE ON inscriptions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_progressions_updated_at ON progressions;
 CREATE TRIGGER update_progressions_updated_at BEFORE UPDATE ON progressions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_modules_updated_at ON modules;
 CREATE TRIGGER update_modules_updated_at BEFORE UPDATE ON modules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_galerie_updated_at ON galerie;
 CREATE TRIGGER update_galerie_updated_at BEFORE UPDATE ON galerie
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_administrateurs_updated_at ON administrateurs;
 CREATE TRIGGER update_administrateurs_updated_at BEFORE UPDATE ON administrateurs
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
---  INSERT DONNEE DEFAULT
+--  INSERT DONNEE DEFAULT (COMMENTE - PA INSERE DONE)
 -- ============================================================
 
 -- Kategori default
-INSERT INTO categories (nom, description, icone, couleur) VALUES
-('Développement Personnel', 'Formations pour développer vos compétences personnelles', 'fa-user-graduate', '#3b82f6'),
-('Leadership', 'Devenez un leader efficace', 'fa-crown', '#f59e0b'),
-('Compétences Professionnelles', 'Améliorez votre carrière', 'fa-briefcase', '#10b981'),
-('Santé Mentale', 'Prenez soin de votre bien-être', 'fa-heart', '#ef4444'),
-('Entrepreneuriat', 'Lancez votre entreprise', 'fa-rocket', '#8b5cf6')
-ON CONFLICT DO NOTHING;
+-- INSERT INTO categories (nom, description, icone, couleur) VALUES
+-- ('Développement Personnel', 'Formations pour développer vos compétences personnelles', 'fa-user-graduate', '#3b82f6'),
+-- ('Leadership', 'Devenez un leader efficace', 'fa-crown', '#f59e0b'),
+-- ('Compétences Professionnelles', 'Améliorez votre carrière', 'fa-briefcase', '#10b981'),
+-- ('Santé Mentale', 'Prenez soin de votre bien-être', 'fa-heart', '#ef4444'),
+-- ('Entrepreneuriat', 'Lancez votre entreprise', 'fa-rocket', '#8b5cf6')
+-- ON CONFLICT DO NOTHING;
 
 -- Parametres default
-INSERT INTO parametres (cle, valeur, description) VALUES
-('site_nom', 'Rasin Ayiti - École en Ligne', 'Nom du site'),
-('site_description', 'Plateforme de formation et séminaires en ligne', 'Description du site'),
-('contact_email', 'contact@rasinayiti.com', 'Email de contact'),
-('contact_phone', '+509 0000 0000', 'Téléphone de contact'),
-('montant_certificat', '2000', 'Montant pour certificat (en HTG)'),
-('annee_academique', '2025-2026', 'Année académique en cours')
-ON CONFLICT DO NOTHING;
+-- INSERT INTO parametres (cle, valeur, description) VALUES
+-- ('site_nom', 'Rasin Ayiti - École en Ligne', 'Nom du site'),
+-- ('site_description', 'Plateforme de formation et séminaires en ligne', 'Description du site'),
+-- ('contact_email', 'contact@rasinayiti.com', 'Email de contact'),
+-- ('contact_phone', '+509 0000 0000', 'Téléphone de contact'),
+-- ('montant_certificat', '2000', 'Montant pour certificat (en HTG)'),
+-- ('annee_academique', '2025-2026', 'Année académique en cours')
+-- ON CONFLICT DO NOTHING;
 
 -- Admin default (password: Admin2026!)
--- Note: Fok ou chanje sa apre premye koneksyon
-INSERT INTO administrateurs (prenom, nom, email, mot_de_passe_hash, role) VALUES
-('Super', 'Admin', 'admin@rasinayiti.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin')
-ON CONFLICT DO NOTHING;
+-- Note: Fok ou chanje sa apre premye koneksion
+-- INSERT INTO administrateurs (prenom, nom, email, mot_de_passe_hash, role) VALUES
+-- ('Super', 'Admin', 'admin@rasinayiti.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin')
+-- ON CONFLICT DO NOTHING;
 
 -- ============================================================
 --  MESAJ SIKSE
 -- ============================================================
-SELECT 'DATABASE RASIN AYITI KREYE AVEC SUCCES!' AS message;  
+SELECT 'DATABASE RASIN AYITI KREYE AVEC SUCCES (SANS DONE)!' AS message;  

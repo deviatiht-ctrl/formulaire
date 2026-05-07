@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Maillots - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        :root { --primary: #2563eb; --bg-main: #f8fafc; --sidebar-bg: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); margin: 0; display: flex; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); min-height: 100vh; color: white; padding: 1.5rem; position: fixed; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 0.5rem; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .main-content { flex: 1; margin-left: 280px; padding: 2.5rem; }
+        .card { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.hidden { display: none; }
+        .modal-content { background: white; padding: 2rem; border-radius: 20px; width: 90%; max-width: 500px; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-input { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header" style="display:flex; align-items:center; gap:10px; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1);">
+            <img src="../assets/logorasin.PNG" width="40" style="border-radius:8px;">
+            <span style="font-weight:800;">Rasin Ayiti Admin</span>
+        </div>
+        <nav>
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
+            <a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i> <span>Événements</span></a>
+            <a href="maillots.html" class="nav-item active"><i class="fas fa-tshirt"></i> <span>Stock Maillots</span></a>
+            <a href="commandes-maillots.html" class="nav-item"><i class="fas fa-shopping-cart"></i> <span>Commandes</span></a>
+            <a href="parametres.html" class="nav-item"><i class="fas fa-cog"></i> <span>Paramètres</span></a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>Gestion du Stock Maillots</h1>
+            <button onclick="openModal()" class="nav-item active" style="border:none; cursor:pointer; background:var(--primary); color:white; padding:0.75rem 1.5rem;">+ Ajouter un Maillot</button>
+        </div>
+
+        <div id="maillotsGrid" class="grid"></div>
+    </main>
+
+    <div id="maillotModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle">Nouveau Maillot</h2>
+            <form id="maillotForm">
+                <input type="hidden" id="maillotId">
+                <div class="form-group">
+                    <label>Nom du Maillot</label>
+                    <input type="text" id="mNom" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="mDesc" class="form-input"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Prix (HTG)</label>
+                    <input type="number" id="mPrix" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Image URL 1 (Photo principale)</label>
+                    <input type="url" id="mImg1" class="form-input" required placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Image URL 2 (Optionnelle)</label>
+                    <input type="url" id="mImg2" class="form-input">
+                </div>
+                <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                    <button type="button" onclick="closeModal()" style="flex:1; padding:0.75rem; border-radius:10px; border:none; background:#64748b; color:white; cursor:pointer;">Annuler</button>
+                    <button type="submit" style="flex:2; padding:0.75rem; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:700; cursor:pointer;">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script>
+        let allMaillots = [];
+        async function loadMaillots() {
+            const { data } = await window.supabaseClient.from('maillots').select('*').order('created_at', { ascending: false });
+            allMaillots = data || [];
+            document.getElementById('maillotsGrid').innerHTML = allMaillots.map(m => `
+                <div class="card">
+                    <img src="${m.image_url_1}" style="width:100%; height:200px; object-fit:cover; border-radius:12px; margin-bottom:1rem;">
+                    <h3 style="margin:0;">${m.nom}</h3>
+                    <p style="color:#64748b; font-size:0.9rem;">${m.description || ''}</p>
+                    <div style="font-weight:800; font-size:1.2rem; color:var(--primary); margin:1rem 0;">${m.prix} ${m.devise}</div>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="editMaillot('${m.id}')" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer;"><i class="fas fa-edit"></i> Modifier</button>
+                        <button onclick="deleteMaillot('${m.id}')" style="color:#ef4444; border:none; background:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal() { document.getElementById('maillotForm').reset(); document.getElementById('maillotId').value = ''; document.getElementById('maillotModal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('maillotModal').classList.add('hidden'); }
+
+        async function editMaillot(id) {
+            const m = allMaillots.find(x => x.id === id);
+            if (!m) return;
+            document.getElementById('maillotId').value = m.id;
+            document.getElementById('mNom').value = m.nom;
+            document.getElementById('mDesc').value = m.description;
+            document.getElementById('mPrix').value = m.prix;
+            document.getElementById('mImg1').value = m.image_url_1;
+            document.getElementById('mImg2').value = m.image_url_2 || '';
+            document.getElementById('maillotModal').classList.remove('hidden');
+        }
+
+        async function deleteMaillot(id) {
+            if (confirm('Supprimer ce maillot ?')) {
+                await window.supabaseClient.from('maillots').delete().eq('id', id);
+                loadMaillots();
+            }
+        }
+
+        document.getElementById('maillotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('maillotId').value;
+            const data = {
+                nom: document.getElementById('mNom').value,
+                description: document.getElementById('mDesc').value,
+                prix: parseFloat(document.getElementById('mPrix').value),
+                image_url_1: document.getElementById('mImg1').value,
+                image_url_2: document.getElementById('mImg2').value || null
+            };
+            if (id) await window.supabaseClient.from('maillots').update(data).eq('id', id);
+            else await window.supabaseClient.from('maillots').insert([data]);
+            closeModal();
+            loadMaillots();
+        });
+
+        loadMaillots();
+    </script>
+</body>
+</html>

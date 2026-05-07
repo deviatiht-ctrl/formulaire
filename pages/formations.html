@@ -269,7 +269,7 @@
         // Load categories
         async function loadCategories() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('categories')
                     .select('*')
                     .order('nom');
@@ -291,7 +291,7 @@
         // Load formations
         async function loadFormations() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('formations')
                     .select('*, categories(nom)')
                     .eq('status', 'publie')

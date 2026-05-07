@@ -156,7 +156,7 @@
                     </div>
                     <div class="form-group">
                         <label>Durée *</label>
-                        <input type="text" id="duree" placeholder="Ex: 40h" required>
+                        <input type="text" id="duree" placeholder="Ex: 40h, 1 mois, 2 jours" required>
                     </div>
                 </div>
 
@@ -175,8 +175,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Image URL</label>
-                    <input type="url" id="image" placeholder="https://...">
+                    <label>Images de la formation (Plusieurs possibles) *</label>
+                    <input type="file" id="imageFiles" accept="image/*" class="form-input" multiple>
+                    <div id="imagesPreviewList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                        <!-- Preview thumbnails will appear here -->
+                    </div>
+                    <input type="hidden" id="imagesData" value="[]">
                 </div>
 
                 <div class="modal-actions">
@@ -548,7 +552,7 @@
         // Load categories
         async function loadCategories() {
             try {
-                const { data, error } = await supabase.from('categories').select('*');
+                const { data, error } = await window.supabaseClient.from('categories').select('*');
                 if (error) throw error;
                 
                 const select = document.getElementById('categorie');
@@ -566,7 +570,7 @@
         // Load formations
         async function loadFormations() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('formations')
                     .select('*, categories(nom)')
                     .order('created_at', { ascending: false });
@@ -578,7 +582,10 @@
                     tbody.innerHTML = data.map(f => `
                         <tr>
                             <td>
-                                <div style="font-weight:600;color:#0f172a;">${f.titre}</div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="${f.image_principale || 'https://via.placeholder.com/50'}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">
+                                    <div style="font-weight:600;color:#0f172a;">${f.titre}</div>
+                                </div>
                                 <div style="font-size:0.85rem;color:#64748b;">${f.description?.substring(0, 50) || ''}...</div>
                             </td>
                             <td>${f.categories?.nom || '-'}</td>
@@ -622,7 +629,7 @@
 
         async function loadFormationData(id) {
             try {
-                const { data, error } = await supabase.from('formations').select('*').eq('id', id).single();
+                const { data, error } = await window.supabaseClient.from('formations').select('*').eq('id', id).single();
                 if (error) throw error;
                 
                 document.getElementById('formationId').value = data.id;
@@ -634,10 +641,30 @@
                 document.getElementById('duree').value = data.duree || '';
                 document.getElementById('couleur').value = data.couleur || '#2563eb';
                 document.getElementById('statut').value = data.status || 'brouillon';
-                document.getElementById('image').value = data.image_principale || '';
+                
+                const imagesArr = data.images || (data.image_principale ? [data.image_principale] : []);
+                document.getElementById('imagesData').value = JSON.stringify(imagesArr);
+                renderImagesPreview(imagesArr);
             } catch (err) {
                 console.error('Error loading formation:', err);
             }
+        }
+
+        function renderImagesPreview(images) {
+            const list = document.getElementById('imagesPreviewList');
+            list.innerHTML = images.map((img, index) => `
+                <div style="position:relative; width:80px; height:80px;">
+                    <img src="${img}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                    <button type="button" onclick="removeImage(${index})" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px;">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(index) {
+            let images = JSON.parse(document.getElementById('imagesData').value || "[]");
+            images.splice(index, 1);
+            document.getElementById('imagesData').value = JSON.stringify(images);
+            renderImagesPreview(images);
         }
 
         async function editFormation(id) {
@@ -648,7 +675,7 @@
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) return;
             
             try {
-                const { error } = await supabase.from('formations').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('formations').delete().eq('id', id);
                 if (error) throw error;
                 
                 loadFormations();
@@ -658,30 +685,72 @@
             }
         }
 
+        // Handle Multiple Images Preview
+        document.getElementById('imageFiles').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                let currentImages = JSON.parse(document.getElementById('imagesData').value || "[]");
+                
+                for (const file of files) {
+                    const url = await uploadImage(file);
+                    currentImages.push(url);
+                }
+                
+                document.getElementById('imagesData').value = JSON.stringify(currentImages);
+                renderImagesPreview(currentImages);
+            } catch (err) {
+                alert('Error uploading: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enregistrer';
+            }
+        });
+
+        async function uploadImage(file) {
+            const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            const { data, error } = await window.supabaseClient.storage
+                .from('maillots')
+                .upload(fileName, file);
+            
+            if (error) throw error;
+            const { data: { publicUrl } } = window.supabaseClient.storage.from('maillots').getPublicUrl(fileName);
+            return publicUrl;
+        }
+
         // Form submission
         document.getElementById('formationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const id = document.getElementById('formationId').value;
-            const formData = {
-                titre: document.getElementById('titre').value,
-                description: document.getElementById('description').value,
-                categorie_id: document.getElementById('categorie').value,
-                type_formation: document.getElementById('typeFormation').value,
-                prix: parseInt(document.getElementById('prix').value),
-                duree: document.getElementById('duree').value,
-                couleur: document.getElementById('couleur').value,
-                status: document.getElementById('statut').value,
-                image_principale: document.getElementById('image').value
-            };
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
             try {
+                const id = document.getElementById('formationId').value;
+                const imagesArr = JSON.parse(document.getElementById('imagesData').value || "[]");
+
+                const formData = {
+                    titre: document.getElementById('titre').value,
+                    description: document.getElementById('description').value,
+                    categorie_id: document.getElementById('categorie').value,
+                    type_formation: document.getElementById('typeFormation').value,
+                    prix: parseFloat(document.getElementById('prix').value),
+                    duree: document.getElementById('duree').value,
+                    couleur: document.getElementById('couleur').value,
+                    status: document.getElementById('statut').value,
+                    image_principale: imagesArr[0] || '', // First image as main
+                    images: imagesArr
+                };
+
                 let error;
                 if (id) {
-                    const { error: updateError } = await supabase.from('formations').update(formData).eq('id', id);
+                    const { error: updateError } = await window.supabaseClient.from('formations').update(formData).eq('id', id);
                     error = updateError;
                 } else {
-                    const { error: insertError } = await supabase.from('formations').insert([formData]);
+                    const { error: insertError } = await window.supabaseClient.from('formations').insert([formData]);
                     error = insertError;
                 }
 
@@ -689,9 +758,13 @@
 
                 closeModal();
                 loadFormations();
+                alert('Formation enregistrée avec succès !');
             } catch (err) {
                 console.error('Error saving formation:', err);
-                alert('Erreur lors de l\'enregistrement');
+                alert('Erreur: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enregistrer';
             }
         });
 

@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Événements - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <div>
+                    <span class="sidebar-title">Rasin Ayiti</span>
+                    <span class="sidebar-subtitle">Administration</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="formations.html" class="nav-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations</span>
+                </a>
+                <a href="seminaires.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Séminaires</span>
+                </a>
+                <a href="etudiants.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Étudiants</span>
+                </a>
+                <a href="inscriptions.html" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Inscriptions Form.</span>
+                </a>
+                <a href="inscriptions-evenements.html" class="nav-item">
+                    <i class="fas fa-users-viewfinder"></i>
+                    <span>Inscriptions Évèn.</span>
+                </a>
+                <a href="quiz-manager.html" class="nav-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Gestion Quiz</span>
+                </a>
+                <a href="events.html" class="nav-item active">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Événements</span>
+                </a>
+                <a href="emails.html" class="nav-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Emails</span>
+                </a>
+                <a href="galerie.html" class="nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Galerie</span>
+                </a>
+                <a href="parametres.html" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="logout-btn">
+                    <i class="fas fa-home"></i>
+                    <span>Retour site</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Événements</h1>
+                    <p>Gérer les événements publics avec flyers</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-primary" onclick="openModal()">
+                        <i class="fas fa-plus"></i>
+                        <span>Nouvel Événement</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <input type="text" id="searchInput" placeholder="Rechercher..." class="search-input">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="actif">Actif</option>
+                    <option value="brouillon">Brouillon</option>
+                    <option value="archive">Archivé</option>
+                </select>
+                <select id="typeFilter" class="filter-select">
+                    <option value="">Tous les types</option>
+                    <option value="in_person">En personne</option>
+                    <option value="online">En ligne</option>
+                    <option value="hybrid">Hybride</option>
+                </select>
+            </div>
+
+            <!-- Events List -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="events-grid" id="eventsList">
+                        <div class="no-data">Chargement...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay hidden" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nouvel Événement</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="eventForm" class="modal-body">
+                <input type="hidden" id="eventId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Titre *</label>
+                        <input type="text" id="titre" required class="search-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Type d'événement *</label>
+                        <select id="typeEvenement" class="filter-select" required>
+                            <option value="in_person">En personne</option>
+                            <option value="online">En ligne</option>
+                            <option value="hybrid">Hybride</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" rows="4" class="search-input"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Flyer de l'événement</label>
+                    <div class="file-upload">
+                        <input type="file" id="flyerFile" accept="image/*" onchange="handleFileUpload(event)">
+                        <label for="flyerFile" class="file-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Choisir une image</span>
+                        </label>
+                        <div id="flyerPreview" class="flyer-preview"></div>
+                        <input type="hidden" id="flyerUrl">
+                        <input type="hidden" id="flyerPublicId">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de l'événement *</label>
+                        <input type="datetime-local" id="dateEvenement" required class="search-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Lieu</label>
+                        <input type="text" id="lieu" class="search-input" placeholder="Adresse ou lien Zoom">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Payant ?</label>
+                        <select id="estPayant" class="filter-select" onchange="togglePriceField()">
+                            <option value="false">Gratuit</option>
+                            <option value="true">Payant</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="priceGroup" style="display: none;">
+                        <label>Prix (HTG)</label>
+                        <input type="number" id="prix" min="0" step="0.01" class="search-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sponsors (un par ligne)</label>
+                    <textarea id="sponsors" rows="3" class="search-input" placeholder="Sponsor 1&#10;Sponsor 2&#10;Sponsor 3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Lien Groupe WhatsApp (Invitation)</label>
+                    <input type="url" id="whatsappLink" class="search-input" placeholder="https://chat.whatsapp.com/...">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Statut</label>
+                        <select id="status" class="filter-select">
+                            <option value="actif">Actif</option>
+                            <option value="brouillon">Brouillon</option>
+                            <option value="archive">Archivé</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Afficher sur le site</label>
+                        <select id="afficherSurSite" class="filter-select">
+                            <option value="true">Oui</option>
+                            <option value="false">Non</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Inscription ouverte ?</label>
+                        <select id="inscriptionOuverte" class="filter-select">
+                            <option value="true">Oui - Accepter inscriptions</option>
+                            <option value="false">Non - Inscriptions fermées</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Places max (vide = illimité)</label>
+                        <input type="number" id="placesMax" min="1" class="search-input" placeholder="Ex: 50">
+                    </div>
+                    <div class="form-group">
+                        <label>Activer Quiz ?</label>
+                        <select id="hasQuiz" class="filter-select">
+                            <option value="false">Non</option>
+                            <option value="true">Oui (Questions sur Haïti)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inscriptions Modal -->
+    <div class="modal-overlay hidden" id="inscriptionsModal">
+        <div class="modal-content" style="max-width:750px;">
+            <div class="modal-header">
+                <h2 id="inscriptionsModalTitle">Inscriptions</h2>
+                <button class="modal-close" onclick="closeInscriptionsModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="inscriptionsModalBody">
+                <p style="color:#94a3b8;">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ===== ADMIN LAYOUT ===== */
+        body {
+            overflow: hidden;
+            display: flex;
+        }
+
+        .admin-dashboard {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            background: #f1f5f9;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b, #0f172a);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .sidebar-title {
+            display: block;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        .sidebar-footer {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-header p { color: #64748b; }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input, .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: white;
+        }
+
+        .search-input { flex: 1; max-width: 280px; }
+        .filter-select { min-width: 160px; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-body { padding: 1.5rem; }
+
+        /* Events Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .event-flyer {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .event-flyer:hover { transform: scale(1.05); }
+
+        .event-details {
+            padding: 1.25rem;
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-meta {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+
+        .event-meta i {
+            width: 16px;
+            margin-right: 0.5rem;
+        }
+
+        .event-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+
+        .event-price.free { color: #10b981; }
+
+        .event-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-actif { background: #dcfce7; color: #166534; }
+        .status-brouillon { background: #fef3c7; color: #92400e; }
+        .status-archive { background: #f1f5f9; color: #64748b; }
+
+        .event-registrations {
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .reg-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            color: #475569;
+            background: #f1f5f9;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.4rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            flex: 1;
+            min-width: 70px;
+            padding: 0.45rem 0.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-inscriptions { background: #7c3aed; color: white; }
+        .btn-inscriptions:hover { background: #6d28d9; }
+        .btn-edit { background: #2563eb; color: white; }
+        .btn-edit:hover { background: #1d4ed8; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-delete:hover { background: #dc2626; }
+
+        /* Inscriptions table in modal */
+        .ins-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .ins-table th { background: #f8fafc; padding: 0.75rem 1rem; text-align: left; font-weight: 700; color: #475569; }
+        .ins-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; }
+        .ins-table tr:last-child td { border: none; }
+        .ins-table tr:hover td { background: #f8fafc; }
+        .badge-attente { background: #fef3c7; color: #92400e; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-confirme { background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-annule { background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+
+        .no-data {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.hidden { display: none; }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #64748b;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body { padding: 1.5rem; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 0.75rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover { background: #e2e8f0; }
+
+        /* File Upload */
+        .file-upload {
+            position: relative;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            border: 2px dashed #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+
+        .file-label:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .flyer-preview {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .flyer-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .flyer-preview.show { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 100; }
+            .main-content { margin-left: 0; }
+            .events-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        let currentAdmin = null;
+        let allEvents = [];
+
+        // Check admin authentication
+        function checkAuth() {
+            const adminData = sessionStorage.getItem('admin');
+            if (!adminData) {
+                window.location.href = '../espace-etudiant/login.html';
+                return false;
+            }
+            currentAdmin = JSON.parse(adminData);
+            return true;
+        }
+
+        // Load events
+        async function loadEvents() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('events')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                
+                allEvents = data || [];
+                filterAndDisplayEvents();
+                // Load counts after display
+                setTimeout(() => loadRegistrationCounts(allEvents), 300);
+            } catch (err) {
+                console.error('Error loading events:', err);
+                document.getElementById('eventsList').innerHTML = '<div class="no-data">Erreur de chargement</div>';
+            }
+        }
+
+        // Filter and display events
+        function filterAndDisplayEvents() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            let filtered = allEvents.filter(event => {
+                if (search && !event.titre.toLowerCase().includes(search)) return false;
+                if (statusFilter && event.status !== statusFilter) return false;
+                if (typeFilter && event.type_evenement !== typeFilter) return false;
+                return true;
+            });
+
+            displayEvents(filtered);
+        }
+
+        // Display events
+        function displayEvents(events) {
+            const container = document.getElementById('eventsList');
+            
+            if (events.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucun événement trouvé</div>';
+                return;
+            }
+
+            container.innerHTML = events.map(event => {
+                const date = event.date_evenement ? new Date(event.date_evenement).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'Date non définie';
+
+                const price = event.est_payant ? `${event.prix} ${event.devise}` : 'Gratuit';
+                const priceClass = event.est_payant ? '' : 'free';
+
+                return `
+                    <div class="event-card">
+                        ${event.flyer_url ? `<img src="${event.flyer_url}" alt="${event.titre}" class="event-flyer" onclick="viewFlyer('${event.flyer_url}')">` : ''}
+                        <div class="event-details">
+                            <h3 class="event-title">${event.titre}</h3>
+                            <span class="event-status status-${event.status}">${event.status}</span>
+                            <div class="event-meta">
+                                <i class="fas fa-calendar"></i> ${date}
+                            </div>
+                            <div class="event-meta">
+                                <i class="fas fa-map-marker-alt"></i> ${event.lieu || 'Lieu non défini'}
+                            </div>
+                            <div class="event-meta">
+                                <i class="fas fa-${event.type_evenement === 'online' ? 'video' : event.type_evenement === 'hybrid' ? 'laptop' : 'users'}"></i>
+                                ${event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne'}
+                            </div>
+                            <div class="event-price ${priceClass}">${price}</div>
+                            <div class="event-registrations">
+                                <span class="reg-count" id="reg-${event.id}">⏳ chargement...</span>
+                            </div>
+                            <div class="event-actions">
+                                <button class="btn-action btn-inscriptions" onclick="location.href='inscriptions-evenements.html?event='+event.id">
+                                    <i class="fas fa-users"></i> Inscrits
+                                </button>
+                                <button class="btn-action btn-edit" onclick="editEvent('${event.id}')">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deleteEvent('${event.id}')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // View flyer
+        function viewFlyer(url) {
+            window.open(url, '_blank');
+        }
+
+        // Load registration counts
+        async function loadRegistrationCounts(events) {
+            for (const event of events) {
+                try {
+                    const { count } = await window.supabaseClient
+                        .from('inscriptions_evenements')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('event_id', event.id);
+                    const el = document.getElementById(`reg-${event.id}`);
+                    if (el) el.textContent = `👥 ${count || 0} inscrit(s)`;
+                } catch (_) {}
+            }
+        }
+
+        // Open modal
+        function openModal(eventId = null) {
+            document.getElementById('eventModal').classList.remove('hidden');
+            document.getElementById('modalTitle').textContent = eventId ? 'Modifier Événement' : 'Nouvel Événement';
+            
+            if (eventId) {
+                const event = allEvents.find(e => e.id === eventId);
+                if (event) {
+                    document.getElementById('eventId').value = event.id;
+                    document.getElementById('titre').value = event.titre;
+                    document.getElementById('description').value = event.description || '';
+                    document.getElementById('typeEvenement').value = event.type_evenement;
+                    document.getElementById('dateEvenement').value = event.date_evenement
+                        ? event.date_evenement.slice(0, 16) : '';
+                    document.getElementById('lieu').value = event.lieu || '';
+                    document.getElementById('estPayant').value = String(event.est_payant);
+                    document.getElementById('prix').value = event.prix || 0;
+                    document.getElementById('sponsors').value = (event.sponsors || []).join('\n');
+                    document.getElementById('status').value = event.status;
+                    document.getElementById('afficherSurSite').value = String(event.afficher_sur_site);
+                    document.getElementById('inscriptionOuverte').value = String(event.inscription_ouverte !== false);
+                    document.getElementById('placesMax').value = event.places_max || '';
+                    document.getElementById('flyerUrl').value = event.flyer_url || '';
+                    document.getElementById('whatsappLink').value = event.whatsapp_link || '';
+                    document.getElementById('hasQuiz').value = String(event.has_quiz === true);
+                    document.getElementById('flyerPublicId').value = event.flyer_public_id || '';
+                    togglePriceField();
+                    if (event.flyer_url) {
+                        document.getElementById('flyerPreview').innerHTML = `<img src="${event.flyer_url}" alt="Flyer">`;
+                        document.getElementById('flyerPreview').classList.add('show');
+                    }
+                }
+            } else {
+                document.getElementById('eventForm').reset();
+                document.getElementById('eventId').value = '';
+                document.getElementById('flyerPreview').innerHTML = '';
+                document.getElementById('flyerPreview').classList.remove('show');
+                document.getElementById('flyerUrl').value = '';
+                document.getElementById('flyerPublicId').value = '';
+                document.getElementById('whatsappLink').value = '';
+                document.getElementById('hasQuiz').value = 'false';
+                document.getElementById('inscriptionOuverte').value = 'true';
+                togglePriceField();
+            }
+        }
+
+        // View inscriptions
+        async function viewInscriptions(eventId, titre) {
+            document.getElementById('inscriptionsModalTitle').textContent = `Inscrits — ${titre}`;
+            document.getElementById('inscriptionsModalBody').innerHTML = '<p style="color:#94a3b8;">Chargement...</p>';
+            document.getElementById('inscriptionsModal').classList.remove('hidden');
+
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('inscriptions_evenements')
+                    .select('*')
+                    .eq('event_id', eventId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    document.getElementById('inscriptionsModalBody').innerHTML =
+                        '<p style="color:#94a3b8;text-align:center;padding:2rem;">Aucune inscription pour cet événement</p>';
+                    return;
+                }
+
+                document.getElementById('inscriptionsModalBody').innerHTML = `
+                    <p style="margin-bottom:1rem;font-size:0.9rem;color:#475569;">
+                        <strong>${data.length}</strong> inscription(s) au total
+                    </p>
+                    <div style="overflow-x:auto;">
+                    <table class="ins-table">
+                        <thead>
+                            <tr>
+                                <th>Nom & Prénom</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Ville</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(ins => `
+                                <tr>
+                                    <td><strong>${ins.prenom} ${ins.nom}</strong></td>
+                                    <td>${ins.email}</td>
+                                    <td>${ins.telephone || '-'}</td>
+                                    <td>${ins.ville || '-'}</td>
+                                    <td>
+                                        <span class="badge-${ins.statut}">${ins.statut}</span>
+                                    </td>
+                                    <td>${new Date(ins.created_at).toLocaleDateString('fr-FR')}</td>
+                                    <td>
+                                        <button onclick="confirmInscription('${ins.id}')" style="padding:0.3rem 0.6rem;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">✓</button>
+                                        <button onclick="cancelInscription('${ins.id}')" style="padding:0.3rem 0.6rem;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;">✕</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    </div>
+                `;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('inscriptionsModalBody').innerHTML =
+                    '<p style="color:#ef4444;">Erreur de chargement</p>';
+            }
+        }
+
+        async function confirmInscription(id) {
+            await window.supabaseClient.from('inscriptions_evenements').update({ statut: 'confirme' }).eq('id', id);
+            document.querySelector(`[onclick="confirmInscription('${id}')"]`).closest('tr').querySelector('.badge-en_attente, .badge-annule').outerHTML = '<span class="badge-confirme">confirme</span>';
+        }
+
+        async function cancelInscription(id) {
+            await window.supabaseClient.from('inscriptions_evenements').update({ statut: 'annule' }).eq('id', id);
+        }
+
+        function closeInscriptionsModal() {
+            document.getElementById('inscriptionsModal').classList.add('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('eventModal').classList.add('hidden');
+        }
+
+        // Toggle price field
+        function togglePriceField() {
+            const isPayant = document.getElementById('estPayant').value === 'true';
+            document.getElementById('priceGroup').style.display = isPayant ? 'block' : 'none';
+        }
+
+        // Handle file upload
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const fileName = `${Date.now()}_${file.name}`;
+                const { data, error } = await window.supabaseClient.storage
+                    .from('events')
+                    .upload(fileName, file);
+
+                if (error) throw error;
+
+                const { data: { publicUrl } } = window.supabaseClient.storage
+                    .from('events')
+                    .getPublicUrl(fileName);
+
+                document.getElementById('flyerUrl').value = publicUrl;
+                document.getElementById('flyerPublicId').value = fileName;
+                document.getElementById('flyerPreview').innerHTML = `<img src="${publicUrl}" alt="Flyer">`;
+                document.getElementById('flyerPreview').classList.add('show');
+            } catch (err) {
+                console.error('Error uploading file:', err);
+                alert('Erreur lors du téléchargement de l\'image');
+            }
+        }
+
+        // Edit event
+        function editEvent(eventId) {
+            openModal(eventId);
+        }
+
+        // Delete event
+        async function deleteEvent(eventId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return;
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('events')
+                    .delete()
+                    .eq('id', eventId);
+
+                if (error) throw error;
+                
+                await loadEvents();
+            } catch (err) {
+                console.error('Error deleting event:', err);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Form submit
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const eventId = document.getElementById('eventId').value;
+            const eventData = {
+                titre: document.getElementById('titre').value,
+                description: document.getElementById('description').value,
+                type_evenement: document.getElementById('typeEvenement').value,
+                date_evenement: document.getElementById('dateEvenement').value || null,
+                lieu: document.getElementById('lieu').value,
+                est_payant: document.getElementById('estPayant').value === 'true',
+                prix: parseFloat(document.getElementById('prix').value) || 0,
+                sponsors: document.getElementById('sponsors').value.split('\n').filter(s => s.trim()),
+                status: document.getElementById('status').value,
+                afficher_sur_site: document.getElementById('afficherSurSite').value === 'true',
+                inscription_ouverte: document.getElementById('inscriptionOuverte').value === 'true',
+                places_max: parseInt(document.getElementById('placesMax').value) || null,
+                whatsapp_link: document.getElementById('whatsappLink').value || null,
+                has_quiz: document.getElementById('hasQuiz').value === 'true',
+                flyer_url: document.getElementById('flyerUrl').value || null,
+                flyer_public_id: document.getElementById('flyerPublicId').value || null
+            };
+
+            try {
+                if (eventId) {
+                    const { error } = await window.supabaseClient
+                        .from('events')
+                        .update(eventData)
+                        .eq('id', eventId);
+                    if (error) throw error;
+                } else {
+                    const { error } = await window.supabaseClient
+                        .from('events')
+                        .insert([eventData]);
+                    if (error) throw error;
+                }
+
+                closeModal();
+                await loadEvents();
+            } catch (err) {
+                console.error('Error saving event:', err);
+                alert('Erreur lors de l\'enregistrement');
+            }
+        });
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterAndDisplayEvents);
+        document.getElementById('statusFilter').addEventListener('change', filterAndDisplayEvents);
+        document.getElementById('typeFilter').addEventListener('change', filterAndDisplayEvents);
+        document.querySelector('.logout-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.clear();
+            window.location.href = '../espace-etudiant/login.html';
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadEvents();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -492,14 +492,14 @@
         async function loadStats() {
             try {
                 // Load formations count
-                const { count: formationsCount } = await supabase
+                const { count: formationsCount } = await window.supabaseClient
                     .from('inscriptions')
                     .select('*', { count: 'exact' })
                     .eq('etudiant_id', currentEtudiant.id)
                     .not('formation_id', 'is', null);
 
                 // Load seminaires count
-                const { count: seminairesCount } = await supabase
+                const { count: seminairesCount } = await window.supabaseClient
                     .from('inscriptions')
                     .select('*', { count: 'exact' })
                     .eq('etudiant_id', currentEtudiant.id)
@@ -515,7 +515,7 @@
 
         async function loadRecentFormations() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('inscriptions')
                     .select('*, formations(*)')
                     .eq('etudiant_id', currentEtudiant.id)
@@ -546,7 +546,7 @@
 
         async function loadUpcomingSeminaires() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('inscriptions')
                     .select('*, seminaires(*)')
                     .eq('etudiant_id', currentEtudiant.id)
