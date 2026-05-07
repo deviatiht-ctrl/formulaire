@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Formations - Rasin Ayiti</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../assets/css/landing-2026.css">
+</head>
+<body>
+    <!-- NAVIGATION -->
+    <nav class="nav-2026">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                <span>Rasin Ayiti</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Accueil</a></li>
+                <li><a href="formations.html" class="active">Formations</a></li>
+                <li><a href="seminaires.html">Séminaires</a></li>
+                <li><a href="../index.html#galerie">Galerie</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
+                    <i class="fas fa-user"></i> Connexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="section-hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <span class="section-badge">Nos Formations</span>
+                <h1>Développez vos compétences professionnelles</h1>
+                <p>Découvrez nos formations certifiantes pour booster votre carrière</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTERS -->
+    <section class="filters-section">
+        <div class="section-container">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label>Catégorie:</label>
+                    <select id="categoryFilter">
+                        <option value="">Toutes</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Prix:</label>
+                    <select id="priceFilter">
+                        <option value="">Tous</option>
+                        <option value="free">Gratuit</option>
+                        <option value="paid">Payant</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Type:</label>
+                    <select id="typeFilter">
+                        <option value="">Tous</option>
+                        <option value="en_ligne">En ligne</option>
+                        <option value="presentiel">Présentiel</option>
+                        <option value="hybride">Hybride</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMATIONS GRID -->
+    <section class="formations-full-section">
+        <div class="section-container">
+            <div class="formations-grid" id="formationsGrid">
+                <!-- Formations yo pral load dinamikman -->
+                <div class="formation-card skeleton">
+                    <div class="card-image skeleton-bg"></div>
+                    <div class="card-content">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+                <div class="formation-card skeleton">
+                    <div class="card-image skeleton-bg"></div>
+                    <div class="card-content">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+                <div class="formation-card skeleton">
+                    <div class="card-image skeleton-bg"></div>
+                    <div class="card-content">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="load-more-container" id="loadMoreContainer" style="display:none;">
+                <button class="btn-load-more" id="loadMoreBtn">Charger plus de formations</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-2026">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                        <span>Rasin Ayiti</span>
+                    </div>
+                    <p>La première école de formation en ligne en Haïti.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="formations.html">Formations</a></li>
+                        <li><a href="seminaires.html">Séminaires</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-phone"></i> +509 46807922</p>
+                    <p><i class="fas fa-envelope"></i> contact@rasinayiti.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Rasin Ayiti. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .section-hero {
+            padding: 140px 20px 60px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.125rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .filters-section {
+            padding: 2rem 0;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .filter-group select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .formations-full-section {
+            padding: 4rem 20px;
+        }
+
+        .formations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .load-more-container {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .btn-load-more {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-load-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 1.75rem;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group select {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        let currentPage = 1;
+        const itemsPerPage = 9;
+        let allFormations = [];
+        let filteredFormations = [];
+
+        // Load categories
+        async function loadCategories() {
+            try {
+                const { data, error } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .order('nom');
+                
+                if (error) throw error;
+                
+                const select = document.getElementById('categoryFilter');
+                select.innerHTML = '<option value="">Toutes</option>';
+                if (data) {
+                    data.forEach(cat => {
+                        select.innerHTML += `<option value="${cat.id}">${cat.nom}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading categories:', err);
+            }
+        }
+
+        // Load formations
+        async function loadFormations() {
+            try {
+                const { data, error } = await supabase
+                    .from('formations')
+                    .select('*, categories(nom)')
+                    .eq('status', 'publie')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allFormations = data || [];
+                filteredFormations = [...allFormations];
+                displayFormations();
+            } catch (err) {
+                console.error('Error loading formations:', err);
+            }
+        }
+
+        // Display formations
+        function displayFormations() {
+            const container = document.getElementById('formationsGrid');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            
+            const startIndex = 0;
+            const endIndex = currentPage * itemsPerPage;
+            const formationsToShow = filteredFormations.slice(startIndex, endIndex);
+            
+            if (formationsToShow.length === 0) {
+                container.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:3rem;color:#64748b;">Aucune formation trouvée.</p>';
+                loadMoreContainer.style.display = 'none';
+                return;
+            }
+            
+            container.innerHTML = formationsToShow.map(f => `
+                <div class="formation-card" data-aos="fade-up">
+                    <div class="card-image" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'});">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span class="card-type">${f.type_formation || 'En ligne'}</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>${f.titre}</h3>
+                        <p>${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
+                        <div class="card-meta">
+                            <span><i class="fas fa-clock"></i> ${f.duree || 'N/A'}</span>
+                            <span class="card-price">${f.prix > 0 ? f.prix + ' HTG' : 'Gratuit'}</span>
+                        </div>
+                        <div class="card-category">
+                            <i class="fas fa-folder"></i> ${f.categories?.nom || 'Général'}
+                        </div>
+                        <a href="inscription.html?id=${f.id}&type=formation" class="btn-card">S'inscrire</a>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Show/hide load more button
+            if (endIndex < filteredFormations.length) {
+                loadMoreContainer.style.display = 'block';
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
+        }
+
+        // Filter formations
+        function filterFormations() {
+            const category = document.getElementById('categoryFilter').value;
+            const price = document.getElementById('priceFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            
+            filteredFormations = allFormations.filter(f => {
+                if (category && f.categorie_id !== category) return false;
+                if (price === 'free' && f.prix > 0) return false;
+                if (price === 'paid' && !f.prix) return false;
+                if (type && f.type_formation !== type) return false;
+                return true;
+            });
+            
+            currentPage = 1;
+            displayFormations();
+        }
+
+        // Load more
+        document.getElementById('loadMoreBtn').addEventListener('click', () => {
+            currentPage++;
+            displayFormations();
+        });
+
+        // Event listeners for filters
+        document.getElementById('categoryFilter').addEventListener('change', filterFormations);
+        document.getElementById('priceFilter').addEventListener('change', filterFormations);
+        document.getElementById('typeFilter').addEventListener('change', filterFormations);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();
+            loadFormations();
+        });
+    </script>
+</body>
+</html>

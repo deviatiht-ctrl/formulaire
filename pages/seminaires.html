@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Séminaires - Rasin Ayiti</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../assets/css/landing-2026.css">
+</head>
+<body>
+    <!-- NAVIGATION -->
+    <nav class="nav-2026">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                <span>Rasin Ayiti</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Accueil</a></li>
+                <li><a href="formations.html">Formations</a></li>
+                <li><a href="seminaires.html" class="active">Séminaires</a></li>
+                <li><a href="../index.html#galerie">Galerie</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
+                    <i class="fas fa-user"></i> Connexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="section-hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <span class="section-badge">Séminaires</span>
+                <h1>Participez à nos événements en direct</h1>
+                <p>Rejoignez nos séminaires interactifs avec des experts</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEMINAIRES LIST -->
+    <section class="seminaires-full-section">
+        <div class="section-container">
+            <div class="seminaires-list" id="seminairesList">
+                <!-- Seminaires yo pral load dinamikman -->
+                <div class="seminaire-item skeleton">
+                    <div class="seminaire-date skeleton-bg"></div>
+                    <div class="seminaire-info">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+                <div class="seminaire-item skeleton">
+                    <div class="seminaire-date skeleton-bg"></div>
+                    <div class="seminaire-info">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAST SEMINAIRES -->
+    <section class="past-seminaires-section" style="background:#f8fafc;padding:4rem 20px;">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Archives</span>
+                <h2 class="section-title">Séminaires <span class="accent">passés</span></h2>
+                <p class="section-desc">Revenez sur nos événements précédents</p>
+            </div>
+            <div class="seminaires-list" id="pastSeminairesList">
+                <!-- Past seminaires yo pral load dinamikman -->
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-2026">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                        <span>Rasin Ayiti</span>
+                    </div>
+                    <p>La première école de formation en ligne en Haïti.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="formations.html">Formations</a></li>
+                        <li><a href="seminaires.html">Séminaires</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-phone"></i> +509 46807922</p>
+                    <p><i class="fas fa-envelope"></i> contact@rasinayiti.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Rasin Ayiti. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .section-hero {
+            padding: 140px 20px 60px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.125rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .seminaires-full-section {
+            padding: 4rem 20px;
+        }
+
+        .seminaires-list {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .seminaire-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+
+        .seminaire-item:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateX(5px);
+        }
+
+        .seminaire-date {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .date-day {
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .date-month {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .seminaire-info {
+            flex: 1;
+        }
+
+        .seminaire-info h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .seminaire-info p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .seminaire-time {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .btn-seminaire {
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-seminaire:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .live-badge {
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .past-seminaires-section .seminaire-item {
+            opacity: 0.8;
+        }
+
+        .past-seminaires-section .seminaire-item:hover {
+            opacity: 1;
+        }
+
+        .past-seminaires-section .btn-seminaire {
+            background: linear-gradient(135deg, #64748b, #475569);
+            pointer-events: none;
+        }
+
+        .skeleton .seminaire-date,
+        .skeleton .seminaire-info h4,
+        .skeleton .seminaire-info p {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s infinite;
+            border-radius: 4px;
+            min-height: 20px;
+        }
+
+        .skeleton .seminaire-date {
+            min-height: 80px;
+            min-width: 80px;
+        }
+
+        .skeleton .seminaire-info h4 {
+            min-height: 28px;
+            margin-bottom: 0.5rem;
+        }
+
+        .skeleton .seminaire-info p {
+            min-height: 20px;
+        }
+
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .seminaire-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .seminaire-info {
+                text-align: center;
+            }
+
+            .seminaire-time {
+                justify-content: center;
+            }
+
+            .btn-seminaire {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        // Load upcoming seminaires
+        async function loadSeminaires() {
+            try {
+                const { data, error } = await supabase
+                    .from('seminaires')
+                    .select('*, formations(titre, couleur)')
+                    .in('status', ['planifie', 'en_cours'])
+                    .order('date_seminaire', { ascending: true });
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('seminairesList');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(s => `
+                        <div class="seminaire-item" data-aos="fade-up">
+                            <div class="seminaire-date">
+                                <span class="date-day">${new Date(s.date_seminaire).getDate()}</span>
+                                <span class="date-month">${new Date(s.date_seminaire).toLocaleDateString('fr-FR', {month: 'short'})}</span>
+                            </div>
+                            <div class="seminaire-info">
+                                <h4>${s.titre}</h4>
+                                <p>${s.formations?.titre || 'Formation'}</p>
+                                <span class="seminaire-time">
+                                    <i class="fas fa-clock"></i> ${s.heure_debut || '09:00'} - ${s.heure_fin || '13:00'}
+                                </span>
+                            </div>
+                            <a href="inscription.html?id=${s.id}&type=seminaire" class="btn-seminaire">
+                                ${s.status === 'en_cours' ? '<span class="live-badge">LIVE</span>' : 'S\'inscrire'}
+                            </a>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align:center;padding:3rem;color:#64748b;">Aucun séminaire planifié pour le moment.</p>';
+                }
+            } catch (err) {
+                console.error('Error loading seminaires:', err);
+            }
+        }
+
+        // Load past seminaires
+        async function loadPastSeminaires() {
+            try {
+                const { data, error } = await supabase
+                    .from('seminaires')
+                    .select('*, formations(titre)')
+                    .in('status', ['termine', 'annule'])
+                    .order('date_seminaire', { ascending: false })
+                    .limit(5);
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('pastSeminairesList');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(s => `
+                        <div class="seminaire-item">
+                            <div class="seminaire-date" style="background: linear-gradient(135deg, #64748b, #475569);">
+                                <span class="date-day">${new Date(s.date_seminaire).getDate()}</span>
+                                <span class="date-month">${new Date(s.date_seminaire).toLocaleDateString('fr-FR', {month: 'short'})}</span>
+                            </div>
+                            <div class="seminaire-info">
+                                <h4>${s.titre}</h4>
+                                <p>${s.formations?.titre || 'Formation'}</p>
+                                <span class="seminaire-time">
+                                    <i class="fas fa-check-circle"></i> ${s.status === 'termine' ? 'Terminé' : 'Annulé'}
+                                </span>
+                            </div>
+                            <a href="#" class="btn-seminaire">Voir détails</a>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align:center;color:#94a3b8;">Aucun séminaire passé.</p>';
+                }
+            } catch (err) {
+                console.error('Error loading past seminaires:', err);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSeminaires();
+            loadPastSeminaires();
+        });
+    </script>
+</body>
+</html>
