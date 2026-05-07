@@ -3,574 +3,488 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Séminaire sur les Compétences de Vie - Rasin Ayiti</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Rasin Ayiti - École de Formation en Ligne | Haïti</title>
+    <meta name="description" content="Plateforme de formation et séminaires en ligne pour développer vos compétences professionnelles et personnelles en Haïti.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="assets/logorasin.PNG" type="image/png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/landing-2026.css">
 </head>
-<body>
-    <!-- Admin Hidden Button -->
-    <div class="admin-trigger" onclick="openAdminLogin()"></div>
+<body class="landing-2026">
+    <!-- NAVIGATION MODERNE -->
+    <nav class="nav-2026">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
+                <span>Rasin Ayiti</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#hero">Accueil</a></li>
+                <li><a href="#formations">Nos Formations</a></li>
+                <li><a href="#seminaires">Séminaires</a></li>
+                <li><a href="#galerie">Galerie</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="espace-etudiant/login.html" class="btn-nav-secondary">
+                    <i class="fas fa-user"></i> Connexion
+                </a>
+                <a href="#formations" class="btn-nav-primary">
+                    <i class="fas fa-graduation-cap"></i> Formations
+                </a>
+            </div>
+        </div>
+    </nav>
 
-    <!-- 🔴 LIVE DIRECT ENTRY - No code needed during seminar -->
+    <!-- HERO SECTION 2026 -->
+    <section class="hero-2026" id="hero">
+        <div class="hero-bg-animation">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-pulse"></span>
+                    <span>Formation En Ligne 2026</span>
+                </div>
+                
+                <h1 class="hero-title">
+                    <span class="title-line">Développez vos</span>
+                    <span class="title-line accent">Compétences</span>
+                    <span class="title-line">pour l'avenir</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Rejoignez <strong>Rasin Ayiti</strong>, la première école de formation en ligne en Haïti. 
+                    Développement personnel, leadership, entrepreneuriat et bien plus.
+                </p>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-etudiants">1,250+</span>
+                        <span class="stat-label">Étudiants formés</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-formations">25+</span>
+                        <span class="stat-label">Formations</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-taux">95%</span>
+                        <span class="stat-label">Taux de satisfaction</span>
+                    </div>
+                </div>
+                
+                <div class="hero-cta">
+                    <a href="pages/formations.html" class="btn-hero-primary">
+                        <i class="fas fa-rocket"></i>
+                        <span>Explorer les formations</span>
+                    </a>
+                    <a href="pages/seminaires.html" class="btn-hero-secondary">
+                        <i class="fas fa-play-circle"></i>
+                        <span>Voir les séminaires</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="hero-card-float">
+                    <div class="float-badge live">LIVE</div>
+                    <div class="float-content">
+                        <div class="float-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3>Séminaire en cours</h3>
+                        <p>Compétences de Vie</p>
+                        <a href="seminar/room.html" class="btn-float">Rejoindre →</a>
+                    </div>
+                </div>
+                
+                <div class="hero-images">
+                    <div class="hero-img img-1">
+                        <img src="assets/images/formation-1.jpg" alt="Formation">
+                    </div>
+                    <div class="hero-img img-2">
+                        <img src="assets/images/formation-2.jpg" alt="Séminaire">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: FORMATIONS -->
+    <section class="section-formations" id="formations">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Nos Formations</span>
+                <h2 class="section-title">Apprenez avec les <span class="accent">meilleurs</span></h2>
+                <p class="section-desc">Des formations pratiques et certifiantes pour booster votre carrière</p>
+            </div>
+            
+            <div class="formations-grid" id="formationsGrid">
+                <!-- Formations yo pral load dinamikman -->
+                <div class="formation-card skeleton">
+                    <div class="card-image skeleton-bg"></div>
+                    <div class="card-content">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+                <div class="formation-card skeleton">
+                    <div class="card-image skeleton-bg"></div>
+                    <div class="card-content">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+                <div class="formation-card skeleton">
+                    <div class="card-image skeleton-bg"></div>
+                    <div class="card-content">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-footer">
+                <a href="pages/formations.html" class="btn-section">
+                    Voir toutes les formations <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: SEMINAIRES -->
+    <section class="section-seminaires" id="seminaires">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Séminaires</span>
+                <h2 class="section-title">Événements à <span class="accent">venir</span></h2>
+                <p class="section-desc">Participez à nos séminaires en direct et interagissez avec nos formateurs</p>
+            </div>
+            
+            <div class="seminaires-list" id="seminairesList">
+                <!-- Seminaires yo pral load dinamikman -->
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: GALERIE -->
+    <section class="section-galerie" id="galerie">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Galerie</span>
+                <h2 class="section-title">Moments <span class="accent">forts</span></h2>
+                <p class="section-desc">Retour en images sur nos formations et séminaires passés</p>
+            </div>
+            
+            <div class="galerie-grid" id="galerieGrid">
+                <!-- Galerie pral load dinamikman -->
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: POURQUOI NOUS -->
+    <section class="section-why">
+        <div class="section-container">
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon blue">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h3>Certificats reconnus</h3>
+                    <p>Obtenez des certificats valorisants pour votre parcours professionnel</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon green">
+                        <i class="fas fa-laptop-house"></i>
+                    </div>
+                    <h3>100% En ligne</h3>
+                    <p>Apprenez depuis chez vous, à votre rythme, quand vous voulez</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon purple">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3>Formateurs experts</h3>
+                    <p>Des professionnels expérimentés et passionnés par l'enseignement</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon orange">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Communauté active</h3>
+                    <p>Rejoignez une communauté d'apprenants motivés et engagés</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: CTA -->
+    <section class="section-cta" id="contact">
+        <div class="cta-bg">
+            <div class="cta-orb orb-1"></div>
+            <div class="cta-orb orb-2"></div>
+        </div>
+        <div class="cta-content">
+            <h2>Prêt à transformer votre avenir ?</h2>
+            <p>Rejoignez plus de 1,250 étudiants qui ont déjà choisi Rasin Ayiti</p>
+            <div class="cta-buttons">
+                <a href="pages/formations.html" class="btn-cta-primary">Commencer maintenant</a>
+                <a href="https://wa.me/50946807922" class="btn-cta-secondary" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Nous contacter
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 🔴 LIVE BUTTON -->
     <a href="seminar/room.html?live=1" class="zoom-float zoom-live-pulse" title="Entrer directement dans le séminaire LIVE">
         <div class="live-indicator">
             <span class="live-dot"></span>
             <span class="live-text">LIVE</span>
         </div>
         <div class="zoom-float-inner">
-            <span class="zoom-icon-circle" style="width:42px;height:42px;font-size:1.3rem;"><i class="fas fa-play"></i></span>
-            <span style="font-size:1.15rem;"><strong>Entrer dans le Séminaire</strong></span>
-        </div>
-        <div class="zoom-float-sub" style="font-size:0.95rem;color:#fecaca;">
-            <i class="fas fa-broadcast-tower"></i> Accès direct — Cliquez ici
+            <span class="zoom-icon-circle"><i class="fas fa-play"></i></span>
+            <span><strong>Entrer dans le Séminaire</strong></span>
         </div>
     </a>
 
-    <!-- Background Elements -->
-    <div class="bg-gradient"></div>
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-    </div>
-
-    <!-- Main Container -->
-    <main class="container">
-        <!-- Logo Section -->
-        <div class="logo-section">
-            <div class="orgs-row" style="align-items:center;gap:18px;">
-                <img src="assets/logorasin.PNG" alt="Rasin Ayiti"
-                    style="height:52px;width:auto;filter:drop-shadow(0 2px 12px rgba(255,255,255,0.25));">
-                <span class="org-cross">×</span>
-                <img src="assets/logounitech.PNG" alt="UNITECH"
-                    style="height:52px;width:auto;filter:drop-shadow(0 2px 12px rgba(255,255,255,0.25));">
-            </div>
-
-            <h1 class="brand-name">SÉMINAIRE SUR LES<br>COMPÉTENCES DE VIE</h1>
-
-            <div class="event-theme">
-                <div class="theme-number">5</div>
-                <div class="theme-content">
-                    <span class="theme-secrets">SECRETS</span>
-                    <p>POUR RÉUSSIR COMME JEUNE ET DEVENIR CRÉATEUR D’OPPORTUNITÉS EN HAÏTI</p>
-                </div>
-            </div>
-
-            <div class="event-info-bar">
-                <div class="event-info-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>30 Avril &amp; 1er Mai 2026</span>
-                </div>
-                <div class="event-info-item">
-                    <i class="fas fa-clock"></i>
-                    <span>09:00 AM – 01:00 PM</span>
-                </div>
-                <div class="event-info-item">
-                    <i class="fas fa-phone"></i>
-                    <a href="tel:+50946807922" style="color:inherit;text-decoration:none;">+509 46807922</a>
-                </div>
-            </div>
-
-            <p class="tagline">Apprenez à avoir du succès, créer des opportunités, dépasser vos blocages</p>
-
-            <!-- Zoom Banner -->
-            <div class="zoom-banner">
-                <span class="zoom-icon-circle" style="width:28px;height:28px;font-size:0.85rem;"><i class="fas fa-video"></i></span>
-                <span>Évènement <strong>100% en ligne</strong> sur <strong>Zoom</strong> &mdash; Lien envoyé après confirmation</span>
-            </div>
-
-            <!-- Countdown Timer -->
-            <div class="countdown-box">
-                <div class="countdown-label">Compte à rebours avant le Séminaire</div>
-                <div class="countdown-grid" id="countdown">
-                    <div class="cd-item"><span class="cd-val" id="cd-days">00</span><span class="cd-unit">Jours</span></div>
-                    <div class="cd-sep">:</div>
-                    <div class="cd-item"><span class="cd-val" id="cd-hours">00</span><span class="cd-unit">Heures</span></div>
-                    <div class="cd-sep">:</div>
-                    <div class="cd-item"><span class="cd-val" id="cd-mins">00</span><span class="cd-unit">Min</span></div>
-                    <div class="cd-sep">:</div>
-                    <div class="cd-item"><span class="cd-val" id="cd-secs">00</span><span class="cd-unit">Sec</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Registration Closed Message (HIDDEN) -->
-        <div class="closed-card glass hidden" id="closedCard">
-            <div class="closed-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <h2>Inscription terminée !</h2>
-            <p style="font-size:1.1rem;margin-bottom:20px;">
-                Les inscriptions pour ce séminaire sont maintenant <strong>closes</strong>.
-            </p>
-            <div style="background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid #f59e0b;border-radius:16px;padding:20px;margin:20px 0;text-align:center;">
-                <div style="font-size:2.5rem;margin-bottom:12px;">📧</div>
-                <p style="font-weight:700;color:#92400e;font-size:1rem;margin:0 0 8px;">
-                    <i class="fas fa-clock" style="margin-right:6px;"></i>Demain matin — 8h45 à 9h00
-                </p>
-                <p style="color:#b45309;font-size:0.9rem;margin:0;line-height:1.6;">
-                    Si vous êtes déjà inscrit, vérifiez votre <strong>email</strong> (et vos spams) pour recevoir votre code d'accès au live Zoom.
-                </p>
-            </div>
-            <a href="seminar/index.html" 
-               style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:16px 32px;border-radius:50px;text-decoration:none;font-weight:700;font-size:1rem;margin-top:10px;box-shadow:0 6px 20px rgba(37,99,235,0.4);">
-                <i class="fas fa-video"></i> Accéder à la Formation Zoom
-            </a>
-        </div>
-
-        <!-- Form Card -->
-        <div class="form-card glass" id="formCard">
-            <div class="form-header">
-                <h2>Inscrivez-vous</h2>
-                <p>Participez <strong style="color:var(--success);">sans frais</strong> — réservez votre place dès maintenant</p>
-            </div>
-
-            <form id="registrationForm" novalidate>
-                <div class="form-group">
-                    <label for="nom">Nom</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user input-icon"></i>
-                        <input 
-                            type="text" 
-                            id="nom" 
-                            name="nom" 
-                            placeholder="Ton nom de famille"
-                            required
-                        >
-                    </div>
-                    <span class="error-message" id="nomError"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="prenom">Prénom</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user input-icon"></i>
-                        <input 
-                            type="text" 
-                            id="prenom" 
-                            name="prenom" 
-                            placeholder="Ton prénom"
-                            required
-                        >
-                    </div>
-                    <span class="error-message" id="prenomError"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-envelope input-icon"></i>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
-                            placeholder="ton@email.com"
-                            required
-                        >
-                    </div>
-                    <span class="error-message" id="emailError"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="telephone">Numéro de téléphone</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-phone input-icon"></i>
-                        <input 
-                            type="tel" 
-                            id="telephone" 
-                            name="telephone" 
-                            placeholder="Ex: 34 56 7890"
-                            required
-                        >
-                    </div>
-                    <span class="error-message" id="telephoneError"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="whatsapp">Numéro WhatsApp (optionnel)</label>
-                    <div class="input-wrapper">
-                        <i class="fab fa-whatsapp input-icon" style="color:#25D366;"></i>
-                        <input 
-                            type="tel" 
-                            id="whatsapp" 
-                            name="whatsapp" 
-                            placeholder="Ex: 34 56 7890 (si différent)"
-                        >
-                    </div>
-                    <span class="error-message" id="whatsappError"></span>
-                </div>
-
-                <div class="form-group">
-                        <label for="tranche_age">Tranche d'âge</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-birthday-cake input-icon"></i>
-                            <select 
-                                id="tranche_age" 
-                                name="tranche_age" 
-                                required
-                                style="width:100%;padding:14px 16px 14px 44px;border:none;background:transparent;font-size:0.95rem;appearance:none;"
-                            >
-                                <option value="">Choisir...</option>
-                                <option value="15-20">15 - 20 ans</option>
-                                <option value="21-25">21 - 25 ans</option>
-                                <option value="26-30">26 - 30 ans</option>
-                                <option value="31-35">31 - 35 ans</option>
-                                <option value="36-40">36 - 40 ans</option>
-                                <option value="40+">40 ans et plus</option>
-                            </select>
-                            <i class="fas fa-chevron-down" style="position:absolute;right:16px;pointer-events:none;color:#9ca3af;"></i>
-                        </div>
-                        <span class="error-message" id="tranche_ageError"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="ville">Ville / Commune *</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-city input-icon"></i>
-                        <input 
-                            type="text" 
-                            id="ville" 
-                            name="ville" 
-                            list="villes-list"
-                            placeholder="Ex: Delmas, Pétion-Ville, Carrefour..."
-                            required
-                        >
-                        <datalist id="villes-list">
-                            <option value="Delmas">
-                            <option value="Pétion-Ville">
-                            <option value="Port-au-Prince">
-                            <option value="Carrefour">
-                            <option value="Cité Soleil">
-                            <option value="Tabarre">
-                            <option value="Croix-des-Bouquets">
-                            <option value="Kenscoff">
-                            <option value="Gonaïves">
-                            <option value="Cap-Haïtien">
-                            <option value="Les Cayes">
-                            <option value="Jacmel">
-                            <option value="Jérémie">
-                            <option value="Saint-Marc">
-                            <option value="Hinche">
-                            <option value="Miragoâne">
-                            <option value="Port-de-Paix">
-                            <option value="Fort-Liberté">
-                        </datalist>
-                    </div>
-                    <span class="error-message" id="villeError"></span>
-                </div>
-
-                <button type="submit" class="btn-submit" id="submitBtn">
-                    <span class="btn-text">S’inscrire gratuitement</span>
-                    <i class="fas fa-arrow-right"></i>
-                    <div class="btn-loader">
-                        <div class="spinner"></div>
-                    </div>
-                </button>
-            </form>
-        </div>
-
-        <!-- Success Message -->
-        <div class="success-card glass hidden" id="successCard">
-            <div class="success-icon" style="background:linear-gradient(135deg,#16a34a,#22c55e);width:70px;height:70px;font-size:2.2rem;">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h2 style="font-size:1.8rem;font-weight:800;">Inscription terminée !</h2>
-            <p style="font-size:1.05rem;color:var(--text-secondary);max-width:420px;margin:0 auto 16px;">
-                Votre place est réservée pour le <strong>Séminaire sur les Compétences de Vie</strong>.
-            </p>
-
-            <!-- Big Zoom Access Button -->
-            <div style="background:linear-gradient(135deg,#dbeafe,#eff6ff);border:2px solid #3b82f6;border-radius:20px;padding:28px 24px;margin:24px 0;text-align:center;position:relative;overflow:hidden;">
-                <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563eb,#60a5fa);"></div>
-                <div style="font-size:3rem;margin-bottom:12px;">🎥</div>
-                <p style="font-weight:800;color:#1e40af;font-size:1.15rem;margin:0 0 8px;">Accéder à la Formation en Direct</p>
-                <p style="color:#3b82f6;font-size:0.9rem;margin:0 0 20px;line-height:1.6;font-weight:600;">
-                    Cliquez ci-dessous pour rejoindre le séminaire Zoom avec votre code d'accès
-                </p>
-                <a href="seminar/index.html"
-                   style="display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:18px 40px;border-radius:50px;text-decoration:none;font-weight:800;font-size:1.1rem;box-shadow:0 8px 28px rgba(37,99,235,0.45);transition:all 0.3s;">
-                    <i class="fas fa-video" style="font-size:1.2rem;"></i> 
-                    <span>Entrer dans la Salle Zoom</span>
-                </a>
-            </div>
-
-            <!-- Email Info Box -->
-            <div style="background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid #f59e0b;border-radius:16px;padding:20px;margin:20px 0;text-align:left;">
-                <div style="display:flex;align-items:flex-start;gap:12px;">
-                    <div style="font-size:1.8rem;flex-shrink:0;">📧</div>
-                    <div>
-                        <p style="font-weight:700;color:#92400e;font-size:0.95rem;margin:0 0 8px;">
-                            <i class="fas fa-clock" style="margin-right:6px;"></i>Demain matin — 8h45 à 9h00
-                        </p>
-                        <p style="color:#b45309;font-size:0.85rem;margin:0;line-height:1.7;">
-                            Vérifiez bien votre <strong>email</strong> (et vos spams/courriers indésirables). 
-                            Vous recevrez votre <strong>code d'accès personnel</strong> pour entrer dans le live.<br>
-                            <span style="color:#dc2626;font-weight:700;">⚠️ Important :</span> Ce code est unique et nécessaire pour rejoindre le séminaire.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- WhatsApp Group CTA -->
-            <div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:16px;padding:20px;margin:20px 0;text-align:center;">
-                <div style="font-size:2rem;margin-bottom:8px;">💬</div>
-                <p style="font-weight:700;color:#166534;font-size:1rem;margin:0 0 6px;">Rejoignez aussi notre groupe WhatsApp !</p>
-                <p style="color:#15803d;font-size:0.82rem;margin:0 0 14px;line-height:1.5;">
-                    Entrez avec le <strong>même numéro WhatsApp</strong> que vous avez enregistré.
-                </p>
-                <a href="https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t" target="_blank"
-                   style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.9rem;box-shadow:0 4px 16px rgba(37,211,102,0.35);">
-                    <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Rejoindre WhatsApp
-                </a>
-            </div>
-
-            <button class="btn-secondary" onclick="resetForm()" style="margin-top:8px;padding:10px 20px;font-size:0.85rem;">
-                <i class="fas fa-plus"></i>
-                Inscrire une autre personne
-            </button>
-        </div>
-
-        <!-- Certificate Offer Modal -->
-        <div class="modal hidden" id="certificateModal">
-            <div class="modal-overlay" onclick="closeCertificateModal()"></div>
-            <div class="modal-content glass">
-                <button class="modal-close" onclick="closeCertificateModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="modal-header">
-                    <i class="fas fa-award" style="color: #f59e0b;"></i>
-                    <h3>Obtenir un Certificat ?</h3>
-                </div>
-                <div style="padding: 20px;">
-                    <p style="margin-bottom: 20px; color: var(--text-secondary);">
-                        Félicitations pour ton inscription ! Souhaites-tu recevoir un <strong>certificat de participation</strong> officiel ?
-                    </p>
-                    <div class="certificate-preview" style="background: var(--bg-light); padding: 20px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
-                        <i class="fas fa-certificate" style="font-size: 48px; color: #f59e0b; margin-bottom: 12px;"></i>
-                        <h4 style="margin-bottom: 8px;">Certificat Rasin Ayiti 2026</h4>
-                        <p style="font-size: 0.9rem; color: var(--text-muted);">Certificat personnalisé avec ton nom</p>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 12px;">
-                            500 Gds
-                        </div>
-                    </div>
-                    <button class="btn-submit" onclick="goToCertificatePayment()" style="margin-bottom: 12px;">
-                        <i class="fas fa-check"></i>
-                        Oui, je veux le certificat
-                    </button>
-                    <button class="btn-secondary" onclick="closeCertificateModal()" style="width: 100%;">
-                        Non, merci
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Donation Section -->
-        <div class="donation-section glass" id="donationSection">
-            <div class="donation-header">
-                <i class="fas fa-heart"></i>
-                <h3>Soutenir Rasin Ayiti</h3>
-            </div>
-            <p class="donation-text">
-                Vous voulez contribuer à la réussite de ce séminaire ? Faites un don et aidez-nous à créer une expérience inoubliable pour tous les jeunes haïtiens.
-            </p>
-            <div class="donation-buttons">
-                <button class="btn-donate btn-donate-primary" onclick="openDonationModal()">
-                    <i class="fas fa-gift"></i>
-                    Faire un don
-                </button>
-                <button class="btn-donate btn-donate-secondary" onclick="window.location.href='donation.html'">
-                    <i class="fas fa-arrow-right"></i>
-                    Voir les donateurs
-                </button>
-            </div>
-        </div>
-
-        <!-- Donation Modal -->
-        <div class="modal hidden" id="donationModal">
-            <div class="modal-overlay" onclick="closeDonationModal()"></div>
-            <div class="modal-content glass modal-large">
-                <button class="modal-close" onclick="closeDonationModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="modal-header">
-                    <i class="fas fa-hand-holding-heart" style="color: #ec4899;"></i>
-                    <h3>Faire un Don</h3>
-                </div>
-                <form id="donationForm">
-                    <div class="form-group">
-                        <label>Type de don</label>
-                        <div class="donation-type">
-                            <label class="radio-label">
-                                <input type="radio" name="donationType" value="anonymous" checked onchange="toggleDonationFields()">
-                                <span class="radio-custom"></span>
-                                <span>Anonyme</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="donationType" value="named" onchange="toggleDonationFields()">
-                                <span class="radio-custom"></span>
-                                <span>Avec mon nom</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="donorFields" class="hidden">
-                        <div class="form-group">
-                            <label for="donorNom">Nom</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="donorNom" placeholder="Ton nom">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="donorPrenom">Prénom</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="donorPrenom" placeholder="Ton prénom">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Montant du don</label>
-                        <div class="amount-buttons">
-                            <button type="button" class="amount-btn" onclick="selectAmount(250)">250 Gds</button>
-                            <button type="button" class="amount-btn" onclick="selectAmount(500)">500 Gds</button>
-                            <button type="button" class="amount-btn" onclick="selectAmount(1000)">1000 Gds</button>
-                            <button type="button" class="amount-btn" onclick="selectAmount(2000)">2000 Gds</button>
-                        </div>
-                        <div style="margin-top: 12px;">
-                            <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">Ou entre ton propre montant:</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-money-bill input-icon"></i>
-                                <input type="number" id="customAmount" placeholder="Ex: 1500" min="50" style="padding-left: 44px;" oninput="selectCustomAmount(this.value)">
-                                <span style="position: absolute; right: 16px; color: var(--text-muted);">Gds</span>
-                            </div>
-                        </div>
-                        <input type="hidden" id="donationAmount" required>
-                        <span class="error-message" id="amountError"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Mode de paiement</label>
-                        <div class="payment-methods">
-                            <div class="payment-method" data-method="moncash" onclick="selectDonationMethod('moncash')">
-                                <i class="fas fa-mobile-alt"></i>
-                                <span>Moncash</span>
-                            </div>
-                            <div class="payment-method" data-method="natcash" onclick="selectDonationMethod('natcash')">
-                                <i class="fas fa-wallet"></i>
-                                <span>Natcash</span>
-                            </div>
-                        </div>
-                        <input type="hidden" id="donationMethod" required>
-                        <span class="error-message" id="donationMethodError"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="donorPhone">Ton numéro de téléphone</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-phone input-icon"></i>
-                            <input type="tel" id="donorPhone" placeholder="+509 34 56 7890" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Preuve de paiement (capture d'écran)</label>
-                        <div class="file-upload" id="donationFileUpload" onclick="document.getElementById('donationFile').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Clique pour télécharger la capture</p>
-                            <p style="font-size: 0.8rem; color: var(--text-muted);">JPG, PNG (max 5MB)</p>
-                            <img id="donationPreviewImage" class="preview-image hidden" alt="Preview">
-                        </div>
-                        <input type="file" id="donationFile" name="donationFile" accept="image/jpeg,image/png,image/jpg" style="display: none;" required onchange="handleDonationFile(this)">
-                        <span class="error-message" id="donationFileError"></span>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="donationSubmitBtn">
-                        <span class="btn-text">Envoyer mon don</span>
-                        <i class="fas fa-heart"></i>
-                        <div class="btn-loader">
-                            <div class="spinner"></div>
-                        </div>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>© 2026 EventJeunes - Tous droits réservés</p>
-        </footer>
-    </main>
-
-    <!-- Admin Login Modal -->
-    <div class="modal hidden" id="adminModal">
-        <div class="modal-overlay" onclick="closeAdminLogin()"></div>
-        <div class="modal-content glass">
-            <button class="modal-close" onclick="closeAdminLogin()">
-                <i class="fas fa-times"></i>
-            </button>
+    <!-- Admin Modal -->
+    <div class="modal-overlay hidden" id="adminModal">
+        <div class="modal-content">
             <div class="modal-header">
-                <i class="fas fa-lock"></i>
-                <h3>Accès Admin</h3>
+                <h2>Connexion Admin</h2>
+                <button class="modal-close" onclick="closeAdminLogin()">&times;</button>
             </div>
-            <form id="adminLoginForm">
-                <div class="form-group">
-                    <label for="adminEmail">Email</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-envelope input-icon"></i>
-                        <input type="email" id="adminEmail" placeholder="admin@example.com" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="adminPassword">Mot de passe</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock input-icon"></i>
-                        <input type="password" id="adminPassword" placeholder="••••••" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword()">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">
-                    <span class="btn-text">Se connecter</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
+            <div class="modal-body">
+                <input type="password" id="adminPin" class="modal-input" placeholder="Entrez le code PIN admin" />
+                <button onclick="verifyAdminPin()" class="modal-btn">Se connecter</button>
+            </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div class="toast hidden" id="toast">
-        <i class="fas fa-info-circle"></i>
-        <span id="toastMessage"></span>
-    </div>
+    <!-- FOOTER 2026 -->
+    <footer class="footer-2026">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
+                        <span>Rasin Ayiti</span>
+                    </div>
+                    <p>La première école de formation en ligne en Haïti.</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="https://wa.me/50946807922"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="pages/formations.html">Formations</a></li>
+                        <li><a href="pages/seminaires.html">Séminaires</a></li>
+                        <li><a href="espace-etudiant/login.html">Espace Étudiant</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Administration</h4>
+                    <ul>
+                        <li><a href="admin/dashboard.html">Dashboard</a></li>
+                        <li><a href="seminar/room.html">Séminaire Live</a></li>
+                        <li><a href="#" onclick="openAdminLogin()">Connexion Admin</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-phone"></i> +509 46807922</p>
+                    <p><i class="fas fa-envelope"></i> contact@rasinayiti.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Port-au-Prince, Haïti</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Rasin Ayiti. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
 
+    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=19"></script>
-    <script src="script.js?v=7"></script>
+    <script src="supabase.js"></script>
+    
     <script>
-    // Countdown to April 30, 2026 09:00 AM Haiti time (UTC-4)
-    (function() {
-        const target = new Date('2026-04-30T09:00:00-04:00').getTime();
-        function update() {
-            const diff = target - Date.now();
-            if (diff <= 0) {
-                document.getElementById('countdown').innerHTML = '<div style="color:var(--success);font-weight:700;font-size:1.1rem;">L\'évènement a commencé !</div>';
-                return;
+        // Load dynamic content
+        async function loadFormations() {
+            try {
+                const { data, error } = await supabase
+                    .from('formations')
+                    .select('*')
+                    .eq('status', 'publie')
+                    .order('created_at', { ascending: false })
+                    .limit(6);
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('formationsGrid');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(f => `
+                        <div class="formation-card" data-aos="fade-up">
+                            <div class="card-image" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'});">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span class="card-type">${f.type_formation}</span>
+                            </div>
+                            <div class="card-content">
+                                <h3>${f.titre}</h3>
+                                <p>${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
+                                <div class="card-meta">
+                                    <span><i class="fas fa-clock"></i> ${f.duree || 'N/A'}</span>
+                                    <span class="card-price">${f.prix > 0 ? f.prix + ' HTG' : 'Gratuit'}</span>
+                                </div>
+                                <a href="pages/inscription.html?id=${f.id}&type=formation" class="btn-card">S'inscrire</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading formations:', err);
             }
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
-            document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
-            document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
-            document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
         }
-        update(); setInterval(update, 1000);
-    })();
+
+        async function loadSeminaires() {
+            try {
+                const { data, error } = await supabase
+                    .from('seminaires')
+                    .select('*, formations(titre)')
+                    .in('status', ['planifie', 'en_cours'])
+                    .order('date_seminaire', { ascending: true })
+                    .limit(5);
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('seminairesList');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(s => `
+                        <div class="seminaire-item" data-aos="fade-up">
+                            <div class="seminaire-date">
+                                <span class="date-day">${new Date(s.date_seminaire).getDate()}</span>
+                                <span class="date-month">${new Date(s.date_seminaire).toLocaleDateString('fr-FR', {month: 'short'})}</span>
+                            </div>
+                            <div class="seminaire-info">
+                                <h4>${s.titre}</h4>
+                                <p>${s.formations?.titre || 'Formation'}</p>
+                                <span class="seminaire-time">
+                                    <i class="fas fa-clock"></i> ${s.heure_debut || '09:00'} - ${s.heure_fin || '13:00'}
+                                </span>
+                            </div>
+                            <a href="pages/inscription.html?id=${s.id}&type=seminaire" class="btn-seminaire">
+                                ${s.status === 'en_cours' ? '<span class="live-badge">LIVE</span>' : 'S\'inscrire'}
+                            </a>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="no-data">Aucun séminaire planifié pour le moment.</p>';
+                }
+            } catch (err) {
+                console.error('Error loading seminaires:', err);
+            }
+        }
+
+        async function loadGalerie() {
+            try {
+                const { data, error } = await supabase
+                    .from('galerie')
+                    .select('*')
+                    .eq('publie', true)
+                    .order('created_at', { ascending: false })
+                    .limit(8);
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('galerieGrid');
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(g => `
+                        <div class="galerie-item" data-aos="zoom-in">
+                            <img src="${g.url_fichier}" alt="${g.titre}" loading="lazy">
+                            <div class="galerie-overlay">
+                                <h4>${g.titre}</h4>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading galerie:', err);
+            }
+        }
+
+        // Animate numbers
+        function animateNumbers() {
+            const numbers = document.querySelectorAll('.stat-number');
+            numbers.forEach(num => {
+                const target = parseInt(num.textContent.replace(/[^0-9]/g, ''));
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        num.textContent = num.textContent.replace(/[0-9]+/, target);
+                        clearInterval(timer);
+                    } else {
+                        num.textContent = num.textContent.replace(/[0-9]+/, Math.floor(current));
+                    }
+                }, 30);
+            });
+        }
+
+        // Navigation scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('.nav-2026');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Admin login functions
+        function openAdminLogin() {
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        async function verifyAdminPin() {
+            const pin = document.getElementById('adminPin').value;
+            if (pin === 'ADMIN2026') {
+                window.location.href = 'admin/dashboard.html';
+            } else {
+                alert('Code incorrect');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFormations();
+            loadSeminaires();
+            loadGalerie();
+            setTimeout(animateNumbers, 500);
+        });
     </script>
 </body>
 </html>

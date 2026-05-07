@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Rasin Ayiti</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../assets/css/landing-2026.css">
+</head>
+<body>
+    <!-- NAVIGATION -->
+    <nav class="nav-2026">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                <span>Rasin Ayiti</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Accueil</a></li>
+                <li><a href="formations.html">Formations</a></li>
+                <li><a href="seminaires.html">Séminaires</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
+                    <i class="fas fa-user"></i> Connexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- INSCRIPTION SECTION -->
+    <section class="inscription-section">
+        <div class="inscription-container">
+            <div class="inscription-header">
+                <a href="javascript:history.back()" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <h1 id="pageTitle">Inscription</h1>
+                <p id="pageSubtitle">Remplissez le formulaire pour vous inscrire</p>
+            </div>
+
+            <!-- Event Details -->
+            <div class="event-details" id="eventDetails">
+                <div class="event-info">
+                    <div class="event-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="event-text">
+                        <h3 id="eventTitle">Chargement...</h3>
+                        <p id="eventDate">--</p>
+                        <p id="eventPrice">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inscription Form -->
+            <div class="form-container">
+                <form id="inscriptionForm" novalidate>
+                    <div class="form-group">
+                        <label for="nom">Nom *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="nom" name="nom" placeholder="Votre nom de famille" required>
+                        </div>
+                        <span class="error-message" id="nomError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prenom">Prénom *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="prenom" name="prenom" placeholder="Votre prénom" required>
+                        </div>
+                        <span class="error-message" id="prenomError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+                        </div>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telephone">Téléphone *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="telephone" name="telephone" placeholder="+509 34 56 7890" required>
+                        </div>
+                        <span class="error-message" id="telephoneError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsapp">WhatsApp (optionnel)</label>
+                        <div class="input-wrapper">
+                            <i class="fab fa-whatsapp input-icon" style="color:#25D366;"></i>
+                            <input type="tel" id="whatsapp" name="whatsapp" placeholder="+509 34 56 7890">
+                        </div>
+                        <span class="error-message" id="whatsappError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tranche_age">Tranche d'âge *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-birthday-cake input-icon"></i>
+                            <select id="tranche_age" name="tranche_age" required>
+                                <option value="">Choisir...</option>
+                                <option value="15-20">15 - 20 ans</option>
+                                <option value="21-25">21 - 25 ans</option>
+                                <option value="26-30">26 - 30 ans</option>
+                                <option value="31-35">31 - 35 ans</option>
+                                <option value="36-40">36 - 40 ans</option>
+                                <option value="40+">40 ans et plus</option>
+                            </select>
+                        </div>
+                        <span class="error-message" id="tranche_ageError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ville">Ville / Commune *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-city input-icon"></i>
+                            <input type="text" id="ville" name="ville" list="villes-list" placeholder="Ex: Delmas, Pétion-Ville..." required>
+                            <datalist id="villes-list">
+                                <option value="Delmas">
+                                <option value="Pétion-Ville">
+                                <option value="Port-au-Prince">
+                                <option value="Carrefour">
+                                <option value="Cité Soleil">
+                                <option value="Tabarre">
+                                <option value="Croix-des-Bouquets">
+                                <option value="Kenscoff">
+                                <option value="Gonaïves">
+                                <option value="Cap-Haïtien">
+                                <option value="Les Cayes">
+                                <option value="Jacmel">
+                                <option value="Jérémie">
+                                <option value="Saint-Marc">
+                                <option value="Hinche">
+                            </datalist>
+                        </div>
+                        <span class="error-message" id="villeError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profession">Profession (optionnel)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-briefcase input-icon"></i>
+                            <input type="text" id="profession" name="profession" placeholder="Votre profession">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span class="btn-text">S'inscrire maintenant</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <div class="btn-loader">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay hidden" id="successModal">
+        <div class="modal-content success-modal">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Inscription réussie !</h2>
+            <p id="successMessage">Votre inscription a été enregistrée avec succès.</p>
+            <div class="success-actions">
+                <a href="../espace-etudiant/login.html" class="btn-primary">
+                    <i class="fas fa-user"></i> Accéder à mon espace
+                </a>
+                <button onclick="closeModal()" class="btn-secondary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STYLES -->
+    <style>
+        .inscription-section {
+            min-height: 100vh;
+            padding: 120px 20px 60px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .inscription-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .inscription-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
+            gap: 0.75rem;
+        }
+
+        .inscription-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .inscription-header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .event-details {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .event-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .event-text h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .event-text p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .event-text p:last-child {
+            color: #2563eb;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i.input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .input-wrapper input,
+        .input-wrapper select {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-wrapper input.error {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            display: block;
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            min-height: 1.25rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-loader {
+            display: none;
+        }
+
+        .btn-submit.loading .btn-text {
+            display: none;
+        }
+
+        .btn-submit.loading .btn-loader {
+            display: block;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .success-modal {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 450px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .success-modal h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+        }
+
+        .success-modal p {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .success-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .inscription-section {
+                padding: 100px 16px 40px;
+            }
+
+            .event-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .event-icon {
+                margin: 0 auto;
+            }
+        }
+    </style>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('id');
+        const itemType = urlParams.get('type'); // 'formation' or 'seminaire'
+
+        // Load event details
+        async function loadEventDetails() {
+            try {
+                let data, error;
+                
+                if (itemType === 'formation') {
+                    ({ data, error } = await supabase
+                        .from('formations')
+                        .select('*')
+                        .eq('id', itemId)
+                        .single());
+                    
+                    if (data) {
+                        document.getElementById('pageTitle').textContent = 'Inscription à la Formation';
+                        document.getElementById('pageSubtitle').textContent = 'Rejoignez cette formation pour développer vos compétences';
+                        document.getElementById('eventTitle').textContent = data.titre;
+                        document.getElementById('eventDate').textContent = `Durée: ${data.duree || 'N/A'}`;
+                        document.getElementById('eventPrice').textContent = data.prix > 0 ? `${data.prix} HTG` : 'Gratuit';
+                        document.querySelector('.event-icon i').className = 'fas fa-graduation-cap';
+                    }
+                } else if (itemType === 'seminaire') {
+                    ({ data, error } = await supabase
+                        .from('seminaires')
+                        .select('*, formations(titre)')
+                        .eq('id', itemId)
+                        .single());
+                    
+                    if (data) {
+                        document.getElementById('pageTitle').textContent = 'Inscription au Séminaire';
+                        document.getElementById('pageSubtitle').textContent = 'Participez à ce séminaire en direct';
+                        document.getElementById('eventTitle').textContent = data.titre;
+                        document.getElementById('eventDate').textContent = `Date: ${new Date(data.date_seminaire).toLocaleDateString('fr-FR')} à ${data.heure_debut || '09:00'}`;
+                        document.getElementById('eventPrice').textContent = data.prix > 0 ? `${data.prix} HTG` : 'Gratuit';
+                        document.querySelector('.event-icon i').className = 'fas fa-video';
+                    }
+                }
+
+                if (error || !data) {
+                    console.error('Error loading event:', error);
+                    document.getElementById('eventTitle').textContent = 'Événement non trouvé';
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        // Form validation
+        function validateForm() {
+            const nom = document.getElementById('nom').value.trim();
+            const prenom = document.getElementById('prenom').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const telephone = document.getElementById('telephone').value.trim();
+            const tranche_age = document.getElementById('tranche_age').value;
+            const ville = document.getElementById('ville').value.trim();
+
+            let isValid = true;
+
+            // Reset errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.input-wrapper input').forEach(el => el.classList.remove('error'));
+
+            if (!nom) {
+                document.getElementById('nomError').textContent = 'Ce champ est requis';
+                document.getElementById('nom').classList.add('error');
+                isValid = false;
+            }
+
+            if (!prenom) {
+                document.getElementById('prenomError').textContent = 'Ce champ est requis';
+                document.getElementById('prenom').classList.add('error');
+                isValid = false;
+            }
+
+            if (!email || !email.includes('@')) {
+                document.getElementById('emailError').textContent = 'Email invalide';
+                document.getElementById('email').classList.add('error');
+                isValid = false;
+            }
+
+            if (!telephone) {
+                document.getElementById('telephoneError').textContent = 'Ce champ est requis';
+                document.getElementById('telephone').classList.add('error');
+                isValid = false;
+            }
+
+            if (!tranche_age) {
+                document.getElementById('tranche_ageError').textContent = 'Ce champ est requis';
+                isValid = false;
+            }
+
+            if (!ville) {
+                document.getElementById('villeError').textContent = 'Ce champ est requis';
+                document.getElementById('ville').classList.add('error');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Submit form
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            if (!validateForm()) return;
+
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const formData = {
+                    nom: document.getElementById('nom').value.trim(),
+                    prenom: document.getElementById('prenom').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    telephone: document.getElementById('telephone').value.trim(),
+                    whatsapp: document.getElementById('whatsapp').value.trim(),
+                    tranche_age: document.getElementById('tranche_age').value,
+                    ville: document.getElementById('ville').value.trim(),
+                    profession: document.getElementById('profession').value.trim(),
+                };
+
+                // Insert into etudiants table
+                const { data: etudiant, error: etudiantError } = await supabase
+                    .from('etudiants')
+                    .insert([formData])
+                    .select()
+                    .single();
+
+                if (etudiantError) throw etudiantError;
+
+                // Create inscription
+                if (itemType === 'formation') {
+                    await supabase.from('inscriptions').insert([{
+                        etudiant_id: etudiant.id,
+                        formation_id: itemId,
+                        statut_paiement: 'en_attente',
+                        date_inscription: new Date().toISOString()
+                    }]);
+                } else if (itemType === 'seminaire') {
+                    await supabase.from('inscriptions').insert([{
+                        etudiant_id: etudiant.id,
+                        seminaire_id: itemId,
+                        statut_paiement: 'en_attente',
+                        date_inscription: new Date().toISOString()
+                    }]);
+                }
+
+                // Show success
+                document.getElementById('successModal').classList.remove('hidden');
+                document.getElementById('successMessage').textContent = 
+                    `Votre inscription a été enregistrée. Un email de confirmation sera envoyé à ${formData.email}.`;
+
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Une erreur est survenue. Veuillez réessayer.');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEventDetails();
+            document.getElementById('inscriptionForm').addEventListener('submit', handleSubmit);
+        });
+    </script>
+</body>
+</html>
