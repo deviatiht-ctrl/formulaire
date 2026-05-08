@@ -128,9 +128,16 @@
         let allQuestions = [];
 
         async function loadQuestions() {
-            const { data } = await window.supabaseClient.from('event_questions').select('*').order('created_at', { ascending: false });
-            allQuestions = data || [];
-            renderQuestions();
+            try {
+                const { data, error } = await window.supabaseClient.from('event_questions').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                allQuestions = data || [];
+                renderQuestions();
+            } catch (err) {
+                console.error('Error loading questions:', err);
+                const container = document.getElementById('questionsList');
+                container.innerHTML = '<p style="color:#ef4444;">Erreur de chargement: ' + err.message + '. Vérifiez que la table event_questions existe et que les RLS policies sont configurées.</p>';
+            }
         }
 
         function renderQuestions() {

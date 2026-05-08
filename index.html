@@ -269,6 +269,44 @@
             flex: 1;
         }
 
+        /* Donation Buttons */
+        .donation-amount-btn {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            color: #0f172a;
+            transition: all 0.2s;
+        }
+
+        .donation-amount-btn:hover {
+            border-color: #667eea;
+            background: #f5f3ff;
+        }
+
+        .donation-amount-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
         .form-group { margin-bottom: 1.25rem; }
         .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; }
         .form-input {
@@ -524,10 +562,11 @@
             
             <ul class="nav-links" id="navLinks">
                 <li><a href="#hero" onclick="closeMenu()">Accueil</a></li>
+                <li><a href="evenements.html" onclick="closeMenu()">Tous les Événements</a></li>
                 <li><a href="#formations" onclick="closeMenu()">Formations</a></li>
                 <li><a href="#seminaires" onclick="closeMenu()">Séminaires</a></li>
-                <li><a href="#evenements" onclick="closeMenu()">Événements</a></li>
                 <li><a href="#boutique" onclick="closeMenu()">Boutique</a></li>
+                <li><a href="#donations" onclick="closeMenu()">Faire un Don</a></li>
                 <li><a href="#galerie" onclick="closeMenu()">Galerie</a></li>
                 <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
                 <!-- Dynamic Auth Buttons -->
@@ -593,10 +632,10 @@
             <div class="hero-visual">
                 <div class="hero-images">
                     <div class="hero-img img-1">
-                        <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=800&auto=format&fit=crop" alt="Formation">
+                        <img src="assets/im1.jpg" alt="Formation">
                     </div>
                     <div class="hero-img img-2">
-                        <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=800&auto=format&fit=crop" alt="Séminaire">
+                        <img src="assets/img1.jpg" alt="Séminaire">
                     </div>
                 </div>
             </div>
@@ -683,6 +722,123 @@
             
             <div class="seminaires-list" id="seminairesList">
                 <!-- Seminaires yo pral load dinamikman -->
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: DONATIONS -->
+    <section class="section-events" id="donations" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="section-container">
+            <div class="section-header" style="text-align:center;">
+                <span style="color:#fff; font-weight:800; letter-spacing:2px; text-transform:uppercase; font-size:0.9rem;">Soutenez-nous</span>
+                <h2 class="section-title" style="color:#fff;">Faire un <span class="accent">Don</span></h2>
+                <p class="section-desc" style="color:#e0e7ff;">Votre soutien aide le Département de Développement Juvénile à former la jeunesse haïtienne</p>
+            </div>
+            
+            <div style="background:white; border-radius:20px; padding:2rem; max-width:600px; margin:0 auto; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+                <form id="donationForm">
+                    <!-- Montant -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Montant du don (HTG)</label>
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; margin-bottom:0.5rem;">
+                            <button type="button" onclick="setDonationAmount(500)" class="donation-amount-btn" data-amount="500">500 HTG</button>
+                            <button type="button" onclick="setDonationAmount(1000)" class="donation-amount-btn" data-amount="1000">1000 HTG</button>
+                            <button type="button" onclick="setDonationAmount(2500)" class="donation-amount-btn" data-amount="2500">2500 HTG</button>
+                        </div>
+                        <input type="number" id="donationAmount" class="form-input" placeholder="Autre montant" min="100" required>
+                    </div>
+
+                    <!-- Anonyme ou nom -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Type de donateur</label>
+                        <div style="display:flex; gap:1rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                <input type="radio" name="donatorType" value="anonyme" checked onchange="toggleDonatorFields()"> Anonyme
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                <input type="radio" name="donatorType" value="personne" onchange="toggleDonatorFields()"> Personne
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                <input type="radio" name="donatorType" value="association" onchange="toggleDonatorFields()"> Association
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Nom/Association -->
+                    <div id="donatorNameField" style="margin-bottom:1.5rem; display:none;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Nom / Association</label>
+                        <input type="text" id="donatorName" class="form-input" placeholder="Votre nom ou nom de l'association">
+                    </div>
+
+                    <!-- But du don -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">But du don</label>
+                        <select id="donationPurpose" class="form-input" onchange="toggleEventField()">
+                            <option value="general">General</option>
+                            <option value="rasin">Rasin Ayiti</option>
+                            <option value="evenement">Événement spécifique</option>
+                            <option value="activite">Activité spécifique</option>
+                        </select>
+                    </div>
+
+                    <!-- Événement -->
+                    <div id="eventField" style="margin-bottom:1.5rem; display:none;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Événement</label>
+                        <select id="donationEvent" class="form-input">
+                            <option value="">Sélectionnez un événement</option>
+                        </select>
+                    </div>
+
+                    <!-- Activité spécifique -->
+                    <div id="activityField" style="margin-bottom:1.5rem; display:none;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Activité spécifique</label>
+                        <input type="text" id="donationActivity" class="form-input" placeholder="Décrivez l'activité">
+                    </div>
+
+                    <!-- Méthode de paiement -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Méthode de paiement</label>
+                        <select id="paymentMethod" class="form-input" onchange="togglePaymentField()">
+                            <option value="monacash">Monacash</option>
+                            <option value="natcash">Natcash</option>
+                            <option value="manuel">Paiement manuel</option>
+                        </select>
+                    </div>
+
+                    <!-- Instructions paiement Monacash/Natcash -->
+                    <div id="paymentInstructions" style="margin-bottom:1.5rem; padding:1rem; background:#f0f9ff; border-radius:10px; border:1px solid #bae6fd;">
+                        <h4 style="margin:0 0 0.5rem 0; color:#0369a1; font-size:0.9rem;">Instructions de paiement</h4>
+                        <div id="paymentDetails" style="font-size:0.85rem; color:#0c4a6e;">
+                            <p style="margin:0.25rem 0;"><strong>Numéro Monacash:</strong> +509 XXXX XXXX</p>
+                            <p style="margin:0.25rem 0;"><strong>Nom du bénéficiaire:</strong> Rasin Ayiti</p>
+                            <p style="margin:0.5rem 0 0 0; font-style:italic;">Envoyez le montant et entrez le numéro de transaction comme preuve.</p>
+                        </div>
+                    </div>
+
+                    <!-- Preuve de paiement -->
+                    <div id="proofField" style="margin-bottom:1.5rem; display:none;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Preuve de paiement</label>
+                        <input type="file" id="paymentProof" class="form-input" accept="image/*">
+                        <p style="font-size:0.8rem; color:#64748b; margin-top:0.25rem;">Upload votre reçu</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Email (pour reçu)</label>
+                        <input type="email" id="donationEmail" class="form-input" placeholder="votre@email.com" required>
+                    </div>
+
+                    <!-- Message -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Message (optionnel)</label>
+                        <textarea id="donationMessage" class="form-input" rows="2" placeholder="Un message pour nous..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-hero-primary" style="width:100%; justify-content:center;">
+                        <i class="fas fa-heart"></i>
+                        <span>Faire le don</span>
+                    </button>
+                </form>
             </div>
         </div>
     </section>
@@ -1307,23 +1463,8 @@
                     
                     if (error) {
                         console.error('Quiz error:', error);
-                        // If table doesn't exist or error, show sample questions
-                        quizQuestionsData = [
-                            { id: 1, question_text: 'Quelle est la capitale d\'Haïti ?', option_a: 'Port-au-Prince', option_b: 'Cap-Haïtien', option_c: 'Jacmel', option_d: 'Gonaïves', correct_option: 'A', points: 10 },
-                            { id: 2, question_text: 'En quelle année Haïti a-t-elle obtenu son indépendance ?', option_a: '1791', option_b: '1804', option_c: '1815', option_d: '1825', correct_option: 'B', points: 10 },
-                            { id: 3, question_text: 'Quel est le drapeau haïtien composé de ?', option_a: 'Bleu et Rouge', option_b: 'Rouge et Blanc', option_c: 'Vert et Jaune', option_d: 'Noir et Blanc', correct_option: 'A', points: 10 }
-                        ];
-                        questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
-                            <div class="quiz-q-item">
-                                <span class="quiz-q-text">${idx + 1}. ${q.question_text}</span>
-                                <div class="quiz-options">
-                                    <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="A" required> ${q.option_a}</label>
-                                    <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="B"> ${q.option_b}</label>
-                                    <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="C"> ${q.option_c}</label>
-                                    <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="D"> ${q.option_d}</label>
-                                </div>
-                            </div>
-                        `).join('');
+                        questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#ef4444;">Erreur de chargement des questions: ${error.message}. Assurez-vous que la table event_questions existe et que les RLS policies sont configurées.</p>`;
+                        quizQuestionsData = [];
                     } else {
                         quizQuestionsData = data || [];
                         
@@ -1340,44 +1481,13 @@
                                 </div>
                             `).join('');
                         } else {
-                            // Use sample questions if table is empty
-                            quizQuestionsData = [
-                                { id: 1, question_text: 'Quelle est la capitale d\'Haïti ?', option_a: 'Port-au-Prince', option_b: 'Cap-Haïtien', option_c: 'Jacmel', option_d: 'Gonaïves', correct_option: 'A', points: 10 },
-                                { id: 2, question_text: 'En quelle année Haïti a-t-elle obtenu son indépendance ?', option_a: '1791', option_b: '1804', option_c: '1815', option_d: '1825', correct_option: 'B', points: 10 },
-                                { id: 3, question_text: 'Quel est le drapeau haïtien composé de ?', option_a: 'Bleu et Rouge', option_b: 'Rouge et Blanc', option_c: 'Vert et Jaune', option_d: 'Noir et Blanc', correct_option: 'A', points: 10 }
-                            ];
-                            questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
-                                <div class="quiz-q-item">
-                                    <span class="quiz-q-text">${idx + 1}. ${q.question_text}</span>
-                                    <div class="quiz-options">
-                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="A" required> ${q.option_a}</label>
-                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="B"> ${q.option_b}</label>
-                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="C"> ${q.option_c}</label>
-                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="D"> ${q.option_d}</label>
-                                    </div>
-                                </div>
-                            `).join('');
+                            questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#64748b;">Aucune question disponible. Veuillez contacter l'administrateur.</p>`;
                         }
                     }
                 } catch (err) {
                     console.error('Quiz error:', err);
-                    // Use sample questions on error
-                    quizQuestionsData = [
-                        { id: 1, question_text: 'Quelle est la capitale d\'Haïti ?', option_a: 'Port-au-Prince', option_b: 'Cap-Haïtien', option_c: 'Jacmel', option_d: 'Gonaïves', correct_option: 'A', points: 10 },
-                        { id: 2, question_text: 'En quelle année Haïti a-t-elle obtenu son indépendance ?', option_a: '1791', option_b: '1804', option_c: '1815', option_d: '1825', correct_option: 'B', points: 10 },
-                        { id: 3, question_text: 'Quel est le drapeau haïtien composé de ?', option_a: 'Bleu et Rouge', option_b: 'Rouge et Blanc', option_c: 'Vert et Jaune', option_d: 'Noir et Blanc', correct_option: 'A', points: 10 }
-                    ];
-                    questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
-                        <div class="quiz-q-item">
-                            <span class="quiz-q-text">${idx + 1}. ${q.question_text}</span>
-                            <div class="quiz-options">
-                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="A" required> ${q.option_a}</label>
-                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="B"> ${q.option_b}</label>
-                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="C"> ${q.option_c}</label>
-                                <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="D"> ${q.option_d}</label>
-                            </div>
-                        </div>
-                    `).join('');
+                    questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#ef4444;">Erreur de chargement: ${err.message}</p>`;
+                    quizQuestionsData = [];
                 }
             } else {
                 quizDiv.classList.add('hidden');
@@ -1552,8 +1662,172 @@
             loadEvents();
             loadMaillots();
             loadHeroStats();
+            loadEventsForDonation(); // Load events for donation dropdown
+            togglePaymentField(); // Initialize payment instructions
             updateNavbarAuth(); // Check auth state
             setTimeout(animateNumbers, 500);
+        });
+
+        // --- DONATION LOGIC ---
+        async function loadEventsForDonation() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('events')
+                    .select('id, titre')
+                    .eq('afficher_sur_site', true)
+                    .eq('status', 'actif')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                const eventSelect = document.getElementById('donationEvent');
+                eventSelect.innerHTML = '<option value="">Sélectionnez un événement</option>';
+                
+                if (data && data.length > 0) {
+                    data.forEach(event => {
+                        const option = document.createElement('option');
+                        option.value = event.id;
+                        option.textContent = event.titre;
+                        eventSelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Aucun événement disponible";
+                    option.disabled = true;
+                    eventSelect.appendChild(option);
+                }
+            } catch (err) {
+                console.error('Error loading events for donation:', err);
+            }
+        }
+
+        function setDonationAmount(amount) {
+            document.getElementById('donationAmount').value = amount;
+            document.querySelectorAll('.donation-amount-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.amount) === amount) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function toggleDonatorFields() {
+            const type = document.querySelector('input[name="donatorType"]:checked').value;
+            const nameField = document.getElementById('donatorNameField');
+            if (type === 'anonyme') {
+                nameField.style.display = 'none';
+            } else {
+                nameField.style.display = 'block';
+            }
+        }
+
+        function toggleEventField() {
+            const purpose = document.getElementById('donationPurpose').value;
+            const eventField = document.getElementById('eventField');
+            const activityField = document.getElementById('activityField');
+            
+            eventField.style.display = purpose === 'evenement' ? 'block' : 'none';
+            activityField.style.display = purpose === 'activite' ? 'block' : 'none';
+        }
+
+        function togglePaymentField() {
+            const method = document.getElementById('paymentMethod').value;
+            const proofField = document.getElementById('proofField');
+            const instructionsDiv = document.getElementById('paymentInstructions');
+            const paymentDetails = document.getElementById('paymentDetails');
+            
+            proofField.style.display = method === 'manuel' ? 'block' : 'none';
+            
+            if (method === 'monacash') {
+                instructionsDiv.style.display = 'block';
+                paymentDetails.innerHTML = `
+                    <p style="margin:0.25rem 0;"><strong>Numéro MONCASH:</strong> +509 46807922</p>
+                    <p style="margin:0.25rem 0;"><strong>Nom du bénéficiaire:</strong> Henry Berlinda</p>
+                    <p style="margin:0.5rem 0 0 0; font-style:italic;">Envoyez le montant via MONCASH et entrez le numéro de transaction comme preuve.</p>
+                `;
+            } else if (method === 'natcash') {
+                instructionsDiv.style.display = 'block';
+                paymentDetails.innerHTML = `
+                    <p style="margin:0.25rem 0;"><strong>Numéro Natcash:</strong> +509 46807922</p>
+                    <p style="margin:0.25rem 0;"><strong>Nom du bénéficiaire:</strong> Henry Berlinda</p>
+                    <p style="margin:0.5rem 0 0 0; font-style:italic;">Envoyez le montant via Natcash et entrez le numéro de transaction comme preuve.</p>
+                `;
+            } else {
+                instructionsDiv.style.display = 'none';
+            }
+        }
+
+        async function uploadPaymentProof(file) {
+            const fileName = `donation_${Date.now()}_${file.name}`;
+            const { data, error } = await window.supabaseClient.storage
+                .from('donations')
+                .upload(fileName, file);
+            
+            if (error) throw error;
+            
+            const { data: { publicUrl } } = window.supabaseClient.storage
+                .from('donations')
+                .getPublicUrl(data.path);
+            
+            return publicUrl;
+        }
+
+        document.getElementById('donationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+
+            try {
+                const donatorType = document.querySelector('input[name="donatorType"]:checked').value;
+                const proofFile = document.getElementById('paymentProof').files[0];
+                
+                let proofUrl = null;
+                if (proofFile) {
+                    proofUrl = await uploadPaymentProof(proofFile);
+                }
+
+                const donationData = {
+                    montant: parseFloat(document.getElementById('donationAmount').value),
+                    devise: 'HTG',
+                    est_anonyme: donatorType === 'anonyme',
+                    nom_donateur: donatorType === 'personne' ? document.getElementById('donatorName').value : null,
+                    association_nom: donatorType === 'association' ? document.getElementById('donatorName').value : null,
+                    but_don: document.getElementById('donationPurpose').value,
+                    activite_specifique: document.getElementById('donationPurpose').value === 'activite' ? document.getElementById('donationActivity').value : null,
+                    methode_paiement: document.getElementById('paymentMethod').value,
+                    preuve_paiement_url: proofUrl,
+                    email: document.getElementById('donationEmail').value,
+                    message: document.getElementById('donationMessage').value || null,
+                    statut: 'en_attente'
+                };
+
+                if (document.getElementById('donationPurpose').value === 'evenement') {
+                    donationData.evenement_id = document.getElementById('donationEvent').value;
+                }
+
+                const { data, error } = await window.supabaseClient
+                    .from('donations')
+                    .insert([donationData]);
+
+                if (error) throw error;
+
+                // Show success message
+                alert('Merci pour votre don ! Vous recevrez un reçu par email.');
+                e.target.reset();
+                document.querySelectorAll('.donation-amount-btn').forEach(btn => btn.classList.remove('active'));
+                toggleDonatorFields();
+                toggleEventField();
+                togglePaymentField();
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Erreur lors du don: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
         });
 
         // --- MAILLOT SHOP LOGIC ---

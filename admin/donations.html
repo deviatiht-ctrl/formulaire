@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Donations - Admin | Rasin Ayiti</title>
+    
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        :root { --primary: #667eea; --bg-main: #f8fafc; --sidebar-bg: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); margin: 0; display: flex; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); min-height: 100vh; color: white; padding: 1.5rem; position: fixed; }
+        .sidebar-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 0.5rem; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .main-content { flex: 1; margin-left: 280px; padding: 2.5rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-title h1 { font-size: 1.8rem; font-weight: 800; margin: 0; }
+        .table-card { background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 1rem 1.5rem; background: #f8fafc; color: #64748b; font-size: 0.8rem; text-transform: uppercase; }
+        .data-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .badge-en_attente { background: #fef3c7; color: #92400e; }
+        .badge-confirme { background: #dcfce7; color: #166534; }
+        .badge-annule { background: #fee2e2; color: #991b1b; }
+        .proof-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/logorasin.PNG" width="40" style="border-radius:8px;">
+            <span style="font-weight:800;">Rasin Ayiti Admin</span>
+        </div>
+        <nav>
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
+            <a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i> <span>Événements</span></a>
+            <a href="maillots.html" class="nav-item"><i class="fas fa-tshirt"></i> <span>Stock Maillots</span></a>
+            <a href="commandes-maillots.html" class="nav-item"><i class="fas fa-shopping-cart"></i> <span>Commandes</span></a>
+            <a href="donations.html" class="nav-item active"><i class="fas fa-heart"></i> <span>Donations</span></a>
+            <a href="parametres.html" class="nav-item"><i class="fas fa-cog"></i> <span>Paramètres</span></a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>Gestion des Donations</h1>
+                <p style="color:#64748b;">Gérez les donations et vérifiez les paiements</p>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Donateur</th>
+                        <th>Montant</th>
+                        <th>But</th>
+                        <th>Méthode</th>
+                        <th>Preuve</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="donationsBody">
+                    <tr><td colspan="8" style="text-align:center; padding:3rem;">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script>
+        async function loadDonations() {
+            const { data, error } = await window.supabaseClient
+                .from('donations')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) return;
+            const tbody = document.getElementById('donationsBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:3rem;">Aucune donation pour le moment.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(d => `
+                <tr>
+                    <td>
+                        ${d.est_anonyme 
+                            ? '<span style="font-style:italic; color:#64748b;">Anonyme</span>' 
+                            : `<div style="font-weight:700;">${d.nom_donateur || d.association_nom || ''}</div>`
+                        }
+                        <div style="font-size:0.8rem; color:#64748b;">${d.email || ''}</div>
+                    </td>
+                    <td style="font-weight:800; color:var(--primary);">${d.montant} ${d.devise}</td>
+                    <td>
+                        <div style="font-weight:600;">${d.but_don}</div>
+                        ${d.activite_specifique ? `<div style="font-size:0.8rem; color:#64748b;">${d.activite_specifique}</div>` : ''}
+                    </td>
+                    <td>
+                        <span style="text-transform:capitalize;">${d.methode_paiement}</span>
+                    </td>
+                    <td>
+                        ${d.preuve_paiement_url 
+                            ? `<img src="${d.preuve_paiement_url}" class="proof-img" onclick="window.open('${d.preuve_paiement_url}', '_blank')">` 
+                            : '<span style="color:#94a3b8;">-</span>'}
+                    </td>
+                    <td><span class="badge badge-${d.statut}">${d.statut.replace('_', ' ')}</span></td>
+                    <td style="font-size:0.8rem; color:#64748b;">${new Date(d.created_at).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <select onchange="updateStatus('${d.id}', this.value)" style="padding:0.4rem; border-radius:6px; border:1px solid #e2e8f0;">
+                            <option value="en_attente" ${d.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
+                            <option value="confirme" ${d.statut === 'confirme' ? 'selected' : ''}>Confirmé</option>
+                            <option value="annule" ${d.statut === 'annule' ? 'selected' : ''}>Annulé</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateStatus(id, status) {
+            const { error } = await window.supabaseClient.from('donations').update({ statut: status }).eq('id', id);
+            if (!error) loadDonations();
+        }
+
+        loadDonations();
+    </script>
+</body>
+</html>
