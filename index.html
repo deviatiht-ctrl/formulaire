@@ -1159,9 +1159,26 @@
 
                     return `
                         <div class="event-card">
-                            ${event.flyer_url ? `<img src="${event.flyer_url}" alt="${event.titre}" class="event-flyer" onclick="window.open('${event.flyer_url}', '_blank')">` : ''}
+                            ${(() => {
+                                const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
+                                if (images.length === 0) return '';
+                                if (images.length === 1) return `<img src="${images[0]}" alt="${event.titre}" class="event-flyer" onclick="window.open('${images[0]}', '_blank')">`;
+                                return `
+                                    <div style="position:relative; width:100%; height:220px; overflow:hidden;">
+                                        <div class="card-image-carousel">
+                                            ${images.map(img => `<img src="${img}" class="carousel-item" alt="${event.titre}">`).join('')}
+                                        </div>
+                                        ${images.length > 1 ? `
+                                            <div class="carousel-dots">
+                                                ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            })()}
                             <div class="event-content">
                                 <h3 class="event-title">${event.titre}</h3>
+                                ${event.duration ? `<div class="event-meta" style="margin-bottom:0.5rem;"><i class="fas fa-clock"></i> ${event.duration}</div>` : ''}
                                 <p class="event-description">${event.description || ''}</p>
                                 <div class="event-meta">
                                     <i class="fas fa-calendar"></i> ${date}

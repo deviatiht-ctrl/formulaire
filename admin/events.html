@@ -152,17 +152,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Flyer de l'événement</label>
-                    <div class="file-upload">
-                        <input type="file" id="flyerFile" accept="image/*" onchange="handleFileUpload(event)">
-                        <label for="flyerFile" class="file-label">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <span>Choisir une image</span>
-                        </label>
-                        <div id="flyerPreview" class="flyer-preview"></div>
-                        <input type="hidden" id="flyerUrl">
-                        <input type="hidden" id="flyerPublicId">
+                    <label>Images de l'événement (Plusieurs possibles) *</label>
+                    <input type="file" id="imageFiles" accept="image/*" class="search-input" multiple>
+                    <div id="imagesPreviewList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                        <!-- Preview thumbnails will appear here -->
                     </div>
+                    <input type="hidden" id="imagesData" value="[]">
                 </div>
 
                 <div class="form-row">
@@ -171,10 +166,16 @@
                         <input type="datetime-local" id="dateEvenement" required class="search-input">
                     </div>
                     <div class="form-group">
+                        <label>Durée (optionnel)</label>
+                        <input type="text" id="duration" class="search-input" placeholder="Ex: 2 jours, 1 mois, 3 heures">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
                         <label>Lieu</label>
                         <input type="text" id="lieu" class="search-input" placeholder="Adresse ou lien Zoom">
                     </div>
-                </div>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -859,15 +860,16 @@
                     document.getElementById('afficherSurSite').value = String(event.afficher_sur_site);
                     document.getElementById('inscriptionOuverte').value = String(event.inscription_ouverte !== false);
                     document.getElementById('placesMax').value = event.places_max || '';
-                    document.getElementById('flyerUrl').value = event.flyer_url || '';
+                    document.getElementById('duration').value = event.duration || '';
                     document.getElementById('whatsappLink').value = event.whatsapp_link || '';
                     document.getElementById('hasQuiz').value = String(event.has_quiz === true);
-                    document.getElementById('flyerPublicId').value = event.flyer_public_id || '';
+                    
+                    // Load images
+                    const imagesArr = event.images || (event.flyer_url ? [event.flyer_url] : []);
+                    document.getElementById('imagesData').value = JSON.stringify(imagesArr);
+                    renderImagesPreview(imagesArr);
+                    
                     togglePriceField();
-                    if (event.flyer_url) {
-                        document.getElementById('flyerPreview').innerHTML = `<img src="${event.flyer_url}" alt="Flyer">`;
-                        document.getElementById('flyerPreview').classList.add('show');
-                    }
                 }
             } else {
                 document.getElementById('eventForm').reset();
@@ -879,8 +881,67 @@
                 document.getElementById('whatsappLink').value = '';
                 document.getElementById('hasQuiz').value = 'false';
                 document.getElementById('inscriptionOuverte').value = 'true';
+                document.getElementById('duration').value = '';
+                document.getElementById('imagesData').value = '[]';
+                document.getElementById('imagesPreviewList').innerHTML = '';
                 togglePriceField();
             }
+        }
+
+        // Render images preview
+        function renderImagesPreview(images) {
+            const list = document.getElementById('imagesPreviewList');
+            list.innerHTML = images.map((img, index) => `
+                <div style="position:relative; width:80px; height:80px;">
+                    <img src="${img}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                    <button type="button" onclick="removeImage(${index})" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px;">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        // Remove image from preview
+        function removeImage(index) {
+            let images = JSON.parse(document.getElementById('imagesData').value || "[]");
+            images.splice(index, 1);
+            document.getElementById('imagesData').value = JSON.stringify(images);
+            renderImagesPreview(images);
+        }
+
+        // Handle multiple images upload
+        document.getElementById('imageFiles').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            const btn = document.querySelector('#eventForm button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                let currentImages = JSON.parse(document.getElementById('imagesData').value || "[]");
+                
+                for (const file of files) {
+                    const url = await uploadEventImage(file);
+                    currentImages.push(url);
+                }
+                
+                document.getElementById('imagesData').value = JSON.stringify(currentImages);
+                renderImagesPreview(currentImages);
+            } catch (err) {
+                alert('Error uploading: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enregistrer';
+            }
+        });
+
+        // Upload event image to Supabase storage
+        async function uploadEventImage(file) {
+            const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            const { data, error } = await window.supabaseClient.storage
+                .from('events')
+                .upload(fileName, file);
+            
+            if (error) throw error;
+            const { data: { publicUrl } } = window.supabaseClient.storage.from('events').getPublicUrl(fileName);
+            return publicUrl;
         }
 
         // View inscriptions
@@ -1027,46 +1088,59 @@
         // Form submit
         document.getElementById('eventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const eventId = document.getElementById('eventId').value;
-            const eventData = {
-                titre: document.getElementById('titre').value,
-                description: document.getElementById('description').value,
-                type_evenement: document.getElementById('typeEvenement').value,
-                date_evenement: document.getElementById('dateEvenement').value || null,
-                lieu: document.getElementById('lieu').value,
-                est_payant: document.getElementById('estPayant').value === 'true',
-                prix: parseFloat(document.getElementById('prix').value) || 0,
-                sponsors: document.getElementById('sponsors').value.split('\n').filter(s => s.trim()),
-                status: document.getElementById('status').value,
-                afficher_sur_site: document.getElementById('afficherSurSite').value === 'true',
-                inscription_ouverte: document.getElementById('inscriptionOuverte').value === 'true',
-                places_max: parseInt(document.getElementById('placesMax').value) || null,
-                whatsapp_link: document.getElementById('whatsappLink').value || null,
-                has_quiz: document.getElementById('hasQuiz').value === 'true',
-                flyer_url: document.getElementById('flyerUrl').value || null,
-                flyer_public_id: document.getElementById('flyerPublicId').value || null
-            };
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
             try {
+                const eventId = document.getElementById('eventId').value;
+                const imagesArr = JSON.parse(document.getElementById('imagesData').value || "[]");
+
+                const eventData = {
+                    titre: document.getElementById('titre').value,
+                    description: document.getElementById('description').value,
+                    type_evenement: document.getElementById('typeEvenement').value,
+                    date_evenement: document.getElementById('dateEvenement').value || null,
+                    lieu: document.getElementById('lieu').value,
+                    est_payant: document.getElementById('estPayant').value === 'true',
+                    prix: parseFloat(document.getElementById('prix').value) || 0,
+                    sponsors: document.getElementById('sponsors').value.split('\n').filter(s => s.trim()),
+                    status: document.getElementById('status').value,
+                    afficher_sur_site: document.getElementById('afficherSurSite').value === 'true',
+                    inscription_ouverte: document.getElementById('inscriptionOuverte').value === 'true',
+                    places_max: parseInt(document.getElementById('placesMax').value) || null,
+                    whatsapp_link: document.getElementById('whatsappLink').value || null,
+                    has_quiz: document.getElementById('hasQuiz').value === 'true',
+                    duration: document.getElementById('duration').value || null,
+                    images: imagesArr,
+                    flyer_url: imagesArr[0] || null // First image as flyer for backward compatibility
+                };
+
+                let error;
                 if (eventId) {
-                    const { error } = await window.supabaseClient
+                    const { error: updateError } = await window.supabaseClient
                         .from('events')
                         .update(eventData)
                         .eq('id', eventId);
-                    if (error) throw error;
+                    error = updateError;
                 } else {
-                    const { error } = await window.supabaseClient
+                    const { error: insertError } = await window.supabaseClient
                         .from('events')
                         .insert([eventData]);
-                    if (error) throw error;
+                    error = insertError;
                 }
+
+                if (error) throw error;
 
                 closeModal();
                 await loadEvents();
+                alert('Événement enregistré avec succès !');
             } catch (err) {
                 console.error('Error saving event:', err);
-                alert('Erreur lors de l\'enregistrement');
+                alert('Erreur: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enregistrer';
             }
         });
 
