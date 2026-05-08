@@ -68,12 +68,22 @@
                     <input type="number" id="mPrix" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label>Image URL 1 (Photo principale)</label>
-                    <input type="url" id="mImg1" class="form-input" required placeholder="https://...">
+                    <label>Image 1 (Photo principale) *</label>
+                    <input type="file" id="mImg1File" class="form-input" accept="image/*" required onchange="previewImage(this, 'preview1')">
+                    <input type="hidden" id="mImg1">
+                    <img id="preview1" style="max-width:100%; height:150px; object-fit:cover; border-radius:8px; margin-top:0.5rem; display:none;">
                 </div>
                 <div class="form-group">
-                    <label>Image URL 2 (Optionnelle)</label>
-                    <input type="url" id="mImg2" class="form-input">
+                    <label>Image 2 (Optionnelle)</label>
+                    <input type="file" id="mImg2File" class="form-input" accept="image/*" onchange="previewImage(this, 'preview2')">
+                    <input type="hidden" id="mImg2">
+                    <img id="preview2" style="max-width:100%; height:150px; object-fit:cover; border-radius:8px; margin-top:0.5rem; display:none;">
+                </div>
+                <div class="form-group">
+                    <label>Image 3 (Optionnelle)</label>
+                    <input type="file" id="mImg3File" class="form-input" accept="image/*" onchange="previewImage(this, 'preview3')">
+                    <input type="hidden" id="mImg3">
+                    <img id="preview3" style="max-width:100%; height:150px; object-fit:cover; border-radius:8px; margin-top:0.5rem; display:none;">
                 </div>
                 <div style="display:flex; gap:1rem; margin-top:1.5rem;">
                     <button type="button" onclick="closeModal()" style="flex:1; padding:0.75rem; border-radius:10px; border:none; background:#64748b; color:white; cursor:pointer;">Annuler</button>
@@ -87,6 +97,35 @@
     <script src="../supabase.js"></script>
     <script>
         let allMaillots = [];
+
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        async function uploadFile(file, fileName) {
+            const { data, error } = await window.supabaseClient.storage
+                .from('maillots')
+                .upload(fileName, file);
+            
+            if (error) throw error;
+            
+            const { data: { publicUrl } } = window.supabaseClient.storage
+                .from('maillots')
+                .getPublicUrl(data.path);
+            
+            return publicUrl;
+        }
+
         async function loadMaillots() {
             const { data } = await window.supabaseClient.from('maillots').select('*').order('created_at', { ascending: false });
             allMaillots = data || [];
@@ -104,7 +143,14 @@
             `).join('');
         }
 
-        function openModal() { document.getElementById('maillotForm').reset(); document.getElementById('maillotId').value = ''; document.getElementById('maillotModal').classList.remove('hidden'); }
+        function openModal() { 
+            document.getElementById('maillotForm').reset(); 
+            document.getElementById('maillotId').value = ''; 
+            document.getElementById('preview1').style.display = 'none';
+            document.getElementById('preview2').style.display = 'none';
+            document.getElementById('preview3').style.display = 'none';
+            document.getElementById('maillotModal').classList.remove('hidden'); 
+        }
         function closeModal() { document.getElementById('maillotModal').classList.add('hidden'); }
 
         async function editMaillot(id) {
@@ -116,6 +162,21 @@
             document.getElementById('mPrix').value = m.prix;
             document.getElementById('mImg1').value = m.image_url_1;
             document.getElementById('mImg2').value = m.image_url_2 || '';
+            document.getElementById('mImg3').value = m.image_url_3 || '';
+            
+            if (m.image_url_1) {
+                document.getElementById('preview1').src = m.image_url_1;
+                document.getElementById('preview1').style.display = 'block';
+            }
+            if (m.image_url_2) {
+                document.getElementById('preview2').src = m.image_url_2;
+                document.getElementById('preview2').style.display = 'block';
+            }
+            if (m.image_url_3) {
+                document.getElementById('preview3').src = m.image_url_3;
+                document.getElementById('preview3').style.display = 'block';
+            }
+            
             document.getElementById('maillotModal').classList.remove('hidden');
         }
 
@@ -128,18 +189,59 @@
 
         document.getElementById('maillotForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('maillotId').value;
-            const data = {
-                nom: document.getElementById('mNom').value,
-                description: document.getElementById('mDesc').value,
-                prix: parseFloat(document.getElementById('mPrix').value),
-                image_url_1: document.getElementById('mImg1').value,
-                image_url_2: document.getElementById('mImg2').value || null
-            };
-            if (id) await window.supabaseClient.from('maillots').update(data).eq('id', id);
-            else await window.supabaseClient.from('maillots').insert([data]);
-            closeModal();
-            loadMaillots();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+
+            try {
+                const id = document.getElementById('maillotId').value;
+                const img1File = document.getElementById('mImg1File').files[0];
+                const img2File = document.getElementById('mImg2File').files[0];
+                const img3File = document.getElementById('mImg3File').files[0];
+
+                let img1Url = document.getElementById('mImg1').value;
+                let img2Url = document.getElementById('mImg2').value;
+                let img3Url = document.getElementById('mImg3').value;
+
+                // Upload new images if selected
+                if (img1File) {
+                    const fileName = `${Date.now()}_1_${img1File.name}`;
+                    img1Url = await uploadFile(img1File, fileName);
+                    document.getElementById('mImg1').value = img1Url;
+                }
+                if (img2File) {
+                    const fileName = `${Date.now()}_2_${img2File.name}`;
+                    img2Url = await uploadFile(img2File, fileName);
+                    document.getElementById('mImg2').value = img2Url;
+                }
+                if (img3File) {
+                    const fileName = `${Date.now()}_3_${img3File.name}`;
+                    img3Url = await uploadFile(img3File, fileName);
+                    document.getElementById('mImg3').value = img3Url;
+                }
+
+                const data = {
+                    nom: document.getElementById('mNom').value,
+                    description: document.getElementById('mDesc').value,
+                    prix: parseFloat(document.getElementById('mPrix').value),
+                    image_url_1: img1Url,
+                    image_url_2: img2Url || null,
+                    image_url_3: img3Url || null
+                };
+
+                if (id) await window.supabaseClient.from('maillots').update(data).eq('id', id);
+                else await window.supabaseClient.from('maillots').insert([data]);
+
+                closeModal();
+                loadMaillots();
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Erreur lors de l\'enregistrement: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
         });
 
         loadMaillots();
