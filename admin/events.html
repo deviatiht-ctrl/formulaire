@@ -162,12 +162,12 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Date de l'événement *</label>
-                        <input type="datetime-local" id="dateEvenement" required class="search-input">
+                        <label>Date de début *</label>
+                        <input type="datetime-local" id="startDate" required class="search-input">
                     </div>
                     <div class="form-group">
-                        <label>Durée (optionnel)</label>
-                        <input type="text" id="duration" class="search-input" placeholder="Ex: 2 jours, 1 mois, 3 heures">
+                        <label>Date de fin (optionnel)</label>
+                        <input type="datetime-local" id="endDate" class="search-input">
                     </div>
                 </div>
 
@@ -850,8 +850,10 @@
                     document.getElementById('titre').value = event.titre;
                     document.getElementById('description').value = event.description || '';
                     document.getElementById('typeEvenement').value = event.type_evenement;
-                    document.getElementById('dateEvenement').value = event.date_evenement
-                        ? event.date_evenement.slice(0, 16) : '';
+                    document.getElementById('startDate').value = event.start_date
+                        ? event.start_date.slice(0, 16) : '';
+                    document.getElementById('endDate').value = event.end_date
+                        ? event.end_date.slice(0, 16) : '';
                     document.getElementById('lieu').value = event.lieu || '';
                     document.getElementById('estPayant').value = String(event.est_payant);
                     document.getElementById('prix').value = event.prix || 0;
@@ -860,7 +862,6 @@
                     document.getElementById('afficherSurSite').value = String(event.afficher_sur_site);
                     document.getElementById('inscriptionOuverte').value = String(event.inscription_ouverte !== false);
                     document.getElementById('placesMax').value = event.places_max || '';
-                    document.getElementById('duration').value = event.duration || '';
                     document.getElementById('whatsappLink').value = event.whatsapp_link || '';
                     document.getElementById('hasQuiz').value = String(event.has_quiz === true);
                     
@@ -881,7 +882,8 @@
                 document.getElementById('whatsappLink').value = '';
                 document.getElementById('hasQuiz').value = 'false';
                 document.getElementById('inscriptionOuverte').value = 'true';
-                document.getElementById('duration').value = '';
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
                 document.getElementById('imagesData').value = '[]';
                 document.getElementById('imagesPreviewList').innerHTML = '';
                 togglePriceField();
@@ -1100,7 +1102,8 @@
                     titre: document.getElementById('titre').value,
                     description: document.getElementById('description').value,
                     type_evenement: document.getElementById('typeEvenement').value,
-                    date_evenement: document.getElementById('dateEvenement').value || null,
+                    start_date: document.getElementById('startDate').value || null,
+                    end_date: document.getElementById('endDate').value || null,
                     lieu: document.getElementById('lieu').value,
                     est_payant: document.getElementById('estPayant').value === 'true',
                     prix: parseFloat(document.getElementById('prix').value) || 0,
@@ -1111,7 +1114,6 @@
                     places_max: parseInt(document.getElementById('placesMax').value) || null,
                     whatsapp_link: document.getElementById('whatsappLink').value || null,
                     has_quiz: document.getElementById('hasQuiz').value === 'true',
-                    duration: document.getElementById('duration').value || null,
                     images: imagesArr,
                     flyer_url: imagesArr[0] || null // First image as flyer for backward compatibility
                 };

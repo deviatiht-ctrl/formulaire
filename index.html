@@ -1144,7 +1144,7 @@
                 }
 
                 eventsGrid.innerHTML = data.map(event => {
-                    const date = event.date_evenement ? new Date(event.date_evenement).toLocaleDateString('fr-FR', {
+                    const startDate = event.start_date ? new Date(event.start_date).toLocaleDateString('fr-FR', {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
@@ -1152,6 +1152,19 @@
                         hour: '2-digit',
                         minute: '2-digit'
                     }) : 'Date non définie';
+
+                    let date = startDate;
+                    if (event.end_date) {
+                        const endDate = new Date(event.end_date).toLocaleDateString('fr-FR', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        date = `${startDate} - ${endDate}`;
+                    }
 
                     const price = event.est_payant ? `${event.prix} ${event.devise}` : 'Gratuit';
                     const typeIcon = event.type_evenement === 'online' ? 'video' : event.type_evenement === 'hybrid' ? 'laptop' : 'map-marker-alt';
@@ -1178,7 +1191,6 @@
                             })()}
                             <div class="event-content">
                                 <h3 class="event-title">${event.titre}</h3>
-                                ${event.duration ? `<div class="event-meta" style="margin-bottom:0.5rem;"><i class="fas fa-clock"></i> ${event.duration}</div>` : ''}
                                 <p class="event-description">${event.description || ''}</p>
                                 <div class="event-meta">
                                     <i class="fas fa-calendar"></i> ${date}
@@ -1197,8 +1209,7 @@
 
                                 <div class="event-progress-container" id="prog-container-${event.id}">
                                     <div class="progress-label">
-                                        <span id="prog-text-${event.id}">Calculant les places...</span>
-                                        <span id="prog-percent-${event.id}">0%</span>
+                                        <span id="prog-text-${event.id}">Chargement...</span>
                                     </div>
                                     <div class="progress-bar-bg">
                                         <div class="progress-bar-fill" id="prog-fill-${event.id}" style="width: 0%"></div>
@@ -1235,35 +1246,14 @@
                 if (error) throw error;
 
                 const current = count || 0;
-                const max = event.places_max;
                 const textEl = document.getElementById(`prog-text-${event.id}`);
-                const percentEl = document.getElementById(`prog-percent-${event.id}`);
                 const fillEl = document.getElementById(`prog-fill-${event.id}`);
-                const btnReg = document.getElementById(`btn-reg-${event.id}`);
 
-                if (!max) {
-                    textEl.textContent = `👥 ${current} inscrit(s)`;
-                    percentEl.textContent = 'Libre';
-                    fillEl.style.width = '100%';
-                    return;
-                }
-
-                const percent = Math.min(Math.round((current / max) * 100), 100);
-                const remaining = max - current;
-
-                textEl.textContent = remaining > 0 ? `${remaining} places restantes` : 'Complet !';
-                percentEl.textContent = `${percent}%`;
+                textEl.textContent = `👥 ${current} inscrit(s)`;
+                
+                // Fill bar based on count (just for visual effect, max 100% at 50+ registrations)
+                const percent = Math.min(Math.round((current / 50) * 100), 100);
                 fillEl.style.width = `${percent}%`;
-
-                if (percent >= 100) {
-                    fillEl.classList.add('full');
-                    if (btnReg) {
-                        btnReg.disabled = true;
-                        btnReg.textContent = 'Événement Complet';
-                    }
-                } else if (percent >= 80) {
-                    fillEl.classList.add('warning');
-                }
             } catch (err) {
                 console.error('Error updating progress:', err);
             }

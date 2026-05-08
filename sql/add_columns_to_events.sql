@@ -1,7 +1,7 @@
 -- ============================================================
 --  AJOUTE KOLON MANKAN NAN TABLE EVENTS
 --  Kreye: 2026
---  Deskripsyon: Ajoute kolon has_quiz, inscription_ouverte, places_max, whatsapp_link, images, duration
+--  Deskripsyon: Ajoute kolon has_quiz, inscription_ouverte, places_max, whatsapp_link, images, duration, start_date, end_date
 -- ============================================================
 
 -- Ajoute kolon yo si yo pa egziste
@@ -12,6 +12,8 @@ ADD COLUMN IF NOT EXISTS places_max INTEGER,
 ADD COLUMN IF NOT EXISTS whatsapp_link VARCHAR(500),
 ADD COLUMN IF NOT EXISTS images TEXT[], -- Array d'images
 ADD COLUMN IF NOT EXISTS duration VARCHAR(100), -- Ex: "2 jours", "1 mois", "3 heures"
+ADD COLUMN IF NOT EXISTS start_date TIMESTAMP,
+ADD COLUMN IF NOT EXISTS end_date TIMESTAMP;
 
 -- Konfime kolon yo te ajoute
 SELECT 
@@ -20,5 +22,5 @@ SELECT
     is_nullable
 FROM information_schema.columns
 WHERE table_name = 'events'
-AND column_name IN ('has_quiz', 'inscription_ouverte', 'places_max', 'whatsapp_link', 'images', 'duration')
+AND column_name IN ('has_quiz', 'inscription_ouverte', 'places_max', 'whatsapp_link', 'images', 'duration', 'start_date', 'end_date')
 ORDER BY column_name;
