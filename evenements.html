@@ -13,22 +13,28 @@
         /* Navbar Styles */
         .navbar {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1400px;
+            padding: 10px 40px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 1000;
-            padding: 0.875rem 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
         }
 
         .nav-logo {
@@ -41,10 +47,10 @@
 
         .nav-links {
             display: flex;
+            gap: 15px;
             list-style: none;
             margin: 0;
             padding: 0;
-            gap: 2rem;
             align-items: center;
         }
 
@@ -53,10 +59,14 @@
             color: #475569;
             font-weight: 600;
             transition: color 0.2s;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
         }
 
         .nav-links a:hover,
         .nav-links a.active {
+            background: rgba(37, 99, 235, 0.1);
             color: var(--primary);
         }
 
@@ -92,11 +102,69 @@
             }
         }
 
+        .event-description {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .event-sponsors {
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .sponsors-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+        }
+
+        .sponsors-list {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .event-progress-container {
+            margin-top: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
         /* Events Page Styles */
         .events-page {
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 120px 20px 60px;
+            padding: 140px 20px 60px;
         }
 
         .events-container {
@@ -134,6 +202,8 @@
             overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
         .event-card:hover {
@@ -142,13 +212,22 @@
 
         .event-image {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
             background: #f1f5f9;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .event-image:hover {
+            transform: scale(1.02);
         }
 
         .event-content {
             padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .event-type {
@@ -220,6 +299,130 @@
             background: rgba(255,255,255,0.1);
             border-radius: 20px;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #0f172a;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Quiz Styles */
+        .quiz-q-item {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .quiz-q-text {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .quiz-opt {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-opt:hover {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .quiz-opt input[type="radio"] {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -265,6 +468,59 @@
         </div>
     </div>
 
+    <!-- Image Modal -->
+    <div class="modal-overlay hidden" id="imageModal">
+        <div class="modal-content" style="max-width:80%; max-height:85vh; background:transparent; box-shadow:none;">
+            <button class="modal-close" onclick="closeImageModal()" style="position:fixed; top:20px; right:20px; background:white; color:#0f172a; width:50px; height:50px; border-radius:50%; font-size:24px; z-index:3000; border:none; cursor:pointer;">&times;</button>
+            <img id="imageModalContent" src="" alt="Full image" style="max-width:100%; max-height:85vh; object-fit:contain; border-radius:12px;">
+        </div>
+    </div>
+
+    <!-- Event Registration Modal -->
+    <div class="modal-overlay hidden" id="eventRegModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="regModalTitle">Inscription à l'événement</h2>
+                <button class="modal-close" onclick="closeRegModal()">&times;</button>
+            </div>
+            <form id="eventRegForm" class="modal-body">
+                <input type="hidden" id="regEventId">
+                <div class="form-group">
+                    <label>Prénom *</label>
+                    <input type="text" id="regPrenom" class="form-input" required placeholder="Votre prénom">
+                </div>
+                <div class="form-group">
+                    <label>Nom *</label>
+                    <input type="text" id="regNom" class="form-input" required placeholder="Votre nom">
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="regEmail" class="form-input" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone / WhatsApp</label>
+                    <input type="tel" id="regPhone" class="form-input" placeholder="+509 ...">
+                </div>
+                <div class="form-group">
+                    <label>Ville</label>
+                    <input type="text" id="regVille" class="form-input" placeholder="Ex: Port-au-Prince">
+                </div>
+
+                <!-- Quiz Section -->
+                <div id="quizSection" class="hidden" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px dashed #e2e8f0;">
+                    <h3 style="font-size: 1.1rem; color: #1e40af; margin-bottom: 1rem;"><i class="fas fa-brain"></i> Quiz sur Haïti (Gagnez des points pour votre ville !)</h3>
+                    <div id="quizQuestions">
+                        <!-- Questions will load here -->
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmitReg" style="margin-top: 1.5rem;">
+                    <i class="fas fa-paper-plane"></i> Confirmer mon inscription
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script>
@@ -295,41 +551,80 @@
                 }
 
                 grid.innerHTML = data.map(event => {
-                    let date = 'Date à venir';
-                    if (event.date_evenement) {
-                        const eventDate = new Date(event.date_evenement);
-                        // Use UTC to avoid timezone conversion issues
-                        const day = eventDate.getUTCDate();
-                        const month = eventDate.toLocaleDateString('fr-FR', { month: 'long' });
-                        const year = eventDate.getUTCFullYear();
-                        const weekday = eventDate.toLocaleDateString('fr-FR', { weekday: 'long' });
-                        date = `${weekday} ${day} ${month} ${year}`;
+                    const startDate = event.start_date ? new Date(event.start_date).toLocaleDateString('fr-FR', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'Date non définie';
+
+                    let date = startDate;
+                    if (event.end_date) {
+                        const endDate = new Date(event.end_date).toLocaleDateString('fr-FR', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        date = `${startDate} - ${endDate}`;
                     }
-                    
+
                     const price = event.est_payant ? `${event.prix} ${event.devise}` : 'Gratuit';
-                    const priceClass = event.est_payant ? '' : 'free';
-                    const imageUrl = event.flyer_url || event.images?.[0] || 'https://via.placeholder.com/400x200?text=Event';
+                    const typeIcon = event.type_evenement === 'online' ? 'video' : event.type_evenement === 'hybrid' ? 'laptop' : 'map-marker-alt';
+                    const typeLabel = event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne';
+
+                    const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
+                    const imageUrl = images.length > 0 ? images[0] : 'https://via.placeholder.com/400x200?text=Event';
                     
                     return `
                         <div class="event-card">
-                            <img src="${imageUrl}" alt="${event.titre}" class="event-image">
+                            <img src="${imageUrl}" alt="${event.titre}" class="event-image" onclick="openImageModal('${imageUrl}')">
                             <div class="event-content">
-                                <span class="event-type">${event.type_evenement || 'Événement'}</span>
+                                <span class="event-type"><i class="fas fa-${typeIcon}"></i> ${typeLabel}</span>
                                 <h3 class="event-title">${event.titre}</h3>
+                                <p class="event-description">${event.description || ''}</p>
                                 <div class="event-date">
                                     <i class="fas fa-calendar"></i>
                                     ${date}
                                 </div>
-                                <div class="event-price ${priceClass}">
+                                ${event.lieu ? `<div style="font-size:0.9rem; color:#64748b; margin-bottom:0.5rem;"><i class="fas fa-map-marker-alt"></i> ${event.lieu}</div>` : ''}
+                                <div class="event-price ${event.est_payant ? '' : 'free'}">
                                     ${price}
                                 </div>
-                                <button class="btn-register" onclick="window.location.href='index.html#evenements'">
+                                ${event.sponsors && event.sponsors.length > 0 ? `
+                                    <div class="event-sponsors">
+                                        <span class="sponsors-label">Sponsors:</span>
+                                        <div class="sponsors-list">${event.sponsors.join(', ')}</div>
+                                    </div>
+                                ` : ''}
+                                ${event.places_max ? `
+                                    <div class="event-progress-container">
+                                        <div class="progress-label">
+                                            <span id="prog-text-${event.id}">Chargement...</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" id="prog-fill-${event.id}" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                <button class="btn-register" onclick="openRegModal('${event.id}', '${event.titre.replace(/'/g, "\\'")}', '${event.whatsapp_link || ''}', '${event.has_quiz}')">
                                     S'inscrire
                                 </button>
                             </div>
                         </div>
                     `;
                 }).join('');
+
+                // Load progress bar data for events with places_max
+                data.forEach(event => {
+                    if (event.places_max) {
+                        loadEventProgress(event.id, event.places_max);
+                    }
+                });
             } catch (err) {
                 console.error('Error loading events:', err);
                 document.getElementById('eventsGrid').innerHTML = `
@@ -349,6 +644,159 @@
 
         function closeMenu() {
             document.getElementById('navLinks').classList.remove('active');
+        }
+
+        function openImageModal(imageUrl) {
+            document.getElementById('imageModalContent').src = imageUrl;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        let currentEventQuiz = false;
+        let currentEventWALink = '';
+        let quizQuestionsData = [];
+
+        async function openRegModal(id, titre, waLink, hasQuiz) {
+            document.getElementById('regEventId').value = id;
+            document.getElementById('regModalTitle').textContent = `S'inscrire : ${titre}`;
+            currentEventWALink = waLink;
+            currentEventQuiz = (hasQuiz === 'true' || hasQuiz === true);
+            
+            const quizDiv = document.getElementById('quizSection');
+            const questionsDiv = document.getElementById('quizQuestions');
+            
+            if (currentEventQuiz) {
+                quizDiv.classList.remove('hidden');
+                questionsDiv.innerHTML = '<p style="text-align:center; padding:1rem; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Chargement des questions...</p>';
+                
+                try {
+                    const { data, error } = await window.supabaseClient
+                        .from('event_questions')
+                        .select('*')
+                        .eq('is_active', true)
+                        .limit(3);
+                    
+                    if (error) {
+                        console.error('Quiz error:', error);
+                        questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#ef4444;">Erreur de chargement des questions: ${error.message}. Assurez-vous que la table event_questions existe et que les RLS policies sont configurées.</p>`;
+                        quizQuestionsData = [];
+                    } else {
+                        quizQuestionsData = data || [];
+                        
+                        if (quizQuestionsData.length > 0) {
+                            questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
+                                <div class="quiz-q-item">
+                                    <span class="quiz-q-text">${idx + 1}. ${q.question_text}</span>
+                                    <div class="quiz-options">
+                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="A" required> ${q.option_a}</label>
+                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="B"> ${q.option_b}</label>
+                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="C"> ${q.option_c}</label>
+                                        <label class="quiz-opt"><input type="radio" name="q_${q.id}" value="D"> ${q.option_d}</label>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#64748b;">Aucune question disponible. Veuillez contacter l'administrateur.</p>`;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Quiz error:', err);
+                    questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#ef4444;">Erreur de chargement: ${err.message}</p>`;
+                    quizQuestionsData = [];
+                }
+            } else {
+                quizDiv.classList.add('hidden');
+                questionsDiv.innerHTML = '';
+                quizQuestionsData = [];
+            }
+
+            document.getElementById('eventRegModal').classList.remove('hidden');
+        }
+
+        function closeRegModal() {
+            document.getElementById('eventRegModal').classList.add('hidden');
+        }
+
+        document.getElementById('eventRegForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitReg');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+
+            let score = 0;
+            if (currentEventQuiz && quizQuestionsData.length > 0) {
+                quizQuestionsData.forEach(q => {
+                    const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                    if (selected && selected.value === q.correct_option) {
+                        score += q.points;
+                    }
+                });
+            }
+
+            const payload = {
+                event_id: document.getElementById('regEventId').value,
+                prenom: document.getElementById('regPrenom').value,
+                nom: document.getElementById('regNom').value,
+                email: document.getElementById('regEmail').value,
+                telephone: document.getElementById('regPhone').value,
+                ville: document.getElementById('regVille').value,
+                quiz_score: score,
+                statut: 'en_attente'
+            };
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('inscriptions_evenements')
+                    .insert([payload]);
+
+                if (error) throw error;
+
+                closeRegModal();
+                alert('Inscription réussie ! Vous recevrez bientôt un e-mail de confirmation.');
+                document.getElementById('eventRegForm').reset();
+            } catch (err) {
+                console.error('Registration error:', err);
+                alert('Erreur lors de l\'inscription: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer mon inscription';
+            }
+        });
+
+        async function loadEventProgress(eventId, maxPlaces) {
+            try {
+                const { count, error } = await window.supabaseClient
+                    .from('inscriptions_evenements')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('event_id', eventId)
+                    .eq('statut', 'confirme');
+                
+                if (error) throw error;
+                
+                const registered = count || 0;
+                const percentage = Math.min((registered / maxPlaces) * 100, 100);
+                
+                const progText = document.getElementById(`prog-text-${eventId}`);
+                const progFill = document.getElementById(`prog-fill-${eventId}`);
+                
+                if (progText && progFill) {
+                    progText.textContent = `${registered}/${maxPlaces} inscrits`;
+                    progFill.style.width = `${percentage}%`;
+                    
+                    if (percentage >= 100) {
+                        progFill.style.background = '#22c55e';
+                    } else if (percentage >= 75) {
+                        progFill.style.background = '#f59e0b';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading progress:', err);
+                const progText = document.getElementById(`prog-text-${eventId}`);
+                if (progText) progText.textContent = 'N/A';
+            }
         }
 
         loadEvents();
