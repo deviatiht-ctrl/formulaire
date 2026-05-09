@@ -192,7 +192,7 @@
 
         .events-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 2rem;
         }
 
@@ -204,6 +204,7 @@
             transition: transform 0.3s;
             display: flex;
             flex-direction: column;
+            min-height: 600px;
         }
 
         .event-card:hover {
@@ -212,7 +213,7 @@
 
         .event-image {
             width: 100%;
-            height: 220px;
+            height: 350px;
             object-fit: cover;
             background: #f1f5f9;
             cursor: pointer;
@@ -221,6 +222,53 @@
 
         .event-image:hover {
             transform: scale(1.02);
+        }
+
+        /* Event Image Carousel */
+        .event-image-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .carousel-dots .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .carousel-dots .dot.active {
+            background: white;
+            transform: scale(1.2);
         }
 
         .event-content {
@@ -509,7 +557,14 @@
     <div class="modal-overlay hidden" id="imageModal">
         <div class="modal-content" style="max-width:80%; max-height:85vh; background:transparent; box-shadow:none;">
             <button class="modal-close" onclick="closeImageModal()" style="position:fixed; top:20px; right:20px; background:white; color:#0f172a; width:50px; height:50px; border-radius:50%; font-size:24px; z-index:3000; border:none; cursor:pointer;">&times;</button>
-            <img id="imageModalContent" src="" alt="Full image" style="max-width:100%; max-height:85vh; object-fit:contain; border-radius:12px;">
+            <div style="position:relative; width:100%; height:85vh; overflow:hidden;" id="modalCarousel">
+                <div class="modal-carousel-track" id="modalCarouselTrack" style="display:flex; transition:transform 0.5s ease-in-out; width:100%; height:100%;">
+                    <img id="imageModalContent" src="" alt="Full image" style="max-width:100%; max-height:85vh; object-fit:contain; border-radius:12px; flex:0 0 100%;">
+                </div>
+                <button onclick="modalPrev()" class="modal-nav-btn" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:50px; height:50px; cursor:pointer; z-index:10; display:none;" id="modalPrevBtn"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="modalNext()" class="modal-nav-btn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:50px; height:50px; cursor:pointer; z-index:10; display:none;" id="modalNextBtn"><i class="fas fa-chevron-right"></i></button>
+                <div class="modal-dots" id="modalDots" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;"></div>
+            </div>
         </div>
     </div>
 
@@ -615,11 +670,27 @@
                     const typeLabel = event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne';
 
                     const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
-                    const imageUrl = images.length > 0 ? images[0] : 'https://via.placeholder.com/400x200?text=Event';
+                    
+                    const carouselId = `carousel-${event.id}`;
                     
                     return `
                         <div class="event-card">
-                            <img src="${imageUrl}" alt="${event.titre}" class="event-image" onclick="openImageModal('${imageUrl}')">
+                            ${(() => {
+                                if (images.length === 0) return '';
+                                if (images.length === 1) return `<img src="${images[0]}" alt="${event.titre}" class="event-image" onclick="openImageModal('${images[0]}', ${JSON.stringify(images)})">`;
+                                return `
+                                    <div class="event-image-container" id="${carouselId}" data-images='${JSON.stringify(images)}'>
+                                        <div class="carousel-track">
+                                            ${images.map(img => `<img src="${img}" alt="${event.titre}" class="carousel-slide">`).join('')}
+                                        </div>
+                                        ${images.length > 1 ? `
+                                            <div class="carousel-dots">
+                                                ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`).join('')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            })()}
                             <div class="event-content">
                                 <span class="event-type"><i class="fas fa-${typeIcon}"></i> ${typeLabel}</span>
                                 <h3 class="event-title">${event.titre}</h3>
@@ -662,6 +733,9 @@
                         loadEventProgress(event.id, event.places_max);
                     }
                 });
+
+                // Initialize carousels after events are loaded
+                setTimeout(initCarouselsAfterLoad, 100);
             } catch (err) {
                 console.error('Error loading events:', err);
                 document.getElementById('eventsGrid').innerHTML = `
@@ -683,14 +757,176 @@
             document.getElementById('navLinks').classList.remove('active');
         }
 
-        function openImageModal(imageUrl) {
-            document.getElementById('imageModalContent').src = imageUrl;
-            document.getElementById('imageModal').classList.remove('hidden');
+        let currentModalImages = [];
+        let currentModalIndex = 0;
+        let modalCarouselInterval = null;
+
+        function openImageModal(imageUrl, allImages = null) {
+            try {
+                const images = allImages || [imageUrl];
+                currentModalImages = images;
+                currentModalIndex = images.indexOf(imageUrl);
+                
+                const modal = document.getElementById('imageModal');
+                const track = document.getElementById('modalCarouselTrack');
+                const dotsContainer = document.getElementById('modalDots');
+                const prevBtn = document.getElementById('modalPrevBtn');
+                const nextBtn = document.getElementById('modalNextBtn');
+                
+                if (!modal || !track || !dotsContainer) {
+                    console.error('Modal elements not found:', { modal, track, dotsContainer });
+                    return;
+                }
+                
+                // Build carousel
+                track.innerHTML = images.map(img => `<img src="${img}" alt="Full image" style="max-width:100%; max-height:85vh; object-fit:contain; border-radius:12px; flex:0 0 100%;">`).join('');
+                
+                // Add dots
+                dotsContainer.innerHTML = images.map((_, i) => `<span class="modal-dot ${i === 0 ? 'active' : ''}" style="width:10px; height:10px; border-radius:50%; background:${i === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer; transition:all 0.3s;" data-index="${i}"></span>`).join('');
+                
+                // Add click handlers to dots
+                dotsContainer.querySelectorAll('.modal-dot').forEach(dot => {
+                    dot.addEventListener('click', (e) => {
+                        currentModalIndex = parseInt(e.target.dataset.index);
+                        updateModalCarousel();
+                    });
+                });
+                
+                // Show/hide navigation buttons
+                if (images.length > 1) {
+                    prevBtn.style.display = 'block';
+                    nextBtn.style.display = 'block';
+                } else {
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                }
+                
+                updateModalCarousel();
+                
+                // Start auto-rotation
+                if (modalCarouselInterval) clearInterval(modalCarouselInterval);
+                if (images.length > 1) {
+                    modalCarouselInterval = setInterval(() => {
+                        currentModalIndex = (currentModalIndex + 1) % images.length;
+                        updateModalCarousel();
+                    }, 3000);
+                }
+                
+                modal.classList.remove('hidden');
+                console.log('Modal opened with images:', images);
+            } catch (err) {
+                console.error('Error opening modal:', err);
+            }
+        }
+
+        function modalPrev() {
+            if (currentModalImages.length <= 1) return;
+            currentModalIndex = (currentModalIndex - 1 + currentModalImages.length) % currentModalImages.length;
+            updateModalCarousel();
+        }
+
+        function modalNext() {
+            if (currentModalImages.length <= 1) return;
+            currentModalIndex = (currentModalIndex + 1) % currentModalImages.length;
+            updateModalCarousel();
+        }
+
+        function updateModalCarousel() {
+            const track = document.getElementById('modalCarouselTrack');
+            const dots = document.querySelectorAll('.modal-dot');
+            const offset = currentModalIndex * -100;
+            track.style.transform = `translateX(${offset}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.style.background = index === currentModalIndex ? 'white' : 'rgba(255,255,255,0.5)';
+            });
         }
 
         function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
+            const modal = document.getElementById('imageModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            if (modalCarouselInterval) {
+                clearInterval(modalCarouselInterval);
+                modalCarouselInterval = null;
+            }
         }
+
+        // Carousel Auto-Rotation
+        const carousels = {};
+        let carouselIntervals = {};
+
+        function initCarousels() {
+            document.querySelectorAll('.event-image-container').forEach(container => {
+                const carouselId = container.id;
+                const images = JSON.parse(container.dataset.images);
+                if (images.length <= 1) return;
+
+                carousels[carouselId] = {
+                    currentIndex: 0,
+                    images: images,
+                    isPaused: false,
+                    track: container.querySelector('.carousel-track'),
+                    dots: container.querySelectorAll('.dot')
+                };
+
+                // Auto-rotation
+                carouselIntervals[carouselId] = setInterval(() => {
+                    if (!carousels[carouselId].isPaused) {
+                        rotateCarousel(carouselId);
+                    }
+                }, 3000);
+
+                // Click to open modal with all images
+                container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('carousel-slide')) {
+                        const imgSrc = e.target.src;
+                        openImageModal(imgSrc, carousels[carouselId].images);
+                    }
+                });
+
+                // Click on dots
+                container.querySelectorAll('.dot').forEach((dot, index) => {
+                    dot.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        goToSlide(carouselId, index);
+                    });
+                });
+            });
+        }
+
+        function rotateCarousel(carouselId) {
+            const carousel = carousels[carouselId];
+            carousel.currentIndex = (carousel.currentIndex + 1) % carousel.images.length;
+            updateCarousel(carouselId);
+        }
+
+        function goToSlide(carouselId, index) {
+            const carousel = carousels[carouselId];
+            carousel.currentIndex = index;
+            carousel.isPaused = true; // Pause when user manually selects
+            updateCarousel(carouselId);
+        }
+
+        function updateCarousel(carouselId) {
+            const carousel = carousels[carouselId];
+            const offset = carousel.currentIndex * -100;
+            carousel.track.style.transform = `translateX(${offset}%)`;
+            
+            carousel.dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === carousel.currentIndex);
+            });
+        }
+
+        // Initialize carousels after events load
+        function initCarouselsAfterLoad() {
+            initCarousels();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEvents();
+        });
 
         let currentEventQuiz = false;
         let currentEventWALink = '';

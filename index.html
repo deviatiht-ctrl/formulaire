@@ -46,34 +46,35 @@
 
         .events-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 2rem;
         }
 
         .event-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             transition: all 0.3s;
-            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
         }
 
         .event-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
         }
 
         .event-flyer {
             width: 100%;
-            height: 220px;
+            height: 350px;
             object-fit: cover;
             cursor: pointer;
             transition: transform 0.3s;
         }
 
         .event-flyer:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .event-content {
@@ -1039,10 +1040,21 @@
                 </div>
 
                 <div style="background:#f0f9ff; padding:1.5rem; border-radius:15px; border:1px solid #bae6fd; margin:1.5rem 0;">
-                    <h4 style="margin:0 0 1rem 0; color:#0369a1;"><i class="fas fa-wallet"></i> Paiement MonCash / Natcash</h4>
-                    <p style="font-size:0.9rem; margin-bottom:0.5rem;">Veuillez effectuer le paiement au numéro suivant :</p>
-                    <div style="font-size:1.2rem; font-weight:800; color:#0f172a; margin-bottom:1rem;">+509 4680-7922</div>
-                    <div style="display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #bae6fd; pt:1rem;">
+                    <h4 style="margin:0 0 1rem 0; color:#0369a1;"><i class="fas fa-wallet"></i> Paiement</h4>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label>Mode de paiement *</label>
+                        <select id="orderPaymentMethod" class="form-input" onchange="updateOrderPaymentInfo()" required>
+                            <option value="">Sélectionnez...</option>
+                            <option value="moncash">Moncash</option>
+                            <option value="natcash">Natcash</option>
+                        </select>
+                    </div>
+                    <div id="orderPaymentInfo" style="font-size:0.9rem; color:#0c4a6e; display:none;">
+                        <p style="margin:0.25rem 0;"><strong>Numéro:</strong> <span id="orderPaymentPhone"></span></p>
+                        <p style="margin:0.25rem 0;"><strong>Nom du bénéficiaire:</strong> <span id="orderPaymentName"></span></p>
+                        <p style="margin:0.5rem 0 0 0; font-style:italic;">Envoyez le montant et entrez le numéro de transaction comme preuve.</p>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-weight:700; border-top:1px solid #bae6fd; padding-top:1rem; margin-top:1rem;">
                         <span>Total à payer :</span>
                         <span id="orderTotal" style="color:#2563eb;">0 HTG</span>
                     </div>
@@ -1064,7 +1076,14 @@
     <div class="modal-overlay hidden" id="imageModal">
         <div class="modal-content" style="max-width:90%; max-height:90vh; background:transparent; box-shadow:none;">
             <button class="modal-close" onclick="closeImageModal()" style="position:fixed; top:20px; right:20px; background:white; color:#0f172a; width:50px; height:50px; border-radius:50%; font-size:24px; z-index:3000;">&times;</button>
-            <img id="imageModalContent" src="" alt="Full image" style="max-width:100%; max-height:90vh; object-fit:contain; border-radius:12px;">
+            <div style="position:relative; width:100%; height:90vh; overflow:hidden;" id="modalCarousel">
+                <div class="modal-carousel-track" id="modalCarouselTrack" style="display:flex; transition:transform 0.5s ease-in-out; width:100%; height:100%;">
+                    <img id="imageModalContent" src="" alt="Full image" style="max-width:100%; max-height:90vh; object-fit:contain; border-radius:12px; flex:0 0 100%;">
+                </div>
+                <button onclick="modalPrev()" class="modal-nav-btn" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:50px; height:50px; cursor:pointer; z-index:10; display:none;" id="modalPrevBtn"><i class="fas fa-chevron-left"></i></button>
+                <button onclick="modalNext()" class="modal-nav-btn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:50px; height:50px; cursor:pointer; z-index:10; display:none;" id="modalNextBtn"><i class="fas fa-chevron-right"></i></button>
+                <div class="modal-dots" id="modalDots" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;"></div>
+            </div>
         </div>
     </div>
 
@@ -1363,16 +1382,17 @@
                         <div class="event-card">
                             ${(() => {
                                 const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
+                                const carouselId = `carousel-${event.id}`;
                                 if (images.length === 0) return '';
-                                if (images.length === 1) return `<img src="${images[0]}" alt="${event.titre}" class="event-flyer" onclick="openImageModal('${images[0]}')" style="cursor:pointer;">`;
+                                if (images.length === 1) return `<img src="${images[0]}" alt="${event.titre}" class="event-flyer" onclick="openImageModal('${images[0]}', ${JSON.stringify(images)})" style="cursor:pointer;">`;
                                 return `
-                                    <div style="position:relative; width:100%; height:220px; overflow:hidden; cursor:pointer;" onclick="openImageModal('${images[0]}')">
-                                        <div class="card-image-carousel">
+                                    <div style="position:relative; width:100%; height:350px; overflow:hidden; cursor:pointer;" id="${carouselId}" data-images='${JSON.stringify(images)}'>
+                                        <div class="carousel-track">
                                             ${images.map(img => `<img src="${img}" class="carousel-item" alt="${event.titre}">`).join('')}
                                         </div>
                                         ${images.length > 1 ? `
                                             <div class="carousel-dots">
-                                                ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                                                ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`).join('')}
                                             </div>
                                         ` : ''}
                                     </div>
@@ -1418,6 +1438,9 @@
 
                 // Update progress for each event
                 data.forEach(event => updateEventProgress(event));
+
+                // Initialize carousels after events are loaded
+                setTimeout(initEventCarousels, 100);
             } catch (err) {
                 console.error('Error loading events:', err);
                 document.getElementById('eventsGrid').innerHTML = '<div class="events-empty">Erreur de chargement</div>';
@@ -1523,14 +1546,165 @@
             document.getElementById('successModal').classList.add('hidden');
         }
 
-        function openImageModal(imageUrl) {
-            document.getElementById('imageModalContent').src = imageUrl;
-            document.getElementById('imageModal').classList.remove('hidden');
+        function openImageModal(imageUrl, allImages = null) {
+            const images = allImages || [imageUrl];
+            currentModalImages = images;
+            currentModalIndex = images.indexOf(imageUrl);
+            
+            const modal = document.getElementById('imageModal');
+            const track = document.getElementById('modalCarouselTrack');
+            const dotsContainer = document.getElementById('modalDots');
+            const prevBtn = document.getElementById('modalPrevBtn');
+            const nextBtn = document.getElementById('modalNextBtn');
+            
+            // Build carousel
+            track.innerHTML = images.map(img => `<img src="${img}" alt="Full image" style="max-width:100%; max-height:90vh; object-fit:contain; border-radius:12px; flex:0 0 100%;">`).join('');
+            
+            // Add dots
+            dotsContainer.innerHTML = images.map((_, i) => `<span class="modal-dot ${i === 0 ? 'active' : ''}" style="width:10px; height:10px; border-radius:50%; background:${i === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer; transition:all 0.3s;" data-index="${i}"></span>`).join('');
+            
+            // Add click handlers to dots
+            dotsContainer.querySelectorAll('.modal-dot').forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    currentModalIndex = parseInt(e.target.dataset.index);
+                    updateModalCarousel();
+                });
+            });
+            
+            // Show/hide navigation buttons
+            if (images.length > 1) {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+            } else {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            }
+            
+            updateModalCarousel();
+            
+            // Start auto-rotation
+            if (modalCarouselInterval) clearInterval(modalCarouselInterval);
+            if (images.length > 1) {
+                modalCarouselInterval = setInterval(() => {
+                    currentModalIndex = (currentModalIndex + 1) % images.length;
+                    updateModalCarousel();
+                }, 3000);
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function modalPrev() {
+            if (currentModalImages.length <= 1) return;
+            currentModalIndex = (currentModalIndex - 1 + currentModalImages.length) % currentModalImages.length;
+            updateModalCarousel();
+        }
+
+        function modalNext() {
+            if (currentModalImages.length <= 1) return;
+            currentModalIndex = (currentModalIndex + 1) % currentModalImages.length;
+            updateModalCarousel();
+        }
+
+        function updateModalCarousel() {
+            const track = document.getElementById('modalCarouselTrack');
+            const dots = document.querySelectorAll('.modal-dot');
+            const offset = currentModalIndex * -100;
+            track.style.transform = `translateX(${offset}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.style.background = index === currentModalIndex ? 'white' : 'rgba(255,255,255,0.5)';
+            });
         }
 
         function closeImageModal() {
             document.getElementById('imageModal').classList.add('hidden');
+            if (modalCarouselInterval) {
+                clearInterval(modalCarouselInterval);
+                modalCarouselInterval = null;
+            }
         }
+
+        let currentModalImages = [];
+        let currentModalIndex = 0;
+        let modalCarouselInterval = null;
+
+        // Event Carousel Auto-Rotation
+        const eventCarousels = {};
+        let eventCarouselIntervals = {};
+
+        function initEventCarousels() {
+            document.querySelectorAll('[id^="carousel-"]').forEach(container => {
+                const carouselId = container.id;
+                const images = JSON.parse(container.dataset.images);
+                if (images.length <= 1) return;
+
+                eventCarousels[carouselId] = {
+                    currentIndex: 0,
+                    images: images,
+                    isPaused: false,
+                    track: container.querySelector('.carousel-track'),
+                    dots: container.querySelectorAll('.dot')
+                };
+
+                // Auto-rotation
+                eventCarouselIntervals[carouselId] = setInterval(() => {
+                    if (!eventCarousels[carouselId].isPaused) {
+                        rotateEventCarousel(carouselId);
+                    }
+                }, 3000);
+
+                // Click to open modal
+                container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('carousel-item')) {
+                        const imgSrc = e.target.src;
+                        openImageModal(imgSrc, eventCarousels[carouselId].images);
+                    }
+                });
+
+                // Click on dots
+                container.querySelectorAll('.dot').forEach((dot, index) => {
+                    dot.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        goToEventSlide(carouselId, index);
+                    });
+                });
+            });
+        }
+
+        function rotateEventCarousel(carouselId) {
+            const carousel = eventCarousels[carouselId];
+            carousel.currentIndex = (carousel.currentIndex + 1) % carousel.images.length;
+            updateEventCarousel(carouselId);
+        }
+
+        function goToEventSlide(carouselId, index) {
+            const carousel = eventCarousels[carouselId];
+            carousel.currentIndex = index;
+            carousel.isPaused = true;
+            updateEventCarousel(carouselId);
+        }
+
+        function updateEventCarousel(carouselId) {
+            const carousel = eventCarousels[carouselId];
+            const offset = carousel.currentIndex * -100;
+            carousel.track.style.transform = `translateX(${offset}%)`;
+            
+            carousel.dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === carousel.currentIndex);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFormations();
+            loadSeminaires();
+            loadEvents();
+            loadMaillots();
+            loadEventsForDonation();
+            setTimeout(() => initEventCarousels(), 500);
+            updateNavbarAuth();
+            setTimeout(animateNumbers, 500);
+        });
 
         document.getElementById('eventRegForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1906,6 +2080,25 @@
             const price = parseFloat(document.getElementById('orderPrice').value) || 0;
             const qty = parseInt(document.getElementById('orderQty').value) || 1;
             document.getElementById('orderTotal').textContent = (price * qty).toLocaleString() + ' HTG';
+        }
+
+        function updateOrderPaymentInfo() {
+            const method = document.getElementById('orderPaymentMethod').value;
+            const infoDiv = document.getElementById('orderPaymentInfo');
+            const phoneSpan = document.getElementById('orderPaymentPhone');
+            const nameSpan = document.getElementById('orderPaymentName');
+
+            if (method === 'moncash') {
+                infoDiv.style.display = 'block';
+                phoneSpan.textContent = '+50946807922';
+                nameSpan.textContent = 'Henry Berlinda';
+            } else if (method === 'natcash') {
+                infoDiv.style.display = 'block';
+                phoneSpan.textContent = '+509 43331145';
+                nameSpan.textContent = 'Jude Joseph';
+            } else {
+                infoDiv.style.display = 'none';
+            }
         }
 
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
