@@ -360,15 +360,13 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js?v=2026.1"></script>
     <script>
         lucide.createIcons();
-        const supabaseUrl = 'https://your-supabase-url.supabase.co';
-        const supabaseKey = 'your-supabase-key';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         async function loadLeaders() {
             try {
-                const { data, error } = await supabaseClient
+                const { data, error } = await window.supabaseClient
                     .from('leaders')
                     .select('*')
                     .eq('est_actif', true)
@@ -391,7 +389,7 @@
                         <div class="leader-content">
                             <h3 class="leader-name">${leader.prenom} ${leader.nom}</h3>
                             <p class="leader-position"><i class="fas fa-briefcase"></i> ${leader.poste}</p>
-                            <p class="leader-description">${leader.description || ''}</p>
+                            <p class="leader-description">${leader.bio || ''}</p>
                             ${leader.responsabilites ? `
                                 <div class="leader-responsibilities">
                                     <h4>Responsabilités</h4>
@@ -416,7 +414,7 @@
         }
 
         function openLeaderModal(leaderId) {
-            supabaseClient
+            window.supabaseClient
                 .from('leaders')
                 .select('*')
                 .eq('id', leaderId)
@@ -430,7 +428,7 @@
                     document.getElementById('modalLeaderName').textContent = `${data.prenom} ${data.nom}`;
                     document.getElementById('modalLeaderImage').src = data.photo_url;
                     document.getElementById('modalLeaderPosition').textContent = data.poste;
-                    document.getElementById('modalLeaderDescription').textContent = data.description || '';
+                    document.getElementById('modalLeaderDescription').textContent = data.bio || '';
                     document.getElementById('modalLeaderResponsibilities').textContent = data.responsabilites || '';
                     
                     if (data.communites_responsables) {
