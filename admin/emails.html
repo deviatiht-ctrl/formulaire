@@ -64,14 +64,20 @@
                 </a>
             </div>
         </aside>
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="header-left">
-                    <h1>Envoyer Emails</h1>
-                    <p>Campagnes d'emails bulk et notifications</p>
+                    <button class="mobile-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Envoyer Emails</h1>
+                        <p>Campagnes d'emails bulk et notifications</p>
+                    </div>
                 </div>
                 <div class="header-right">
                     <button class="btn-primary" onclick="selectEmailType('custom')">
@@ -135,6 +141,7 @@
                 <!-- Email Composer -->
                 <div class="card" id="emailComposer" style="display: none;">
                     <div class="card-body">
+                        <h3 id="composerTitle" style="margin-bottom: 1.5rem; color: #0f172a;">Composer Email</h3>
                         <div class="form-group">
                             <label>Cible:</label>
                             <select id="targetSelect" class="filter-select">
@@ -247,7 +254,13 @@
             left: 0;
             top: 0;
             z-index: 100;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
         }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
         .sidebar-header {
             display: flex;
@@ -595,9 +608,37 @@
         .btn-view { background: #2563eb; }
         .btn-cancel { background: #ef4444; }
 
+        .mobile-toggle {
+            display: none;
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 0.6rem;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #1e293b;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 95;
+            backdrop-filter: blur(2px);
+        }
+
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 100; }
-            .main-content { margin-left: 0; }
+            .sidebar { transform: translateX(-100%); z-index: 100; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .mobile-toggle { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .header-left { display: flex; align-items: center; gap: 1rem; }
+            .dashboard-header h1 { font-size: 1.4rem; }
+            .dashboard-header p { display: none; }
             .email-types-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
@@ -883,6 +924,12 @@ L'équipe Rasin Ayiti`
                 loadEvents();
             }
         });
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        window.toggleSidebar = toggleSidebar;
     </script>
 </body>
 </html>
