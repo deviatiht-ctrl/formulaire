@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nos Leaders - Rasin Ayiti</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/css/landing-2026.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -264,6 +265,21 @@
             color: #475569;
         }
 
+        .nav-2026.scrolled {
+            top: 10px;
+            padding: 8px 30px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 40px rgba(0, 32, 159, 0.15);
+        }
+
+        .nav-leaders-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0f172a !important;
+            padding: 8px 16px !important;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .leaders-grid {
@@ -288,9 +304,9 @@
             </div>
             
             <ul class="nav-links" id="navLinks">
-                <li><a href="index.html"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="index.html#hero"><i data-lucide="home"></i> <span>Accueil</span></a></li>
                 <li><a href="evenements.html"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
-                <li><a href="leaders.html" class="active"><i data-lucide="users"></i> <span>Leaders</span></a></li>
+                <li><a href="leaders.html" class="active nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
                 <li><a href="index.html#formations"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
                 <li><a href="index.html#boutique"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
                 <li><a href="index.html#donations"><i data-lucide="heart"></i> <span>Dons</span></a></li>
@@ -303,7 +319,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-2026" style="padding-top: 120px; padding-bottom: 80px;">
+    <section class="hero-2026" style="padding-top: 60px; padding-bottom: 20px; min-height: auto;">
         <div class="hero-bg-animation">
             <div class="gradient-orb orb-1"></div>
             <div class="gradient-orb orb-2"></div>
@@ -388,14 +404,7 @@
                         </div>
                         <div class="leader-content">
                             <h3 class="leader-name">${leader.prenom} ${leader.nom}</h3>
-                            <p class="leader-position"><i class="fas fa-briefcase"></i> ${leader.poste}</p>
                             <p class="leader-description">${leader.bio || ''}</p>
-                            ${leader.responsabilites ? `
-                                <div class="leader-responsibilities">
-                                    <h4>Responsabilités</h4>
-                                    <p>${leader.responsabilites}</p>
-                                </div>
-                            ` : ''}
                             <div class="leader-card-footer">
                                 <button class="view-profile-btn">Voir le profil</button>
                                 <div class="social-links">
@@ -463,6 +472,16 @@
                 link.addEventListener('click', () => {
                     navLinks.classList.remove('active');
                 });
+            });
+
+            // Scrolled effect
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('.nav-2026');
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
             });
         });
     </script>
