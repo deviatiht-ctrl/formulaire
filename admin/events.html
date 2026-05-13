@@ -704,19 +704,6 @@
 
         .flyer-preview.show { display: block; }
 
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 100; transition: transform 0.3s ease; }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 1rem; }
-            .events-grid { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-            .mobile-toggle { display: block; }
-            .sidebar-overlay.active { display: block; }
-            .header-left { display: flex; align-items: center; gap: 1rem; }
-            .dashboard-header h1 { font-size: 1.4rem; }
-            .dashboard-header p { display: none; }
-        }
-
         .mobile-toggle {
             display: none;
             background: white;
@@ -737,6 +724,19 @@
             background: rgba(0,0,0,0.5);
             z-index: 95;
             backdrop-filter: blur(2px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); z-index: 100; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .events-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .mobile-toggle { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .header-left { display: flex; align-items: center; gap: 1rem; }
+            .dashboard-header h1 { font-size: 1.4rem; }
+            .dashboard-header p { display: none; }
         }
     </style>
 
