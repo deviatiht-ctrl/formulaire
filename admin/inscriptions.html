@@ -64,14 +64,20 @@
                 </a>
             </div>
         </aside>
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="header-left">
-                    <h1>Inscriptions</h1>
-                    <p>Gérer les inscriptions aux formations et séminaires</p>
+                    <button class="mobile-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Inscriptions</h1>
+                        <p>Gérer les inscriptions aux formations et séminaires</p>
+                    </div>
                 </div>
                 <div class="header-right">
                     <button id="exportBtn" class="btn-primary">
@@ -456,9 +462,39 @@
         .btn-cancel { background: #ef4444; }
 
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); z-index: 100; }
-            .main-content { margin-left: 0; }
+            .sidebar { transform: translateX(-100%); z-index: 100; transition: transform 0.3s ease; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .mobile-toggle { display: block; }
+            .sidebar-overlay.active { display: block; }
+            .header-left { display: flex; align-items: center; gap: 1rem; }
+            .dashboard-header h1 { font-size: 1.4rem; }
+            .dashboard-header p { display: none; }
+            .filters-bar { flex-direction: column; }
+            .search-input { max-width: 100%; }
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 0.6rem;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #1e293b;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 95;
+            backdrop-filter: blur(2px);
         }
     </style>
 
@@ -732,6 +768,12 @@
                 loadInscriptions();
             }
         });
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        window.toggleSidebar = toggleSidebar;
     </script>
 </body>
 </html>
