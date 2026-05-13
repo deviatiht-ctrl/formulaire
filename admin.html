@@ -47,6 +47,10 @@
                 <i class="fas fa-envelope"></i>
                 <span>Emails</span>
             </a>
+            <a href="#" class="nav-item" data-section="leaders" onclick="showSection('leaders')">
+                <i class="fas fa-user-tie"></i>
+                <span>Leaders</span>
+            </a>
             <a href="#" class="nav-item" data-section="emailgros" onclick="showSection('emailgros')" style="background:linear-gradient(135deg,rgba(79,70,229,0.15),rgba(22,163,74,0.15));border:1px solid rgba(79,70,229,0.3);">
                 <i class="fas fa-bullhorn" style="color:#4f46e5;"></i>
                 <span style="font-weight:700;color:#4f46e5;">Email en Gros</span>
@@ -77,7 +81,12 @@
     <main class="main-content">
         <!-- Header -->
         <header class="header">
-            <h1>Tableau de bord</h1>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="menu-toggle" id="menuToggle" style="display:none; background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-primary);">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Tableau de bord</h1>
+            </div>
             <div class="header-actions">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
@@ -279,6 +288,7 @@
                 <i class="fas fa-check-circle" style="color:var(--success);"></i>
                 <p>Aucun paiement en attente</p>
             </div>
+        </section>
         </section>
 
         <!-- Participants Section -->
@@ -560,6 +570,32 @@
             </div>
         </section>
 
+        <!-- ===== LEADERS SECTION ===== -->
+        <section class="section" id="leadersSection">
+            <div class="section-header">
+                <h2><i class="fas fa-user-tie" style="color:#fbbf24;"></i> Gestion des Leaders</h2>
+                <div class="section-actions">
+                    <button class="btn-action btn-primary" onclick="showAddLeaderModal()">
+                        <i class="fas fa-plus"></i>
+                        Ajouter un Leader
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="loadLeaders()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <div style="background:#fff;border-radius:16px;padding:24px;">
+                <div id="leadersList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Chargement des leaders...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ===== EMAIL EN GROS SECTION ===== -->
         <section class="section" id="emailgrosSection">
             <div class="section-header">
@@ -763,12 +799,81 @@
         </div>
     </div>
     
+    <!-- Add/Edit Leader Modal -->
+    <div class="modal hidden" id="leaderModal">
+        <div class="modal-overlay" onclick="closeLeaderModal()"></div>
+        <div class="modal-content glass">
+            <button class="modal-close" onclick="closeLeaderModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h3 id="leaderModalTitle">Ajouter un Leader</h3>
+            </div>
+            <form id="leaderForm" onsubmit="saveLeader(event)" class="payment-details">
+                <input type="hidden" id="leaderId">
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Prénom:</label>
+                    <input type="text" id="leaderPrenom" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                </div>
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Nom:</label>
+                    <input type="text" id="leaderNom" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                </div>
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Poste:</label>
+                    <input type="text" id="leaderPoste" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                </div>
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">URL Photo:</label>
+                    <input type="url" id="leaderPhotoUrl" required style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                </div>
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Description / Bio:</label>
+                    <textarea id="leaderBio" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; height:60px; font-size:0.9rem; font-family:inherit;"></textarea>
+                </div>
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Responsabilités:</label>
+                    <textarea id="leaderResponsibilities" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; height:60px; font-size:0.9rem; font-family:inherit;"></textarea>
+                </div>
+                <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                    <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Communautés responsables:</label>
+                    <input type="text" id="leaderCommunities" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                        <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">LinkedIn:</label>
+                        <input type="url" id="leaderLinkedIn" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                    </div>
+                    <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                        <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Instagram:</label>
+                        <input type="url" id="leaderInstagram" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                        <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Email Contact:</label>
+                        <input type="email" id="leaderEmail" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                    </div>
+                    <div class="payment-info-row" style="flex-direction:column; align-items:flex-start; gap:5px;">
+                        <label style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">Ordre d'affichage:</label>
+                        <input type="number" id="leaderOrdre" value="0" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.9rem;">
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top:24px;">
+                    <button type="submit" class="btn-action btn-primary" id="btnSaveLeader" style="width:100%; justify-content:center; padding:12px;">
+                        <i class="fas fa-save"></i> Enregistrer le Leader
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
     
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=19"></script>
-    <script src="admin.js?v=18"></script>
+    <script src="supabase.js?v=20"></script>
+    <script src="admin.js?v=20"></script>
 </body>
 </html>

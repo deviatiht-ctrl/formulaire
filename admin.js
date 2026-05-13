@@ -1007,6 +1007,8 @@ function showSection(sectionName) {
         renderStatsSection();
     } else if (sectionName === 'emailgros') {
         renderEmailGrosSection();
+    } else if (sectionName === 'leaders') {
+        loadLeaders();
     }
 }
 
@@ -1844,6 +1846,178 @@ window.saveZoomConfig = saveZoomConfig;
 window.sendZoomEmailAll = sendZoomEmailAll;
 window.sendZoomEmailNew = sendZoomEmailNew;
 
+// ===== LEADERS MANAGEMENT =====
+let leaders = [];
+
+async function loadLeaders() {
+    try {
+        const { data, error } = await supabase
+            .from('leaders')
+            .select('*')
+            .order('ordre_affichage', { ascending: true });
+
+        if (error) throw error;
+
+        leaders = data || [];
+        renderLeaders();
+    } catch (err) {
+        console.error('Error loading leaders:', err);
+        showToast('Erreur lors du chargement des leaders', 'error');
+    }
+}
+
+function renderLeaders() {
+    const leadersList = document.getElementById('leadersList');
+    if (!leaders || leaders.length === 0) {
+        leadersList.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#6b7280;">Aucun leader disponible</p>';
+        return;
+    }
+
+    leadersList.innerHTML = leaders.map(leader => `
+        <div style="background:#f9fafb;border-radius:12px;padding:16px;border:1px solid #e5e7eb;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <img src="${leader.photo_url}" alt="${leader.prenom}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #fbbf24;">
+                <div>
+                    <h3 style="margin:0;font-size:1rem;font-weight:700;">${leader.prenom} ${leader.nom}</h3>
+                    <p style="margin:0;font-size:0.85rem;color:#6b7280;">${leader.poste}</p>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="editLeader('${leader.id}')" style="flex:1;padding:8px;background:#4f46e5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;">
+                    <i class="fas fa-edit"></i> Modifier
+                </button>
+                <button onclick="toggleLeaderActive('${leader.id}', ${leader.est_actif})" style="flex:1;padding:8px;background:${leader.est_actif ? '#ef4444' : '#22c55e'};color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;">
+                    ${leader.est_actif ? '<i class="fas fa-ban"></i> Désactiver' : '<i class="fas fa-check"></i> Activer'}
+                </button>
+                <button onclick="deleteLeader('${leader.id}')" style="padding:8px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;cursor:pointer;font-size:0.85rem;" title="Supprimer">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddLeaderModal() {
+    document.getElementById('leaderModalTitle').textContent = "Ajouter un Leader";
+    document.getElementById('leaderId').value = "";
+    document.getElementById('leaderForm').reset();
+    document.getElementById('leaderModal').classList.remove('hidden');
+}
+
+function closeLeaderModal() {
+    document.getElementById('leaderModal').classList.add('hidden');
+}
+
+async function saveLeader(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnSaveLeader');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+
+    const id = document.getElementById('leaderId').value;
+    const payload = {
+        prenom: document.getElementById('leaderPrenom').value,
+        nom: document.getElementById('leaderNom').value,
+        poste: document.getElementById('leaderPoste').value,
+        photo_url: document.getElementById('leaderPhotoUrl').value,
+        bio: document.getElementById('leaderBio').value,
+        responsabilites: document.getElementById('leaderResponsibilities').value,
+        communites_responsables: document.getElementById('leaderCommunities').value,
+        linkedin: document.getElementById('leaderLinkedIn').value,
+        instagram: document.getElementById('leaderInstagram').value,
+        email: document.getElementById('leaderEmail').value,
+        ordre_affichage: parseInt(document.getElementById('leaderOrdre').value) || 0,
+        est_actif: true
+    };
+
+    try {
+        let result;
+        if (id) {
+            result = await supabase.from('leaders').update(payload).eq('id', id);
+        } else {
+            result = await supabase.from('leaders').insert([payload]);
+        }
+
+        if (result.error) throw result.error;
+
+        showToast('✅ Leader enregistré avec succès !', 'success');
+        closeLeaderModal();
+        loadLeaders();
+    } catch (err) {
+        console.error('Error saving leader:', err);
+        showToast('❌ Erreur: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+async function editLeader(leaderId) {
+    const leader = leaders.find(l => l.id === leaderId);
+    if (!leader) return;
+
+    document.getElementById('leaderModalTitle').textContent = "Modifier le Leader";
+    document.getElementById('leaderId').value = leader.id;
+    document.getElementById('leaderPrenom').value = leader.prenom;
+    document.getElementById('leaderNom').value = leader.nom;
+    document.getElementById('leaderPoste').value = leader.poste;
+    document.getElementById('leaderPhotoUrl').value = leader.photo_url;
+    document.getElementById('leaderBio').value = leader.bio || '';
+    document.getElementById('leaderResponsibilities').value = leader.responsabilites || '';
+    document.getElementById('leaderCommunities').value = leader.communites_responsables || '';
+    document.getElementById('leaderLinkedIn').value = leader.linkedin || '';
+    document.getElementById('leaderInstagram').value = leader.instagram || '';
+    document.getElementById('leaderEmail').value = leader.email || '';
+    document.getElementById('leaderOrdre').value = leader.ordre_affichage || 0;
+
+    document.getElementById('leaderModal').classList.remove('hidden');
+}
+
+async function deleteLeader(leaderId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce leader ? Cette action est irréversible.')) return;
+
+    try {
+        const { error } = await supabase
+            .from('leaders')
+            .delete()
+            .eq('id', leaderId);
+
+        if (error) throw error;
+
+        showToast('✅ Leader supprimé avec succès', 'success');
+        loadLeaders();
+    } catch (err) {
+        console.error('Error deleting leader:', err);
+        showToast('❌ Erreur lors de la suppression', 'error');
+    }
+}
+
+async function toggleLeaderActive(leaderId, currentStatus) {
+    try {
+        const { error } = await supabase
+            .from('leaders')
+            .update({ est_actif: !currentStatus })
+            .eq('id', leaderId);
+
+        if (error) throw error;
+
+        showToast('Statut du leader mis à jour', 'success');
+        loadLeaders();
+    } catch (err) {
+        console.error('Error toggling leader status:', err);
+        showToast('Erreur lors de la mise à jour', 'error');
+    }
+}
+
+window.loadLeaders = loadLeaders;
+window.showAddLeaderModal = showAddLeaderModal;
+window.closeLeaderModal = closeLeaderModal;
+window.saveLeader = saveLeader;
+window.editLeader = editLeader;
+window.deleteLeader = deleteLeader;
+window.toggleLeaderActive = toggleLeaderActive;
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation Admin Panel...');
     console.log('🔍 renderParticipants défini:', typeof renderParticipants === 'function');
@@ -1858,6 +2032,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminEmail && document.getElementById('adminEmailDisplay')) {
         document.getElementById('adminEmailDisplay').textContent = adminNom || adminEmail;
     }
+    
+    // Sidebar toggle for mobile
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+    }
+
+    // Close sidebar when clicking on a nav item (mobile)
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+            }
+        });
+    });
     
     console.log('🔧 Panel Admin chargé');
 });

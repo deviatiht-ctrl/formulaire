@@ -8,7 +8,7 @@
 -- Email: laurorejeanclarens0@gmail.com
 -- Password: Deja kreye nan Supabase Auth
 INSERT INTO administrateurs (prenom, nom, email, role) VALUES
-('Laurore', 'Jean', 'laurorejeanclarens0@gmail.com', 'super_admin')
+('Laurore', 'Jean', 'rasinayiti@gmail.com', 'super_admin')
 ON CONFLICT (email) DO UPDATE SET
     actif = true;
 

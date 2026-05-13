@@ -16,6 +16,7 @@
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
@@ -220,6 +221,91 @@
 
         .progress-bar-fill.full { background: #ef4444; }
         .progress-bar-fill.warning { background: #f59e0b; }
+
+        /* New Event Design Placeholder */
+        .event-design-placeholder {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .event-design-placeholder:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .design-circle {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            z-index: 1;
+        }
+
+        .design-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: white;
+            z-index: 2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .design-action {
+            margin-top: 1.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            color: white;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 2;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: all 0.3s;
+        }
+
+        .event-design-placeholder:hover .design-action {
+            background: white;
+            color: #1e3a8a;
+        }
+
+        .nav-leaders-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0f172a !important;
+            padding: 8px 16px !important;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links i {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-links span { display: inline; }
+        }
 
         /* Modal Styles */
         .modal-overlay {
@@ -579,17 +665,15 @@
             </div>
             
             <ul class="nav-links" id="navLinks">
-                <li><a href="#hero" onclick="closeMenu()">Accueil</a></li>
-                <li><a href="evenements.html" onclick="closeMenu()">Tous les Événements</a></li>
-                <li><a href="#formations" onclick="closeMenu()">Formations</a></li>
-                <li><a href="#seminaires" onclick="closeMenu()">Séminaires</a></li>
-                <li><a href="#boutique" onclick="closeMenu()">Boutique</a></li>
-                <li><a href="#donations" onclick="closeMenu()">Faire un Don</a></li>
-                <li><a href="#galerie" onclick="closeMenu()">Galerie</a></li>
-                <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+                <li><a href="#hero" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="evenements.html" onclick="closeMenu()"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
+                <li><a href="#formations" onclick="closeMenu()"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
+                <li><a href="#boutique" onclick="closeMenu()"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
+                <li><a href="#donations" onclick="closeMenu()"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                <li><a href="leaders.html" onclick="closeMenu()" class="nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
                 <!-- Dynamic Auth Buttons -->
                 <li id="authContainer">
-                    <a href="espace-etudiant/login.html" class="btn-login" style="background:var(--primary); color:white; padding:12px 24px; border-radius:12px; font-weight:700;">Connexion</a>
+                    <a href="espace-etudiant/login.html" class="btn-login">Connexion</a>
                 </li>
             </ul>
         </div>
@@ -1160,6 +1244,9 @@
     <script src="supabase.js?v=2026.1"></script>
     
     <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+        
         // Load dynamic content
         async function loadFormations() {
             try {
@@ -1382,19 +1469,17 @@
                         <div class="event-card">
                             ${(() => {
                                 const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
-                                const carouselId = `carousel-${event.id}`;
-                                if (images.length === 0) return '';
-                                if (images.length === 1) return `<img src="${images[0]}" alt="${event.titre}" class="event-flyer" onclick="openImageModal('${images[0]}', ${JSON.stringify(images)})" style="cursor:pointer;">`;
+                                if (images.length === 0) return `
+                                    <div class="event-design-placeholder" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">
+                                        <div class="design-circle"></div>
+                                        <div class="design-title">${event.titre}</div>
+                                    </div>
+                                `;
                                 return `
-                                    <div style="position:relative; width:100%; height:350px; overflow:hidden; cursor:pointer;" id="${carouselId}" data-images='${JSON.stringify(images)}'>
-                                        <div class="carousel-track">
-                                            ${images.map(img => `<img src="${img}" class="carousel-item" alt="${event.titre}">`).join('')}
-                                        </div>
-                                        ${images.length > 1 ? `
-                                            <div class="carousel-dots">
-                                                ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`).join('')}
-                                            </div>
-                                        ` : ''}
+                                    <div class="event-design-placeholder" onclick="openImageModal('${images[0]}', ${JSON.stringify(images)})">
+                                        <div class="design-circle"></div>
+                                        <div class="design-title">${event.titre}</div>
+                                        <div class="design-action"><i class="fas fa-eye"></i> Voir le Flyer</div>
                                     </div>
                                 `;
                             })()}
@@ -1415,15 +1500,6 @@
                                         <div class="sponsors-list">${event.sponsors.join(', ')}</div>
                                     </div>
                                 ` : ''}
-
-                                <div class="event-progress-container" id="prog-container-${event.id}">
-                                    <div class="progress-label">
-                                        <span id="prog-text-${event.id}">Chargement...</span>
-                                    </div>
-                                    <div class="progress-bar-bg">
-                                        <div class="progress-bar-fill" id="prog-fill-${event.id}" style="width: 0%"></div>
-                                    </div>
-                                </div>
 
                                 <button class="btn-event-reg" 
                                     id="btn-reg-${event.id}"
@@ -2037,14 +2113,18 @@
                 }
 
                 grid.innerHTML = data.map(m => `
-                    <div class="event-card">
-                        <img src="${m.image_url_1}" class="event-flyer" style="height:250px;">
-                        <div class="event-content">
-                            <h3 class="event-title">${m.nom}</h3>
-                            <p class="event-description">${m.description || ''}</p>
-                            <div class="event-price paid" style="margin-bottom:1rem;">${m.prix} ${m.devise}</div>
-                            <button class="btn-event-reg" onclick="openOrderModal('${m.id}', '${m.nom.replace(/'/g, "\\'")}', ${m.prix}, '${m.image_url_1}', '${m.image_url_2 || ''}', '${m.image_url_3 || ''}')">
-                                <i class="fas fa-cart-plus"></i> Commander
+                    <div class="event-card" style="min-height: auto; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                        <div style="position:relative; height:280px; overflow:hidden;">
+                            <img src="${m.image_url_1}" class="event-flyer" style="height:100%; width:100%; object-fit:cover;">
+                            <div style="position:absolute; top:15px; right:15px; background:#FFD700; color:#000; padding:5px 12px; border-radius:50px; font-weight:800; font-size:0.85rem; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+                                ${m.prix} ${m.devise}
+                            </div>
+                        </div>
+                        <div class="event-content" style="flex-grow:0;">
+                            <h3 class="event-title" style="margin-bottom:0.5rem; color:#00209F;">${m.nom}</h3>
+                            <p class="event-description" style="font-size:0.85rem; margin-bottom:1.5rem;">${m.description || ''}</p>
+                            <button class="btn-event-reg" style="margin-top:0; background:linear-gradient(135deg, #00209F, #1e40af);" onclick="openOrderModal('${m.id}', '${m.nom.replace(/'/g, "\\'")}', ${m.prix}, '${m.image_url_1}', '${m.image_url_2 || ''}', '${m.image_url_3 || ''}')">
+                                <i class="fas fa-shopping-bag"></i> Commander maintenant
                             </button>
                         </div>
                     </div>

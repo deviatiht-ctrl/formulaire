@@ -749,55 +749,89 @@ body {
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        width: 70px;
+    .menu-toggle {
+        display: block !important;
     }
-    
+
+    .sidebar {
+        left: -100%;
+        width: 280px;
+        transition: left 0.3s ease;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
     .sidebar-header .brand,
     .nav-item span,
     .btn-logout span {
-        display: none;
+        display: block;
     }
-    
+
     .main-content {
-        margin-left: 70px;
+        margin-left: 0;
+        padding: 20px;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .header {
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
     }
-    
-    .search-box input {
-        width: 200px;
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
     }
-    
+
+    .search-box {
+        flex: 1;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
     .section-header {
         flex-direction: column;
         gap: 12px;
         align-items: flex-start;
     }
-    
+
+    .section-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        flex: 1;
+        justify-content: center;
+    }
+
     .table-container {
         overflow-x: auto;
     }
-    
+
     .data-table {
-        min-width: 600px;
+        min-width: 800px;
     }
 }
 
 @media (max-width: 480px) {
     .main-content {
-        padding: 20px;
+        padding: 16px;
     }
     
     .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}
         padding: 20px;
     }
     

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Leaders - Rasin Ayiti</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/landing-2026.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --haiti-blue: #00209F;
+            --haiti-red: #D21034;
+            --haiti-gold: #FFD700;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Leaders Grid */
+        .leaders-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .leaders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 3rem;
+        }
+
+        /* Leader Card - Haitian Premium Style */
+        .leader-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leader-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 32, 159, 0.2);
+            border-color: var(--haiti-blue);
+        }
+
+        .leader-image-container {
+            position: relative;
+            height: 380px;
+            width: 100%;
+            overflow: hidden;
+            background: #eee;
+        }
+
+        .leader-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            transition: transform 0.6s ease;
+        }
+
+        .leader-card:hover .leader-image {
+            transform: scale(1.05);
+        }
+
+        /* Haitian Flag Overlay Effect on Hover */
+        .leader-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--haiti-blue) 50%, var(--haiti-red) 50%);
+            z-index: 5;
+        }
+
+        .leader-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: var(--haiti-blue);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 3;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .leader-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .leader-name {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .leader-position {
+            font-size: 0.95rem;
+            color: var(--haiti-red);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leader-description {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .leader-card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .view-profile-btn {
+            background: #f1f5f9;
+            color: #0f172a;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .leader-card:hover .view-profile-btn {
+            background: var(--haiti-blue);
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .social-links a {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .social-links a:hover {
+            background: var(--haiti-red);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* Modal Redesign */
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 900px;
+            border: none;
+            overflow: hidden;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 0;
+            padding: 0;
+        }
+
+        .modal-left {
+            background: #f8fafc;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .modal-right {
+            padding: 3rem;
+        }
+
+        .modal-leader-image {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .modal-body {
+                grid-template-columns: 1fr;
+            }
+            .modal-left {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .modal-right {
+                padding: 2rem;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: #475569;
+            font-size: 1.2rem;
+        }
+
+        /* Empty State */
+        .empty {
+            text-align: center;
+            padding: 4rem;
+            color: #94a3b8;
+        }
+
+        .empty i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #475569;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .leaders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="landing-2026">
+    <!-- NAVIGATION MODERNE -->
+    <nav class="nav-2026">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
+                <div style="display:flex; flex-direction:column;">
+                    <span style="font-weight:900; font-size:1.4rem; line-height:1;">Rasin Ayiti</span>
+                    <span style="font-size:0.65rem; color:var(--primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Développement Juvénile/RASINAYITI</span>
+                </div>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="evenements.html"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
+                <li><a href="leaders.html" class="active"><i data-lucide="users"></i> <span>Leaders</span></a></li>
+                <li><a href="index.html#formations"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
+                <li><a href="index.html#boutique"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
+                <li><a href="index.html#donations"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                <!-- Dynamic Auth Buttons -->
+                <li id="authContainer">
+                    <a href="espace-etudiant/login.html" class="btn-login">Connexion</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-2026" style="padding-top: 120px; padding-bottom: 80px;">
+        <div class="hero-bg-animation">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-pulse"></span>
+                    <span>Notre Équipe</span>
+                </div>
+                <h1>Nos Leaders</h1>
+                <p>Découvrez les personnes qui font avancer la mission de Rasin Ayiti</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Leaders Section -->
+    <div class="leaders-container">
+        <div class="leaders-grid" id="leadersGrid">
+            <div class="loading">Chargement des leaders...</div>
+        </div>
+    </div>
+
+    <!-- Leader Modal -->
+    <div class="modal-overlay hidden" id="leaderModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLeaderModal()" style="position:absolute; top:20px; right:20px; z-index:100;">&times;</button>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <img id="modalLeaderImage" src="" alt="Leader" class="modal-leader-image">
+                    <h2 id="modalLeaderName" style="color:var(--haiti-blue); font-weight:900; margin-bottom:0.5rem;">Leader Name</h2>
+                    <p id="modalLeaderPosition" class="modal-leader-position" style="justify-content:center;">Position</p>
+                </div>
+                <div class="modal-right">
+                    <div class="modal-section">
+                        <h3><i class="fas fa-user" style="color:var(--haiti-blue);"></i> À propos</h3>
+                        <p id="modalLeaderDescription">Description</p>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3><i class="fas fa-tasks" style="color:var(--haiti-blue);"></i> Responsabilités</h3>
+                        <p id="modalLeaderResponsibilities">Responsibilities</p>
+                    </div>
+                    
+                    <div class="modal-section" id="modalCommunitiesSection" style="display:none;">
+                        <h3><i class="fas fa-users" style="color:var(--haiti-blue);"></i> Communautés responsables</h3>
+                        <p id="modalLeaderCommunities">Communities</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        lucide.createIcons();
+        const supabaseUrl = 'https://your-supabase-url.supabase.co';
+        const supabaseKey = 'your-supabase-key';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function loadLeaders() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('leaders')
+                    .select('*')
+                    .eq('est_actif', true)
+                    .order('ordre_affichage', { ascending: true });
+
+                if (error) throw error;
+
+                const grid = document.getElementById('leadersGrid');
+                if (!data || data.length === 0) {
+                    grid.innerHTML = '<div class="empty"><i class="fas fa-users"></i><p>Aucun leader disponible pour le moment.</p></div>';
+                    return;
+                }
+
+                grid.innerHTML = data.map(leader => `
+                    <div class="leader-card" onclick="openLeaderModal('${leader.id}')">
+                        <div class="leader-image-container">
+                            <img src="${leader.photo_url}" alt="${leader.prenom} ${leader.nom}" class="leader-image">
+                            <div class="leader-badge">${leader.poste}</div>
+                        </div>
+                        <div class="leader-content">
+                            <h3 class="leader-name">${leader.prenom} ${leader.nom}</h3>
+                            <p class="leader-position"><i class="fas fa-briefcase"></i> ${leader.poste}</p>
+                            <p class="leader-description">${leader.description || ''}</p>
+                            ${leader.responsabilites ? `
+                                <div class="leader-responsibilities">
+                                    <h4>Responsabilités</h4>
+                                    <p>${leader.responsabilites}</p>
+                                </div>
+                            ` : ''}
+                            <div class="leader-card-footer">
+                                <button class="view-profile-btn">Voir le profil</button>
+                                <div class="social-links">
+                                    ${leader.linkedin ? `<a href="${leader.linkedin}" target="_blank"><i class="fab fa-linkedin"></i></a>` : ''}
+                                    ${leader.instagram ? `<a href="${leader.instagram}" target="_blank"><i class="fab fa-instagram"></i></a>` : ''}
+                                    ${leader.email ? `<a href="mailto:${leader.email}"><i class="fas fa-envelope"></i></a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading leaders:', err);
+                document.getElementById('leadersGrid').innerHTML = '<div class="empty"><i class="fas fa-exclamation-triangle"></i><p>Erreur de chargement des leaders.</p></div>';
+            }
+        }
+
+        function openLeaderModal(leaderId) {
+            supabaseClient
+                .from('leaders')
+                .select('*')
+                .eq('id', leaderId)
+                .single()
+                .then(({ data, error }) => {
+                    if (error) {
+                        console.error('Error fetching leader:', error);
+                        return;
+                    }
+
+                    document.getElementById('modalLeaderName').textContent = `${data.prenom} ${data.nom}`;
+                    document.getElementById('modalLeaderImage').src = data.photo_url;
+                    document.getElementById('modalLeaderPosition').textContent = data.poste;
+                    document.getElementById('modalLeaderDescription').textContent = data.description || '';
+                    document.getElementById('modalLeaderResponsibilities').textContent = data.responsabilites || '';
+                    
+                    if (data.communites_responsables) {
+                        document.getElementById('modalCommunitiesSection').style.display = 'block';
+                        document.getElementById('modalLeaderCommunities').textContent = data.communites_responsables;
+                    } else {
+                        document.getElementById('modalCommunitiesSection').style.display = 'none';
+                    }
+
+                    document.getElementById('leaderModal').classList.remove('hidden');
+                });
+        }
+
+        function closeLeaderModal() {
+            document.getElementById('leaderModal').classList.add('hidden');
+        }
+
+        // Load leaders on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLeaders();
+            
+            // Mobile menu toggle
+            const navToggle = document.getElementById('navToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Close menu when clicking a link
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

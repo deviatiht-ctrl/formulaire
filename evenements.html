@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* Navbar Styles */
         .navbar {
@@ -158,6 +159,87 @@
             background: linear-gradient(90deg, #2563eb, #3b82f6);
             border-radius: 4px;
             transition: width 0.3s;
+        }
+
+        /* New Event Design Placeholder */
+        .event-design-placeholder {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .event-design-placeholder:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .design-circle {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            z-index: 1;
+        }
+
+        .design-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: white;
+            z-index: 2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .design-action {
+            margin-top: 1.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            color: white;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 2;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: all 0.3s;
+        }
+
+        .event-design-placeholder:hover .design-action {
+            background: white;
+            color: #1e3a8a;
+        }
+
+        .nav-leaders-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0f172a !important;
+            padding: 8px 16px !important;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links i {
+            width: 18px;
+            height: 18px;
         }
 
         /* Events Page Styles */
@@ -488,14 +570,12 @@
             </div>
             
             <ul class="nav-links" id="navLinks">
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="evenements.html" class="active">Tous les Événements</a></li>
-                <li><a href="index.html#formations">Formations</a></li>
-                <li><a href="index.html#seminaires">Séminaires</a></li>
-                <li><a href="index.html#boutique">Boutique</a></li>
-                <li><a href="index.html#donations">Faire un Don</a></li>
-                <li><a href="index.html#galerie">Galerie</a></li>
-                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="index.html"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="evenements.html" class="active"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
+                <li><a href="index.html#formations"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
+                <li><a href="index.html#boutique"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
+                <li><a href="index.html#donations"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                <li><a href="leaders.html" class="nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
             </ul>
         </div>
     </nav>
@@ -616,6 +696,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script>
+        lucide.createIcons();
         async function loadEvents() {
             try {
                 const { data, error } = await window.supabaseClient
@@ -676,18 +757,18 @@
                     return `
                         <div class="event-card">
                             ${(() => {
-                                if (images.length === 0) return '';
-                                if (images.length === 1) return `<img src="${images[0]}" alt="${event.titre}" class="event-image" onclick="openImageModal('${images[0]}', ${JSON.stringify(images)})">`;
+                                const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
+                                if (images.length === 0) return `
+                                    <div class="event-design-placeholder" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
+                                        <div class="design-circle"></div>
+                                        <div class="design-title">${event.titre}</div>
+                                    </div>
+                                `;
                                 return `
-                                    <div class="event-image-container" id="${carouselId}" data-images='${JSON.stringify(images)}'>
-                                        <div class="carousel-track">
-                                            ${images.map(img => `<img src="${img}" alt="${event.titre}" class="carousel-slide">`).join('')}
-                                        </div>
-                                        ${images.length > 1 ? `
-                                            <div class="carousel-dots">
-                                                ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`).join('')}
-                                            </div>
-                                        ` : ''}
+                                    <div class="event-design-placeholder" onclick="openImageModal('${images[0]}', ${JSON.stringify(images)})">
+                                        <div class="design-circle"></div>
+                                        <div class="design-title">${event.titre}</div>
+                                        <div class="design-action"><i class="fas fa-eye"></i> Voir le Flyer</div>
                                     </div>
                                 `;
                             })()}
@@ -709,16 +790,6 @@
                                         <div class="sponsors-list">${event.sponsors.join(', ')}</div>
                                     </div>
                                 ` : ''}
-                                ${event.places_max ? `
-                                    <div class="event-progress-container">
-                                        <div class="progress-label">
-                                            <span id="prog-text-${event.id}">Chargement...</span>
-                                        </div>
-                                        <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" id="prog-fill-${event.id}" style="width: 0%"></div>
-                                        </div>
-                                    </div>
-                                ` : ''}
                                 <button class="btn-register" onclick="openRegModal('${event.id}', '${event.titre.replace(/'/g, "\\'")}', '${event.whatsapp_link || ''}', '${event.has_quiz}')">
                                     S'inscrire
                                 </button>
@@ -726,13 +797,6 @@
                         </div>
                     `;
                 }).join('');
-
-                // Load progress bar data for events with places_max
-                data.forEach(event => {
-                    if (event.places_max) {
-                        loadEventProgress(event.id, event.places_max);
-                    }
-                });
 
                 // Initialize carousels after events are loaded
                 setTimeout(initCarouselsAfterLoad, 100);
