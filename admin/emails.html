@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="responsiveadmin.css">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -80,148 +81,203 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="btn-primary" onclick="selectEmailType('custom')">
-                        <i class="fas fa-plus"></i>
-                        <span>Nouvel Email</span>
+                    <button class="btn-primary" onclick="selectAllVisible(); openBulkEmailModal();">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Email à tous</span>
                     </button>
                 </div>
             </header>
 
             <div class="content-area">
-                <!-- Email Type Selection -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="email-types-grid">
-                            <div class="email-type-card" data-type="inscription" onclick="selectEmailType('inscription')">
-                                <div class="email-type-icon">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                <h3>Inscription</h3>
-                                <p>Email de confirmation d'inscription</p>
+                <!-- Stats Row -->
+                <div class="stats-row" id="statsRow">
+                    <div class="stat-card"><i class="fas fa-users"></i><div><span id="statTotal">0</span><small>Contacts total</small></div></div>
+                    <div class="stat-card"><i class="fas fa-graduation-cap"></i><div><span id="statEtudiants">0</span><small>Étudiants</small></div></div>
+                    <div class="stat-card"><i class="fas fa-calendar-check"></i><div><span id="statEvents">0</span><small>Inscriptions événements</small></div></div>
+                    <div class="stat-card"><i class="fas fa-chalkboard-teacher"></i><div><span id="statParticipants">0</span><small>Participants séminaire</small></div></div>
+                    <div class="stat-card"><i class="fas fa-heart"></i><div><span id="statDonors">0</span><small>Donateurs</small></div></div>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="card" style="margin-bottom:1rem;">
+                    <div class="card-body" style="padding:1rem 1.5rem;">
+                        <div class="filters-row">
+                            <div class="filter-group">
+                                <label><i class="fas fa-filter"></i> Source:</label>
+                                <select id="filterSource" class="filter-select" onchange="applyFilters()">
+                                    <option value="all">Toutes les sources</option>
+                                    <option value="etudiants">Étudiants</option>
+                                    <option value="inscriptions_evenements">Inscriptions événements</option>
+                                    <option value="participants">Participants séminaire</option>
+                                    <option value="donations">Donateurs</option>
+                                </select>
                             </div>
-                            <div class="email-type-card" data-type="whatsapp" onclick="selectEmailType('whatsapp')">
-                                <div class="email-type-icon">
-                                    <i class="fab fa-whatsapp"></i>
-                                </div>
-                                <h3>Groupe WhatsApp</h3>
-                                <p>Invitation à rejoindre le groupe</p>
+                            <div class="filter-group">
+                                <label><i class="fas fa-search"></i> Recherche:</label>
+                                <input type="text" id="filterSearch" class="search-input" placeholder="Nom, email, téléphone..." oninput="applyFilters()">
                             </div>
-                            <div class="email-type-card" data-type="evenement" onclick="selectEmailType('evenement')">
-                                <div class="email-type-icon">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                                <h3>Annonce Événement</h3>
-                                <p>Nouvelle formation ou séminaire</p>
-                            </div>
-                            <div class="email-type-card" data-type="rappel" onclick="selectEmailType('rappel')">
-                                <div class="email-type-icon">
-                                    <i class="fas fa-bell"></i>
-                                </div>
-                                <h3>Rappel Paiement</h3>
-                                <p>Rappel pour paiement en attente</p>
-                            </div>
-                            <div class="email-type-card" data-type="certificat" onclick="selectEmailType('certificat')">
-                                <div class="email-type-icon">
-                                    <i class="fas fa-certificate"></i>
-                                </div>
-                                <h3>Certificat</h3>
-                                <p>Notification certificat disponible</p>
-                            </div>
-                            <div class="email-type-card" data-type="custom" onclick="selectEmailType('custom')">
-                                <div class="email-type-icon">
-                                    <i class="fas fa-edit"></i>
-                                </div>
-                                <h3>Email Personnalisé</h3>
-                                <p>Créer votre propre email</p>
+                            <div class="filter-group">
+                                <label><i class="fas fa-check-circle"></i> Statut:</label>
+                                <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+                                    <option value="all">Tous</option>
+                                    <option value="confirme">Confirmé</option>
+                                    <option value="en_attente">En attente</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Email Composer -->
-                <div class="card" id="emailComposer" style="display: none;">
-                    <div class="card-body">
-                        <h3 id="composerTitle" style="margin-bottom: 1.5rem; color: #0f172a;">Composer Email</h3>
-                        <div class="form-group">
-                            <label>Cible:</label>
-                            <select id="targetSelect" class="filter-select">
-                                <option value="all">Tous les étudiants</option>
-                                <option value="inscrits">Étudiants inscrits</option>
-                                <option value="pending">Paiement en attente</option>
-                                <option value="confirmed">Paiement confirmé</option>
-                                <option value="specific">Événement spécifique</option>
-                                <option value="custom">Sélection manuelle</option>
-                            </select>
-                            <select id="eventSelect" class="filter-select" style="display: none;">
-                                <option value="">Sélectionner un événement</option>
-                            </select>
-                            <textarea id="customEmails" class="search-input" placeholder="Entrez les emails (un par ligne)" style="display: none;"></textarea>
-                            <div class="target-count">
-                                <span id="targetCount">0</span> destinataires
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Sujet:</label>
-                            <input type="text" id="emailSubject" class="search-input" placeholder="Sujet de l'email">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Contenu:</label>
-                            <textarea id="emailContent" class="search-input" rows="10" placeholder="Contenu de l'email..."></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Aperçu:</label>
-                            <div class="email-preview" id="emailPreview">
-                                <div class="preview-header">
-                                    <strong>Sujet:</strong> <span id="previewSubject">-</span>
-                                </div>
-                                <div class="preview-body" id="previewBody">
-                                    L'aperçu apparaîtra ici...
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button class="btn-secondary" onclick="previewEmail()">
-                                <i class="fas fa-eye"></i>
-                                Aperçu
-                            </button>
-                            <button class="btn-secondary" onclick="saveTemplate()">
-                                <i class="fas fa-save"></i>
-                                Sauvegarder Template
-                            </button>
-                            <button class="btn-primary" onclick="sendEmail()">
-                                <i class="fas fa-paper-plane"></i>
-                                Envoyer
-                            </button>
-                        </div>
+                <!-- Bulk Actions -->
+                <div class="card" id="bulkBar" style="display:none;margin-bottom:1rem;">
+                    <div class="card-body" style="padding:0.75rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;background:#eff6ff;">
+                        <span id="selectedCount" style="font-weight:700;color:#2563eb;">0 sélectionné(s)</span>
+                        <button class="btn-primary" onclick="openBulkEmailModal()" style="padding:0.6rem 1.25rem;font-size:0.85rem;">
+                            <i class="fas fa-paper-plane"></i> Envoyer email aux sélectionnés
+                        </button>
+                        <button class="btn-secondary" onclick="selectAllVisible()" style="padding:0.6rem 1rem;font-size:0.85rem;">
+                            <i class="fas fa-check-double"></i> Sélectionner tout
+                        </button>
+                        <button class="btn-secondary" onclick="deselectAll()" style="padding:0.6rem 1rem;font-size:0.85rem;">
+                            <i class="fas fa-times"></i> Désélectionner
+                        </button>
                     </div>
                 </div>
 
-                <!-- Email History -->
+                <!-- Contacts Table -->
                 <div class="card">
-                    <div class="card-body">
-                        <h3>Historique des Emails</h3>
+                    <div class="card-body" style="padding:0;">
                         <div class="table-container">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Type</th>
-                                        <th>Sujet</th>
-                                        <th>Destinataires</th>
+                                        <th style="width:40px;"><input type="checkbox" id="checkAll" onchange="toggleCheckAll(this)"></th>
+                                        <th>Nom</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Source</th>
                                         <th>Statut</th>
-                                        <th>Actions</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="emailHistoryList">
-                                    <tr>
-                                        <td colspan="6" class="no-data">Aucun email envoyé</td>
-                                    </tr>
+                                <tbody id="contactsBody">
+                                    <tr><td colspan="8" class="no-data">Chargement...</td></tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Modal with Templates + Preview -->
+            <div class="modal-overlay" id="emailModal" style="display:none;">
+                <div class="modal-box" style="max-width:960px;">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-envelope"></i> Composer Email — <span id="modalRecipientCount" style="color:#2563eb;">0</span> destinataire(s)</h3>
+                        <button class="modal-close" onclick="closeEmailModal()">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding:0;">
+                        <!-- Step 1: Template Selection -->
+                        <div id="stepTemplates" style="padding:1.5rem;">
+                            <h4 style="margin:0 0 1rem;color:#0f172a;font-size:0.95rem;"><i class="fas fa-palette"></i> Choisir un template</h4>
+                            <div class="template-grid">
+                                <div class="tpl-card selected" data-tpl="general" onclick="selectTemplate('general')">
+                                    <div class="tpl-icon" style="background:linear-gradient(135deg,#667eea,#764ba2);"><i class="fas fa-bullhorn"></i></div>
+                                    <strong>Annonce Générale</strong>
+                                    <small>Info, communiqué, message</small>
+                                </div>
+                                <div class="tpl-card" data-tpl="evenement" onclick="selectTemplate('evenement')">
+                                    <div class="tpl-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);"><i class="fas fa-calendar-alt"></i></div>
+                                    <strong>Annonce Événement</strong>
+                                    <small>Nouvelle formation, séminaire</small>
+                                </div>
+                                <div class="tpl-card" data-tpl="rappel" onclick="selectTemplate('rappel')">
+                                    <div class="tpl-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);"><i class="fas fa-bell"></i></div>
+                                    <strong>Rappel Paiement</strong>
+                                    <small>Relance paiement en attente</small>
+                                </div>
+                                <div class="tpl-card" data-tpl="bienvenue" onclick="selectTemplate('bienvenue')">
+                                    <div class="tpl-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);"><i class="fas fa-hand-sparkles"></i></div>
+                                    <strong>Bienvenue</strong>
+                                    <small>Accueil nouveau membre</small>
+                                </div>
+                                <div class="tpl-card" data-tpl="whatsapp" onclick="selectTemplate('whatsapp')">
+                                    <div class="tpl-icon" style="background:linear-gradient(135deg,#25D366,#128C7E);"><i class="fab fa-whatsapp"></i></div>
+                                    <strong>Groupe WhatsApp</strong>
+                                    <small>Invitation groupe WA</small>
+                                </div>
+                                <div class="tpl-card" data-tpl="custom" onclick="selectTemplate('custom')">
+                                    <div class="tpl-icon" style="background:linear-gradient(135deg,#64748b,#334155);"><i class="fas fa-edit"></i></div>
+                                    <strong>Personnalisé</strong>
+                                    <small>Votre propre message</small>
+                                </div>
+                            </div>
+
+                            <!-- Template Fields -->
+                            <div style="margin-top:1.5rem;border-top:1px solid #e2e8f0;padding-top:1.25rem;">
+                                <div class="form-group">
+                                    <label>Sujet *</label>
+                                    <input type="text" id="modalSubject" class="search-input" placeholder="Sujet de l'email" style="max-width:100%;">
+                                </div>
+                                <!-- Dynamic fields -->
+                                <div id="tplFieldEventName" class="form-group" style="display:none;">
+                                    <label>Nom de l'événement *</label>
+                                    <input type="text" id="fieldEventName" class="search-input" placeholder="Ex: Séminaire Compétences de Vie" style="max-width:100%;" oninput="updatePreview()">
+                                </div>
+                                <div id="tplFieldEventDate" class="form-group" style="display:none;">
+                                    <label>Date & Heure</label>
+                                    <input type="text" id="fieldEventDate" class="search-input" placeholder="Ex: 30 Avril 2026, 09:00 AM" style="max-width:100%;" oninput="updatePreview()">
+                                </div>
+                                <div id="tplFieldEventLocation" class="form-group" style="display:none;">
+                                    <label>Lieu / Format</label>
+                                    <input type="text" id="fieldEventLocation" class="search-input" placeholder="Ex: En ligne sur Zoom" style="max-width:100%;" oninput="updatePreview()">
+                                </div>
+                                <div id="tplFieldWALink" class="form-group" style="display:none;">
+                                    <label>Lien WhatsApp</label>
+                                    <input type="text" id="fieldWALink" class="search-input" placeholder="https://chat.whatsapp.com/..." style="max-width:100%;" oninput="updatePreview()">
+                                </div>
+                                <div id="tplFieldAmount" class="form-group" style="display:none;">
+                                    <label>Montant</label>
+                                    <input type="text" id="fieldAmount" class="search-input" placeholder="Ex: 500 Gourdes" style="max-width:100%;" oninput="updatePreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Message personnalisé</label>
+                                    <textarea id="modalContent" class="search-input" rows="4" placeholder="Votre message ici (optionnel pour les templates)..." style="max-width:100%;" oninput="updatePreview()"></textarea>
+                                </div>
+                            </div>
+
+                            <div style="display:flex;gap:1rem;margin-top:1rem;">
+                                <button class="btn-secondary" onclick="closeEmailModal()">Annuler</button>
+                                <button class="btn-primary" onclick="showPreviewStep()">
+                                    <i class="fas fa-eye"></i> Aperçu
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Preview -->
+                        <div id="stepPreview" style="display:none;padding:1.5rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                                <h4 style="margin:0;color:#0f172a;"><i class="fas fa-eye"></i> Aperçu Email</h4>
+                                <button class="btn-secondary" onclick="showTemplateStep()" style="font-size:0.82rem;padding:0.5rem 1rem;">
+                                    <i class="fas fa-arrow-left"></i> Modifier
+                                </button>
+                            </div>
+                            <div id="emailPreviewFrame" style="background:#f1f5f9;border-radius:12px;padding:1.5rem;max-height:50vh;overflow-y:auto;border:1px solid #e2e8f0;"></div>
+                            <div style="display:flex;gap:1rem;margin-top:1.25rem;align-items:center;">
+                                <button class="btn-secondary" onclick="showTemplateStep()">
+                                    <i class="fas fa-pencil-alt"></i> Modifier
+                                </button>
+                                <button class="btn-primary" id="btnSendBulk" onclick="sendBulkEmail()">
+                                    <i class="fas fa-paper-plane"></i> Envoyer maintenant
+                                </button>
+                            </div>
+                            <div id="sendProgress" style="display:none;margin-top:1rem;">
+                                <div style="background:#e2e8f0;border-radius:10px;overflow:hidden;height:8px;">
+                                    <div id="progressBar" style="height:100%;background:#2563eb;width:0%;transition:width 0.3s;"></div>
+                                </div>
+                                <p id="progressText" style="font-size:0.82rem;color:#64748b;margin-top:0.5rem;">0 / 0 envoyé(s)</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -607,6 +663,46 @@
         .btn-action:hover { opacity: 0.85; }
         .btn-view { background: #2563eb; }
         .btn-cancel { background: #ef4444; }
+        .btn-send-one { background: #667eea; }
+
+        /* Stats Row */
+        .stats-row { display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+        .stat-card { background:white; border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; flex:1; min-width:160px; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+        .stat-card i { font-size:1.3rem; color:#2563eb; background:#eff6ff; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+        .stat-card span { font-size:1.4rem; font-weight:800; color:#0f172a; display:block; }
+        .stat-card small { font-size:0.75rem; color:#64748b; }
+
+        /* Filters Row */
+        .filters-row { display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end; }
+        .filter-group { display:flex; flex-direction:column; gap:0.3rem; flex:1; min-width:160px; }
+        .filter-group label { font-size:0.78rem; font-weight:700; color:#64748b; }
+
+        /* Source Badge */
+        .source-badge { padding:0.25rem 0.65rem; border-radius:20px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
+        .source-etudiants { background:#dbeafe; color:#1e40af; }
+        .source-inscriptions_evenements { background:#fce7f3; color:#9d174d; }
+        .source-participants { background:#d1fae5; color:#065f46; }
+        .source-donations { background:#fef3c7; color:#92400e; }
+
+        /* Modal */
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+        .modal-box { background:white; border-radius:20px; width:92%; max-width:600px; max-height:90vh; overflow-y:auto; }
+        .modal-header { padding:1.25rem 1.5rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+        .modal-header h3 { font-size:1.1rem; font-weight:800; margin:0; color:#0f172a; }
+        .modal-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8; }
+        .modal-body { padding:1.5rem; }
+
+        /* Checkbox style */
+        .data-table input[type="checkbox"] { width:16px; height:16px; cursor:pointer; accent-color:#2563eb; }
+
+        /* Template Grid */
+        .template-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:0.75rem; }
+        .tpl-card { background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:1rem; cursor:pointer; text-align:center; transition:all 0.2s; }
+        .tpl-card:hover { border-color:#667eea; transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+        .tpl-card.selected { border-color:#2563eb; background:#eff6ff; }
+        .tpl-card .tpl-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin:0 auto 0.6rem; color:white; font-size:1rem; }
+        .tpl-card strong { display:block; font-size:0.82rem; color:#0f172a; margin-bottom:0.2rem; }
+        .tpl-card small { font-size:0.72rem; color:#64748b; }
 
         .mobile-toggle {
             display: none;
@@ -647,289 +743,411 @@
     <script src="../supabase.js"></script>
     
     <script>
-        let currentAdmin = null;
-        let selectedEmailType = null;
-        let allEvents = [];
+        // ===== STATE =====
+        let allContacts = [];
+        let filteredContacts = [];
+        let selectedIds = new Set();
 
-        // Email templates
-        const emailTemplates = {
-            inscription: {
-                subject: '✅ Inscription confirmée - Rasin Ayiti',
-                content: `Bonjour {prenom} {nom},
+        const SOURCE_LABELS = {
+            etudiants: 'Étudiant',
+            inscriptions_evenements: 'Événement',
+            participants: 'Séminaire',
+            donations: 'Donateur'
+        };
 
-Votre inscription a été confirmée avec succès !
+        // ===== LOAD ALL CONTACTS =====
+        async function loadAllContacts() {
+            allContacts = [];
 
-Détails de votre inscription:
-- Événement: {evenement}
-- Date: {date}
-- Statut: {statut}
+            // 1. Étudiants (status, not statut; has created_at)
+            try {
+                const { data: etudiants, error } = await window.supabaseClient.from('etudiants').select('id, prenom, nom, email, telephone, status, created_at');
+                if (error) console.warn('etudiants:', error.message);
+                (etudiants || []).forEach(e => allContacts.push({
+                    _id: 'etu_' + e.id, source: 'etudiants',
+                    nom: (e.prenom || '') + ' ' + (e.nom || ''), email: e.email, telephone: e.telephone || '',
+                    statut: e.status || 'inscrit', date: e.created_at
+                }));
+            } catch (e) { console.warn('etudiants fetch error:', e); }
 
-Pour toute question, n'hésitez pas à nous contacter.
+            // 2. Inscriptions événements (statut, created_at)
+            try {
+                const { data: inscrits, error } = await window.supabaseClient.from('inscriptions_evenements').select('id, prenom, nom, email, telephone, statut, created_at, event_id');
+                if (error) console.warn('inscriptions_evenements:', error.message);
+                (inscrits || []).forEach(e => allContacts.push({
+                    _id: 'evt_' + e.id, source: 'inscriptions_evenements',
+                    nom: (e.prenom || '') + ' ' + (e.nom || ''), email: e.email, telephone: e.telephone || '',
+                    statut: e.statut || 'en_attente', date: e.created_at, event_id: e.event_id
+                }));
+            } catch (e) { console.warn('inscriptions_evenements fetch error:', e); }
 
-Cordialement,
-L'équipe Rasin Ayiti`
-            },
-            whatsapp: {
-                subject: '📱 Rejoignez notre Groupe WhatsApp',
-                content: `Bonjour {prenom} {nom},
+            // 3. Participants séminaire (statut_paiement, date_inscription)
+            try {
+                const { data: participants, error } = await window.supabaseClient.from('participants').select('id, prenom, nom, email, telephone, statut_paiement, date_inscription');
+                if (error) console.warn('participants:', error.message);
+                (participants || []).forEach(e => allContacts.push({
+                    _id: 'par_' + e.id, source: 'participants',
+                    nom: (e.prenom || '') + ' ' + (e.nom || ''), email: e.email, telephone: e.telephone || '',
+                    statut: e.statut_paiement || 'en_attente', date: e.date_inscription
+                }));
+            } catch (e) { console.warn('participants fetch error:', e); }
 
-Nous vous invitons à rejoindre notre groupe WhatsApp officiel pour rester informé(e) de toutes les actualités.
+            // 4. Donateurs (statut, created_at)
+            try {
+                const { data: donors, error } = await window.supabaseClient.from('donations').select('id, nom_donateur, association_nom, email, telephone, statut, created_at, est_anonyme');
+                if (error) console.warn('donations:', error.message);
+                (donors || []).forEach(e => {
+                    if (!e.email) return;
+                    allContacts.push({
+                        _id: 'don_' + e.id, source: 'donations',
+                        nom: e.est_anonyme ? 'Anonyme' : (e.nom_donateur || e.association_nom || 'Donateur'),
+                        email: e.email, telephone: e.telephone || '',
+                        statut: e.statut || 'en_attente', date: e.created_at
+                    });
+                });
+            } catch (e) { console.warn('donations fetch error:', e); }
 
-🔗 Lien: {whatsapp_link}
+            updateStats();
+            applyFilters();
+        }
 
-Important: Utilisez le numéro WhatsApp que vous avez enregistré lors de votre inscription.
+        function updateStats() {
+            const counts = { etudiants: 0, inscriptions_evenements: 0, participants: 0, donations: 0 };
+            allContacts.forEach(c => { if (counts[c.source] !== undefined) counts[c.source]++; });
+            document.getElementById('statTotal').textContent = allContacts.length;
+            document.getElementById('statEtudiants').textContent = counts.etudiants;
+            document.getElementById('statEvents').textContent = counts.inscriptions_evenements;
+            document.getElementById('statParticipants').textContent = counts.participants;
+            document.getElementById('statDonors').textContent = counts.donations;
+        }
 
-Cordialement,
-L'équipe Rasin Ayiti`
+        // ===== FILTERS =====
+        function applyFilters() {
+            const source = document.getElementById('filterSource').value;
+            const search = document.getElementById('filterSearch').value.toLowerCase().trim();
+            const status = document.getElementById('filterStatus').value;
+
+            filteredContacts = allContacts.filter(c => {
+                if (source !== 'all' && c.source !== source) return false;
+                if (status !== 'all' && !c.statut.includes(status)) return false;
+                if (search && !c.nom.toLowerCase().includes(search) && !c.email.toLowerCase().includes(search) && !c.telephone.includes(search)) return false;
+                return true;
+            });
+            renderContacts();
+        }
+
+        // ===== RENDER =====
+        function renderContacts() {
+            const tbody = document.getElementById('contactsBody');
+            if (!filteredContacts.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="no-data">Aucun contact trouvé</td></tr>';
+                return;
+            }
+            tbody.innerHTML = filteredContacts.map(c => {
+                const checked = selectedIds.has(c._id) ? 'checked' : '';
+                const dateStr = c.date ? new Date(c.date).toLocaleDateString('fr-FR') : '-';
+                const statusBadge = c.statut === 'confirme' || c.statut === 'inscrit'
+                    ? `<span class="status-badge status-sent">${c.statut}</span>`
+                    : `<span class="status-badge status-pending">${c.statut.replace('_',' ')}</span>`;
+                return `<tr>
+                    <td><input type="checkbox" data-id="${c._id}" ${checked} onchange="toggleSelect('${c._id}')"></td>
+                    <td style="font-weight:600;">${c.nom}</td>
+                    <td style="font-size:0.85rem;color:#475569;">${c.email}</td>
+                    <td style="font-size:0.85rem;">${c.telephone || '-'}</td>
+                    <td><span class="source-badge source-${c.source}">${SOURCE_LABELS[c.source]}</span></td>
+                    <td>${statusBadge}</td>
+                    <td style="font-size:0.8rem;color:#64748b;">${dateStr}</td>
+                    <td><button class="btn-action btn-send-one" title="Envoyer email" onclick="openSingleEmail('${c._id}')"><i class="fas fa-envelope"></i></button></td>
+                </tr>`;
+            }).join('');
+            updateBulkBar();
+        }
+
+        // ===== SELECTION =====
+        function toggleSelect(id) {
+            if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+            updateBulkBar();
+        }
+
+        function toggleCheckAll(el) {
+            if (el.checked) {
+                filteredContacts.forEach(c => selectedIds.add(c._id));
+            } else {
+                filteredContacts.forEach(c => selectedIds.delete(c._id));
+            }
+            renderContacts();
+        }
+
+        function selectAllVisible() {
+            filteredContacts.forEach(c => selectedIds.add(c._id));
+            renderContacts();
+        }
+
+        function deselectAll() {
+            selectedIds.clear();
+            document.getElementById('checkAll').checked = false;
+            renderContacts();
+        }
+
+        function updateBulkBar() {
+            const bar = document.getElementById('bulkBar');
+            const count = selectedIds.size;
+            bar.style.display = count > 0 ? 'block' : 'none';
+            document.getElementById('selectedCount').textContent = count + ' sélectionné(s)';
+        }
+
+        // ===== SITE URL & LOGO =====
+        const LOGO_URL = 'https://formulaire-iota.vercel.app/assets/logorasin.PNG';
+
+        // ===== TEMPLATE SYSTEM =====
+        let currentTemplate = 'general';
+
+        const TEMPLATES = {
+            general: {
+                subject: '📢 Annonce — RASIN AYITI',
+                fields: [],
+                build(name, data) {
+                    return emailShell('linear-gradient(135deg,#667eea,#764ba2)', '📢 Annonce', `
+                        <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${name} 👋</h2>
+                        <div style="color:#374151;line-height:1.8;font-size:0.92rem;white-space:pre-wrap;">${data.message || ''}</div>
+                    `);
+                }
             },
             evenement: {
-                subject: '🎉 Nouvel Événement - {titre}',
-                content: `Bonjour {prenom} {nom},
-
-Nous sommes ravis de vous annoncer un nouvel événement:
-
-📚 {titre}
-📅 {date}
-🕐 {heure}
-💻 {type}
-
-Inscrivez-vous maintenant pour réserver votre place !
-
-Cordialement,
-L'équipe Rasin Ayiti`
+                subject: '🎉 Nouvel Événement — RASIN AYITI',
+                fields: ['EventName','EventDate','EventLocation'],
+                build(name, data) {
+                    return emailShell('linear-gradient(135deg,#f59e0b,#ef4444)', '🎉 Nouvel Événement', `
+                        <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${name} 👋</h2>
+                        <p style="color:#374151;line-height:1.7;font-size:0.92rem;">Nous sommes ravis de vous inviter à notre prochain événement :</p>
+                        <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:18px;margin:18px 0;text-align:center;">
+                            <h3 style="margin:0 0 8px;color:#92400e;font-size:1.05rem;">📚 ${data.eventName || 'Événement'}</h3>
+                            ${data.eventDate ? `<p style="margin:4px 0;font-size:0.88rem;color:#92400e;"><strong>📅</strong> ${data.eventDate}</p>` : ''}
+                            ${data.eventLocation ? `<p style="margin:4px 0;font-size:0.88rem;color:#92400e;"><strong>📍</strong> ${data.eventLocation}</p>` : ''}
+                        </div>
+                        ${data.message ? `<div style="color:#374151;line-height:1.7;font-size:0.92rem;white-space:pre-wrap;margin-top:16px;">${data.message}</div>` : ''}
+                        <div style="text-align:center;margin:20px 0;">
+                            <a href="https://formulaire-iota.vercel.app/evenements.html" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.92rem;">S'inscrire maintenant →</a>
+                        </div>
+                    `);
+                }
             },
             rappel: {
-                subject: '⏰ Rappel - Paiement en attente',
-                content: `Bonjour {prenom} {nom},
-
-Nous n'avons pas encore reçu votre paiement de {montant} HTG.
-
-Pour confirmer votre inscription, veuillez effectuer le paiement:
-- Moncash: +509 46807922
-- Natcash: +509 46807922
-
-Envoyez la capture d'écran à notre WhatsApp.
-
-Cordialement,
-L'équipe Rasin Ayiti`
+                subject: '⏰ Rappel Paiement — RASIN AYITI',
+                fields: ['Amount'],
+                build(name, data) {
+                    return emailShell('linear-gradient(135deg,#ef4444,#dc2626)', '⏰ Rappel de Paiement', `
+                        <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${name} 👋</h2>
+                        <p style="color:#374151;line-height:1.7;font-size:0.92rem;">Nous n'avons pas encore reçu votre paiement.</p>
+                        <div style="background:#fee2e2;border:2px solid #ef4444;border-radius:12px;padding:18px;margin:18px 0;">
+                            <p style="margin:0 0 8px;font-size:0.95rem;color:#991b1b;font-weight:700;">⚠️ Action requise</p>
+                            ${data.amount ? `<p style="margin:0 0 8px;font-size:0.92rem;color:#991b1b;"><strong>Montant :</strong> ${data.amount}</p>` : ''}
+                            <p style="margin:0;font-size:0.88rem;color:#991b1b;">Veuillez effectuer le paiement via Moncash ou Natcash et envoyer la preuve sur WhatsApp.</p>
+                        </div>
+                        ${data.message ? `<div style="color:#374151;line-height:1.7;font-size:0.92rem;white-space:pre-wrap;margin-top:12px;">${data.message}</div>` : ''}
+                        <div style="text-align:center;margin:20px 0;">
+                            <a href="https://wa.me/50946807922" style="display:inline-block;background:#25D366;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.92rem;">📱 WhatsApp : +509 46807922</a>
+                        </div>
+                    `);
+                }
             },
-            certificat: {
-                subject: '🏆 Votre Certificat est disponible',
-                content: `Félicitations {prenom} {nom} !
-
-Votre certificat est maintenant disponible pour téléchargement.
-
-📄 Certificat: {certificat}
-📅 Date: {date}
-
-Téléchargez-le depuis votre espace étudiant.
-
-Cordialement,
-L'équipe Rasin Ayiti`
+            bienvenue: {
+                subject: '🎉 Bienvenue dans RASIN AYITI !',
+                fields: [],
+                build(name, data) {
+                    return emailShell('linear-gradient(135deg,#22c55e,#16a34a)', '🎉 Bienvenue !', `
+                        <div style="text-align:center;margin-bottom:20px;">
+                            <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:56px;height:56px;line-height:56px;font-size:1.6rem;">🎊</div>
+                        </div>
+                        <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;text-align:center;">Bienvenue ${name} !</h2>
+                        <p style="color:#374151;line-height:1.7;font-size:0.92rem;text-align:center;">Vous faites maintenant partie de la grande famille <strong>RASIN AYITI</strong>. Ensemble, nous bâtissons l'avenir de la jeunesse haïtienne !</p>
+                        ${data.message ? `<div style="color:#374151;line-height:1.7;font-size:0.92rem;white-space:pre-wrap;margin-top:16px;">${data.message}</div>` : ''}
+                        <div style="background:#f0fdf4;border-radius:10px;padding:14px;margin:18px 0;text-align:center;">
+                            <p style="margin:0;font-size:0.88rem;color:#166534;">🌐 Visitez notre site : <a href="https://formulaire-iota.vercel.app" style="color:#16a34a;font-weight:700;">formulaire-iota.vercel.app</a></p>
+                        </div>
+                    `);
+                }
+            },
+            whatsapp: {
+                subject: '📱 Rejoignez notre Groupe WhatsApp — RASIN AYITI',
+                fields: ['WALink'],
+                build(name, data) {
+                    return emailShell('linear-gradient(135deg,#25D366,#128C7E)', '📱 Groupe WhatsApp', `
+                        <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${name} 👋</h2>
+                        <p style="color:#374151;line-height:1.7;font-size:0.92rem;">Rejoignez notre groupe WhatsApp officiel pour rester informé(e) des dernières nouvelles et activités.</p>
+                        ${data.message ? `<div style="color:#374151;line-height:1.7;font-size:0.92rem;white-space:pre-wrap;margin:12px 0;">${data.message}</div>` : ''}
+                        <div style="text-align:center;margin:24px 0;">
+                            <a href="${data.waLink || '#'}" style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.95rem;box-shadow:0 4px 15px rgba(37,211,102,0.4);">📱 Rejoindre le Groupe</a>
+                        </div>
+                        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:12px;margin-top:12px;">
+                            <p style="margin:0;font-size:0.82rem;color:#92400e;">⚠️ <strong>Important :</strong> Utilisez le numéro WhatsApp que vous avez enregistré lors de votre inscription.</p>
+                        </div>
+                    `);
+                }
             },
             custom: {
                 subject: '',
-                content: ''
+                fields: [],
+                build(name, data) {
+                    return emailShell('linear-gradient(135deg,#667eea,#764ba2)', '', `
+                        <div style="color:#374151;line-height:1.8;font-size:0.92rem;white-space:pre-wrap;">${data.message || ''}</div>
+                    `);
+                }
             }
         };
 
-        // Check admin authentication
-        function checkAuth() {
-            const adminData = sessionStorage.getItem('admin');
-            if (!adminData) {
-                window.location.href = '../espace-etudiant/login.html';
-                return false;
-            }
-            currentAdmin = JSON.parse(adminData);
-            return true;
+        function emailShell(headerBg, headerLabel, bodyHtml) {
+            return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
+  <div style="background:${headerBg};border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
+    <img src="${LOGO_URL}" alt="RASIN AYITI" style="height:50px;width:auto;margin-bottom:8px;border-radius:8px;" />
+    <h1 style="color:#fff;font-size:1.15rem;margin:0;letter-spacing:0.05em;">RASIN AYITI</h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.82rem;margin:4px 0 0;">Développement Juvénile</p>
+    ${headerLabel ? `<p style="color:rgba(255,255,255,0.95);font-size:0.78rem;margin:10px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">${headerLabel}</p>` : ''}
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
+    ${bodyHtml}
+  </div>
+  <div style="text-align:center;margin-top:20px;">
+    <p style="color:#9ca3af;font-size:0.75rem;margin:0 0 6px;">RASIN AYITI — Développement Juvénile</p>
+    <p style="color:#9ca3af;font-size:0.72rem;margin:0;">📞 +509 46807922 &nbsp;|&nbsp; 📧 rasinayiti.ht@gmail.com</p>
+    <p style="color:#cbd5e1;font-size:0.68rem;margin:8px 0 0;">© 2026 RASIN AYITI. Tous droits réservés.</p>
+  </div>
+</div>`;
         }
 
-        // Load events
-        async function loadEvents() {
-            try {
-                const { data: formations } = await window.supabaseClient
-                    .from('formations')
-                    .select('id, titre, date_debut')
-                    .eq('status', 'publie');
-                
-                const { data: seminaires } = await window.supabaseClient
-                    .from('seminaires')
-                    .select('id, titre, date_seminaire')
-                    .eq('status', 'planifie');
-                
-                allEvents = [...(formations || []), ...(seminaires || [])];
-                
-                const eventSelect = document.getElementById('eventSelect');
-                eventSelect.innerHTML = '<option value="">Sélectionner un événement</option>';
-                allEvents.forEach(e => {
-                    eventSelect.innerHTML += `<option value="${e.id}">${e.titre}</option>`;
-                });
-            } catch (err) {
-                console.error('Error loading events:', err);
-            }
-        }
+        // ===== TEMPLATE SELECTION =====
+        function selectTemplate(tpl) {
+            currentTemplate = tpl;
+            document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`.tpl-card[data-tpl="${tpl}"]`)?.classList.add('selected');
 
-        // Select email type
-        function selectEmailType(type) {
-            selectedEmailType = type;
-            
-            // Update card selection
-            document.querySelectorAll('.email-type-card').forEach(card => {
-                card.classList.remove('selected');
-                if (card.dataset.type === type) {
-                    card.classList.add('selected');
-                }
+            const t = TEMPLATES[tpl];
+            document.getElementById('modalSubject').value = t.subject;
+
+            // Toggle fields
+            ['EventName','EventDate','EventLocation','WALink','Amount'].forEach(f => {
+                document.getElementById('tplField' + f).style.display = t.fields.includes(f) ? 'block' : 'none';
             });
-            
-            // Show composer
-            document.getElementById('emailComposer').style.display = 'block';
-            document.getElementById('composerTitle').textContent = getEmailTypeTitle(type);
-            
-            // Load template
-            const template = emailTemplates[type];
-            document.getElementById('emailSubject').value = template.subject || '';
-            document.getElementById('emailContent').value = template.content || '';
-            
-            // Update preview
+
             updatePreview();
-            
-            // Update target options based on type
-            updateTargetOptions(type);
         }
 
-        function getEmailTypeTitle(type) {
-            const titles = {
-                inscription: 'Email d\'Inscription',
-                whatsapp: 'Invitation WhatsApp',
-                evenement: 'Annonce Événement',
-                rappel: 'Rappel Paiement',
-                certificat: 'Notification Certificat',
-                custom: 'Email Personnalisé'
+        function getTemplateData() {
+            return {
+                message: document.getElementById('modalContent').value.trim(),
+                eventName: document.getElementById('fieldEventName').value.trim(),
+                eventDate: document.getElementById('fieldEventDate').value.trim(),
+                eventLocation: document.getElementById('fieldEventLocation').value.trim(),
+                waLink: document.getElementById('fieldWALink').value.trim(),
+                amount: document.getElementById('fieldAmount').value.trim()
             };
-            return titles[type] || 'Composer Email';
-        }
-
-        function updateTargetOptions(type) {
-            const targetSelect = document.getElementById('targetSelect');
-            const eventSelect = document.getElementById('eventSelect');
-            const customEmails = document.getElementById('customEmails');
-            
-            // Reset
-            eventSelect.style.display = 'none';
-            customEmails.style.display = 'none';
-            
-            if (type === 'evenement' || type === 'inscription') {
-                eventSelect.style.display = 'block';
-            }
-            
-            if (type === 'custom') {
-                targetSelect.value = 'custom';
-                customEmails.style.display = 'block';
-            }
-            
-            updateTargetCount();
-        }
-
-        function updateTargetCount() {
-            const targetSelect = document.getElementById('targetSelect').value;
-            // In a real implementation, this would query the database
-            document.getElementById('targetCount').textContent = targetSelect === 'custom' ? '0' : '---';
-        }
-
-        function closeComposer() {
-            document.getElementById('emailComposer').style.display = 'none';
-            document.querySelectorAll('.email-type-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            selectedEmailType = null;
         }
 
         function updatePreview() {
-            const subject = document.getElementById('emailSubject').value;
-            const content = document.getElementById('emailContent').value;
-            
-            document.getElementById('previewSubject').textContent = subject || '-';
-            document.getElementById('previewBody').textContent = content || 'L\'aperçu apparaîtra ici...';
+            const data = getTemplateData();
+            const html = TEMPLATES[currentTemplate].build('{Nom du destinataire}', data);
+            document.getElementById('emailPreviewFrame').innerHTML = html;
         }
 
-        function previewEmail() {
-            alert('Fonctionnalité d\'aperçu complet à implémenter');
+        function showPreviewStep() {
+            const subject = document.getElementById('modalSubject').value.trim();
+            if (!subject) { alert('Remplissez le sujet'); return; }
+            updatePreview();
+            document.getElementById('stepTemplates').style.display = 'none';
+            document.getElementById('stepPreview').style.display = 'block';
         }
 
-        function saveTemplate() {
-            alert('Template sauvegardé !');
+        function showTemplateStep() {
+            document.getElementById('stepPreview').style.display = 'none';
+            document.getElementById('stepTemplates').style.display = 'block';
         }
 
-        async function sendEmail() {
-            const subject = document.getElementById('emailSubject').value;
-            const content = document.getElementById('emailContent').value;
-            const target = document.getElementById('targetSelect').value;
-            
-            if (!subject || !content) {
-                alert('Veuillez remplir le sujet et le contenu');
-                return;
+        // ===== EMAIL MODAL =====
+        function getSelectedContacts() {
+            return allContacts.filter(c => selectedIds.has(c._id));
+        }
+
+        function openSingleEmail(id) {
+            selectedIds.clear();
+            selectedIds.add(id);
+            updateBulkBar();
+            openBulkEmailModal();
+        }
+
+        function openBulkEmailModal() {
+            const recipients = getSelectedContacts();
+            if (!recipients.length) { alert('Sélectionnez au moins un contact'); return; }
+            document.getElementById('modalRecipientCount').textContent = recipients.length;
+            document.getElementById('modalContent').value = '';
+            document.getElementById('fieldEventName').value = '';
+            document.getElementById('fieldEventDate').value = '';
+            document.getElementById('fieldEventLocation').value = '';
+            document.getElementById('fieldWALink').value = '';
+            document.getElementById('fieldAmount').value = '';
+            document.getElementById('sendProgress').style.display = 'none';
+            document.getElementById('btnSendBulk').disabled = false;
+            document.getElementById('btnSendBulk').innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer maintenant';
+            showTemplateStep();
+            selectTemplate('general');
+            document.getElementById('emailModal').style.display = 'flex';
+        }
+
+        function closeEmailModal() {
+            document.getElementById('emailModal').style.display = 'none';
+        }
+
+        async function sendBulkEmail() {
+            const subject = document.getElementById('modalSubject').value.trim();
+            if (!subject) { alert('Remplissez le sujet'); return; }
+
+            const data = getTemplateData();
+            const recipients = getSelectedContacts();
+            if (!confirm(`Envoyer cet email à ${recipients.length} personne(s) ?`)) return;
+
+            const btn = document.getElementById('btnSendBulk');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
+            document.getElementById('sendProgress').style.display = 'block';
+
+            let sent = 0, failed = 0;
+            for (let i = 0; i < recipients.length; i++) {
+                const c = recipients[i];
+                try {
+                    const html = TEMPLATES[currentTemplate].build(c.nom, data);
+                    const res = await fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ to: c.email.trim(), subject, html })
+                    });
+                    if (res.ok) sent++; else failed++;
+                } catch (e) { failed++; }
+
+                const pct = Math.round(((i + 1) / recipients.length) * 100);
+                document.getElementById('progressBar').style.width = pct + '%';
+                document.getElementById('progressText').textContent = `${i + 1} / ${recipients.length} — ✅ ${sent} envoyé(s), ❌ ${failed} échoué(s)`;
             }
-            
-            if (!confirm(`Envoyer cet email à ${target} destinataires ?`)) {
-                return;
-            }
-            
-            // In a real implementation, this would call the email API
-            alert('Email envoyé avec succès ! (Simulation)');
-            
-            // Add to history
-            addToHistory(selectedEmailType, subject, target);
-            closeComposer();
+
+            btn.innerHTML = '<i class="fas fa-check"></i> Terminé';
+            alert(`Envoi terminé !\n✅ ${sent} envoyé(s)\n❌ ${failed} échoué(s)`);
+            setTimeout(() => {
+                closeEmailModal();
+                deselectAll();
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer maintenant';
+            }, 1500);
         }
 
-        function addToHistory(type, subject, target) {
-            const tbody = document.getElementById('emailHistoryList');
-            const now = new Date().toLocaleDateString('fr-FR');
-            
-            // Remove "no data" row if exists
-            if (tbody.querySelector('.no-data')) {
-                tbody.innerHTML = '';
-            }
-            
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${now}</td>
-                <td>${type}</td>
-                <td>${subject}</td>
-                <td>${target}</td>
-                <td><span class="status-badge status-sent">Envoyé</span></td>
-                <td>
-                    <button class="btn-action btn-view"><i class="fas fa-eye"></i></button>
-                    <button class="btn-action btn-cancel"><i class="fas fa-redo"></i></button>
-                </td>
-            `;
-            tbody.insertBefore(row, tbody.firstChild);
-        }
-
-        // Event listeners
-        document.getElementById('targetSelect').addEventListener('change', updateTargetCount);
-        document.getElementById('emailSubject').addEventListener('input', updatePreview);
-        document.getElementById('emailContent').addEventListener('input', updatePreview);
-
-        // Logout
-        document.querySelector('.logout-btn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            sessionStorage.clear();
-            window.location.href = '../espace-etudiant/login.html';
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkAuth()) {
-                loadEvents();
-            }
-        });
-
+        // ===== SIDEBAR =====
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
         window.toggleSidebar = toggleSidebar;
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllContacts();
+        });
     </script>
 </body>
 </html>

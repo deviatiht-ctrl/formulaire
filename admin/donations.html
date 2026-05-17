@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="responsiveadmin.css">
     <style>
         :root { --primary: #667eea; --bg-main: #f8fafc; --sidebar-bg: #0f172a; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); margin: 0; display: flex; }
@@ -140,19 +141,18 @@
         }
         window.toggleSidebar = toggleSidebar;
 
+        let allDonations = [];
+
         async function loadDonations() {
             const { data, error } = await window.supabaseClient
-                .from('donations')
-                .select('*')
-                .order('created_at', { ascending: false });
-
+                .from('donations').select('*').order('created_at', { ascending: false });
             if (error) return;
+            allDonations = data || [];
             const tbody = document.getElementById('donationsBody');
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:3rem;">Aucune donation pour le moment.</td></tr>';
                 return;
             }
-
             tbody.innerHTML = data.map(d => `
                 <tr>
                     <td>
@@ -177,12 +177,13 @@
                     </td>
                     <td><span class="badge badge-${d.statut}">${d.statut.replace('_', ' ')}</span></td>
                     <td style="font-size:0.8rem; color:#64748b;">${new Date(d.created_at).toLocaleDateString('fr-FR')}</td>
-                    <td>
-                        <select onchange="updateStatus('${d.id}', this.value)" style="padding:0.4rem; border-radius:6px; border:1px solid #e2e8f0;">
+                    <td style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+                        <select onchange="updateStatus('${d.id}', this.value)" style="padding:0.4rem; border-radius:6px; border:1px solid #e2e8f0;width:100%;">
                             <option value="en_attente" ${d.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
                             <option value="confirme" ${d.statut === 'confirme' ? 'selected' : ''}>Confirmé</option>
                             <option value="annule" ${d.statut === 'annule' ? 'selected' : ''}>Annulé</option>
                         </select>
+                        ${d.email ? `<button onclick="sendReceipt('${d.id}')" id="btn-receipt-${d.id}" style="padding:0.35rem 0.7rem;background:#667eea;color:white;border:none;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;"><i class="fas fa-envelope"></i> Envoyer reçu</button>` : '<span style="font-size:0.7rem;color:#94a3b8;">Pas d\'email</span>'}
                     </td>
                 </tr>
             `).join('');
@@ -192,6 +193,28 @@
             const { error } = await window.supabaseClient.from('donations').update({ statut: status }).eq('id', id);
             if (!error) loadDonations();
         }
+
+        async function sendReceipt(id) {
+            const donation = allDonations.find(d => d.id === id);
+            if (!donation || !donation.email) { alert('Pas d\'email pour ce don'); return; }
+
+            const btn = document.getElementById('btn-receipt-' + id);
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                await window.sendDonationReceiptEmail(donation);
+                btn.innerHTML = '<i class="fas fa-check"></i> Envoyé !';
+                btn.style.background = '#22c55e';
+                setTimeout(() => { btn.innerHTML = orig; btn.style.background = '#667eea'; btn.disabled = false; }, 3000);
+            } catch (err) {
+                alert('Erreur envoi: ' + err.message);
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+        window.sendReceipt = sendReceipt;
 
         loadDonations();
     </script>

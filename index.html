@@ -542,13 +542,21 @@
             width: 95%;
             max-width: 1400px;
             padding: 10px 40px;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             z-index: 1000;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
             border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-2026.scrolled {
+            top: 10px;
+            padding: 8px 30px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 40px rgba(0, 32, 159, 0.12);
         }
 
         .nav-container {
@@ -558,6 +566,63 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .nav-logo img {
+            height: 45px;
+            width: auto;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            z-index: 1001;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.05);
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .nav-toggle:hover {
+            background: rgba(37, 99, 235, 0.1);
+            transform: scale(1.05);
+        }
+
+        .hamburger-line {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background-color: #0f172a;
+            position: absolute;
+            left: 10px;
+            transition: transform 0.4s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .line-1 {
+            top: 16px;
+        }
+
+        .line-2 {
+            bottom: 16px;
+            width: 14px;
+        }
+
+        .nav-toggle.active .line-1 {
+            transform: rotate(45deg);
+            top: 19px;
+            width: 20px;
+        }
+
+        .nav-toggle.active .line-2 {
+            transform: rotate(-45deg);
+            bottom: 19px;
+            width: 20px;
         }
 
         .nav-links {
@@ -570,15 +635,174 @@
         }
 
         .nav-links a {
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             transition: all 0.2s;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-decoration: none;
         }
 
         .nav-links a:hover {
             background: rgba(37, 99, 235, 0.1);
             color: var(--primary);
+        }
+
+        .nav-links a.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-leaders-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+            color: #0f172a !important;
+        }
+
+        /* Mobile Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 1999;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-handle {
+            display: none;
+        }
+
+        /* Responsive Navbar */
+        @media (max-width: 1024px) {
+            .nav-2026 {
+                width: 95% !important;
+                padding: 8px 16px !important;
+                border-radius: 50px !important;
+                top: 15px !important;
+                z-index: 2001 !important;
+            }
+
+            .nav-toggle {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-links {
+                position: fixed !important;
+                left: 5% !important;
+                right: 5% !important;
+                top: auto !important;
+                bottom: 200px !important;
+                width: 90% !important;
+                max-width: 380px !important;
+                max-height: 70vh !important;
+                overflow-y: auto !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(25px) !important;
+                -webkit-backdrop-filter: blur(25px) !important;
+                flex-direction: column !important;
+                padding: 24px 16px !important;
+                gap: 6px !important;
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35) !important;
+                z-index: 2000 !important;
+                display: none !important;
+                border-radius: 24px 24px 0 0 !important;
+                border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            }
+
+            .nav-links.active {
+                display: flex !important;
+            }
+
+            .mobile-menu-handle {
+                display: none !important;
+            }
+
+            .nav-links li {
+                width: 100% !important;
+            }
+
+            .nav-links a {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 10px !important;
+                padding: 10px 14px !important;
+                font-size: 0.95rem !important;
+                border-radius: 10px !important;
+                color: #0f172a !important;
+                font-weight: 600 !important;
+                transition: all 0.3s ease !important;
+                border: 1px solid transparent !important;
+            }
+
+            .nav-links a:hover {
+                background: rgba(37, 99, 235, 0.08) !important;
+                border-color: rgba(37, 99, 235, 0.15) !important;
+                transform: translateY(-2px) !important;
+            }
+
+            .nav-links a.active {
+                background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+            }
+
+            .nav-links i {
+                width: 24px !important;
+                height: 24px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .nav-leaders-btn {
+                background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+                color: #0f172a !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-2026 {
+                width: 92% !important;
+                padding: 6px 12px !important;
+            }
+
+            .nav-logo img {
+                height: 38px !important;
+            }
+
+            .nav-links {
+                width: 92% !important;
+                padding: 24px 16px 16px 16px !important;
+                position: fixed !important;
+                left: 4% !important;
+                right: 4% !important;
+                top: auto !important;
+                bottom: -100% !important;
+                border-radius: 24px 24px 0 0 !important;
+                display: flex !important;
+                transition: bottom 0.3s ease !important;
+            }
+
+            .nav-links.active {
+                display: flex !important;
+            }
+
+            .nav-links a {
+                padding: 10px 14px !important;
+                font-size: 0.9rem !important;
+            }
         }
 
         /* Carousel Swipe Styles */
@@ -621,28 +845,6 @@
             border-radius: 4px;
         }
 
-        @media (max-width: 1024px) {
-            .nav-actions { display: none; }
-            .nav-toggle { display: block; }
-            .nav-links {
-                position: fixed;
-                top: 75px;
-                left: -100%;
-                width: 100%;
-                height: calc(100vh - 75px);
-                background: white;
-                flex-direction: column;
-                padding: 40px 20px;
-                gap: 20px;
-                transition: 0.4s;
-                box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-                overflow-y: auto;
-            }
-            .nav-links.active { left: 0; }
-            .nav-links li { width: 100%; }
-            .nav-links a { display: block; text-align: center; padding: 15px; font-size: 1.1rem; }
-        }
-
         @media (max-width: 768px) {
             .section-events { padding: 60px 0; }
             .events-grid { grid-template-columns: 1fr; }
@@ -653,18 +855,20 @@
     <!-- NAVIGATION MODERNE -->
     <nav class="nav-2026">
         <div class="nav-container">
-            <div class="nav-logo">
+            <a href="index.html" class="nav-logo" style="text-decoration: none;">
                 <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
                 <div style="display:flex; flex-direction:column;">
-                    <span style="font-weight:900; font-size:1.4rem; line-height:1;">Rasin Ayiti</span>
+                    <span style="font-weight:900; font-size:1.4rem; line-height:1; color:#0f172a;">RASIN AYITI</span>
                     <span style="font-size:0.65rem; color:var(--primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Développement Juvénile/RASINAYITI</span>
                 </div>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <i class="fas fa-bars"></i>
-            </div>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span class="hamburger-line line-1"></span>
+                <span class="hamburger-line line-2"></span>
+            </button>
             
             <ul class="nav-links" id="navLinks">
+                <div class="mobile-menu-handle"></div>
                 <li><a href="#hero" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
                 <li><a href="evenements.html" onclick="closeMenu()"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
                 <li><a href="#formations" onclick="closeMenu()"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
@@ -695,12 +899,12 @@
                 </div>
                 
                 <h1 class="hero-title">
-                    <span class="title-line">Rasin Ayiti</span>
+                    <span class="title-line">RASIN AYITI</span>
                     <span class="title-line accent" style="font-size:0.4em; display:block; margin-top:0.5rem; letter-spacing:2px;">DÉPARTEMENT DE DÉVELOPPEMENT JUVÉNILE</span>
                 </h1>
                 
                 <p class="hero-description">
-                    Rejoignez <strong>Rasin Ayiti</strong>, une grande mobilisation pour la jeunesse haïtienne. 
+                    Rejoignez <strong>RASIN AYITI</strong>, une grande mobilisation pour la jeunesse haïtienne. 
                     Nous œuvrons pou le <strong>Développement Juvénile</strong> à travers le leadership, l'engagement et l'excellence.
                 </p>
                 
@@ -919,9 +1123,16 @@
 
                     <!-- Preuve de paiement -->
                     <div id="proofField" style="margin-bottom:1.5rem; display:none;">
-                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Preuve de paiement</label>
-                        <input type="file" id="paymentProof" class="form-input" accept="image/*">
-                        <p style="font-size:0.8rem; color:#64748b; margin-top:0.25rem;">Upload votre reçu</p>
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Preuve de paiement *</label>
+                        <input type="file" id="paymentProof" class="form-input" accept="image/*" required>
+                        <p style="font-size:0.8rem; color:#64748b; margin-top:0.25rem;">Upload votre reçu (obligatoire)</p>
+                    </div>
+
+                    <!-- Numéro de téléphone -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Numéro de téléphone *</label>
+                        <input type="tel" id="donationPhone" class="form-input" placeholder="+509 XXXX XXXX" required>
+                        <p style="font-size:0.8rem; color:#64748b; margin-top:0.25rem;">Pour contact et confirmation (obligatoire)</p>
                     </div>
 
                     <!-- Email -->
@@ -1842,23 +2053,62 @@
             }
         });
 
-        // Responsive Menu Logic
-        const navToggle = document.getElementById('navToggle');
-        const navLinks = document.getElementById('navLinks');
-        
-        navToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const icon = navToggle.querySelector('i');
-            icon.classList.toggle('fa-bars');
-            icon.classList.toggle('fa-times');
-        });
+        // Responsive Menu Logic (Premium Bottom Sheet Modal)
+        document.addEventListener('DOMContentLoaded', () => {
+            const navToggle = document.getElementById('navToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            // Create glassmorphic overlay for mobile menu dynamically
+            let overlay = document.getElementById('mobileMenuOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'mobileMenuOverlay';
+                overlay.className = 'mobile-menu-overlay';
+                document.body.appendChild(overlay);
+            }
+            
+            if (navToggle && navLinks) {
+                navToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navToggle.classList.toggle('active');
+                    navLinks.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    
+                    // Toggle scroll lock on body when menu is active
+                    if (navLinks.classList.contains('active')) {
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        document.body.style.overflow = '';
+                    }
+                });
 
-        function closeMenu() {
-            navLinks.classList.remove('active');
-            const icon = navToggle.querySelector('i');
-            icon.classList.add('fa-bars');
-            icon.classList.remove('fa-times');
-        }
+                window.closeMenu = function() {
+                    navToggle.classList.remove('active');
+                    navLinks.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                };
+
+                // Close menu when clicking overlay
+                overlay.addEventListener('click', () => {
+                    closeMenu();
+                });
+
+                // Close menu when clicking a link
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        closeMenu();
+                    });
+                });
+                
+                // Close menu when clicking outside of navLinks
+                document.addEventListener('click', (e) => {
+                    if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+                        closeMenu();
+                    }
+                });
+            }
+        });
 
         // --- DYNAMIC STATS LOGIC ---
         async function loadHeroStats() {
@@ -1875,7 +2125,8 @@
                 const { count: eventCount } = await window.supabaseClient
                     .from('events').select('*', { count: 'exact', head: true });
 
-                document.getElementById('stat-members').textContent = (studentCount || 0) + '+';
+                // Members hardcoded to 5000+
+                document.getElementById('stat-members').textContent = '5000+';
                 document.getElementById('stat-courses').textContent = (courseCount || 0);
                 document.getElementById('stat-events').textContent = (eventCount || 0);
             } catch (err) {
@@ -2004,7 +2255,7 @@
             const instructionsDiv = document.getElementById('paymentInstructions');
             const paymentDetails = document.getElementById('paymentDetails');
             
-            proofField.style.display = method === 'manuel' ? 'block' : 'none';
+            proofField.style.display = 'block'; // Always show proof field (mandatory)
             
             if (method === 'monacash') {
                 instructionsDiv.style.display = 'block';
@@ -2051,10 +2302,14 @@
                 const donatorType = document.querySelector('input[name="donatorType"]:checked').value;
                 const proofFile = document.getElementById('paymentProof').files[0];
                 
-                let proofUrl = null;
-                if (proofFile) {
-                    proofUrl = await uploadPaymentProof(proofFile);
+                if (!proofFile) {
+                    alert('Veuillez fournir une preuve de paiement (photo du reçu).');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    return;
                 }
+                
+                const proofUrl = await uploadPaymentProof(proofFile);
 
                 const donationData = {
                     montant: parseFloat(document.getElementById('donationAmount').value),
@@ -2066,6 +2321,7 @@
                     activite_specifique: document.getElementById('donationPurpose').value === 'activite' ? document.getElementById('donationActivity').value : null,
                     methode_paiement: document.getElementById('paymentMethod').value,
                     preuve_paiement_url: proofUrl,
+                    telephone: document.getElementById('donationPhone').value,
                     email: document.getElementById('donationEmail').value,
                     message: document.getElementById('donationMessage').value || null,
                     statut: 'en_attente'
@@ -2081,8 +2337,17 @@
 
                 if (error) throw error;
 
+                // Auto-send receipt email
+                try {
+                    donationData.created_at = new Date().toISOString();
+                    await window.sendDonationReceiptEmail(donationData);
+                    console.log('✅ Reçu de don envoyé par email');
+                } catch (emailErr) {
+                    console.warn('⚠️ Email reçu non envoyé:', emailErr.message);
+                }
+
                 // Show success message
-                alert('Merci pour votre don ! Vous recevrez un reçu par email.');
+                alert('Merci pour votre don ! Un reçu a été envoyé à votre email.');
                 e.target.reset();
                 document.querySelectorAll('.donation-amount-btn').forEach(btn => btn.classList.remove('active'));
                 toggleDonatorFields();

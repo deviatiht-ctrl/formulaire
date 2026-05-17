@@ -1846,50 +1846,134 @@ window.saveZoomConfig = saveZoomConfig;
 window.sendZoomEmailAll = sendZoomEmailAll;
 window.sendZoomEmailNew = sendZoomEmailNew;
 
-// ===== LEADERS MANAGEMENT =====
+// ===== LEADERS MANAGEMENT (v2 — Flyer + Commune) =====
 let leaders = [];
 
+const COMMUNES_HAITI = [
+    "Acul-du-Nord","Anse-à-Foleur","Anse-à-Galets","Anse-à-Pitres","Anse-à-Veau",
+    "Anse-d'Hainault","Anse-Rouge","Aquin","Arcahaie","Arnaud","Arniquet",
+    "Bahon","Baie-de-Henne","Bainet","Baradères","Bas-Limbé","Beaumont",
+    "Belladère","Belle-Anse","Bombardopolis","Bonbon","Borgne","Boucan-Carré",
+    "Cabaret","Carice","Carrefour","Cavaillon","Cayes-Jacmel","Cerca-Carvajal",
+    "Cerca-la-Source","Chambellan","Chantal","Chardonières","Chardonnières",
+    "Citronnier","Corail","Cornillon","Côtes-de-Fer","Coteaux","Croix-des-Bouquets",
+    "Croix-des-Missions","Dame-Marie","Delmas","Dessalines","Dondon",
+    "Ennery","Fonds-des-Nègres","Fonds-Verrettes","Fort-Liberté","Ganthier",
+    "Gonâves","Grand-Gosier","Grand-Goâve","Grande-Rivière-du-Nord",
+    "Grande-Saline","Gressier","Gros-Morne","Hinche","Île-à-Vache",
+    "Jacmel","Jean-Rabel","Jérémie","Kenscoff","La Chapelle","La Vallée",
+    "Lascahobas","Léogâne","Les Anglais","Les Cayes","Les Irois",
+    "Limbé","Limonade","Maïssade","Maniche","Marmelade","Marigot",
+    "Milot","Miragoâne","Mirebalais","Moïse","Môle-Saint-Nicolas",
+    "Mont-Organisé","Ouanaminthe","Paillant","Pétion-Ville","Petit-Goâve",
+    "Petit-Trou-de-Nippes","Petite-Anse","Petite-Rivière-de-l'Artibonite",
+    "Pilate","Plaine-du-Nord","Plaisance","Pointe-à-Raquette","Port-à-Piment",
+    "Port-au-Prince","Port-de-Paix","Port-Margot","Port-Salut",
+    "Quartier-Morin","Ranquitte","Roche-à-Bateau","Roseaux","Sainte-Suzanne",
+    "Saint-Jean-du-Sud","Saint-Louis-du-Nord","Saint-Louis-du-Sud","Saint-Marc",
+    "Saint-Michel-de-l'Attalaye","Saint-Raphaël","Saut-d'Eau","Séguin",
+    "Tabarre","Terre-Neuve","Thiotte","Thomassique","Thomazeau",
+    "Thomonde","Tiburon","Torbeck","Trou-du-Nord","Vallières","Verrettes"
+];
+
+function populateAdminCommuneSelects() {
+    const selects = [document.getElementById('leaderCommune'), document.getElementById('adminCommuneFilter')];
+    selects.forEach(sel => {
+        if (!sel) return;
+        const existing = sel.querySelectorAll('option[data-commune]');
+        if (existing.length > 0) return;
+        COMMUNES_HAITI.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            opt.setAttribute('data-commune', '1');
+            sel.appendChild(opt);
+        });
+    });
+}
+
+function previewFlyerImage(input) {
+    const container = document.getElementById('flyerPreviewContainer');
+    const preview = document.getElementById('flyerPreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            container.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+async function uploadFlyerToSupabase(file) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `leader_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+    const filePath = `leaders/${fileName}`;
+
+    const sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : window.supabaseClient;
+
+    const { data, error } = await sb.storage
+        .from('leaders')
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+    if (error) throw error;
+
+    const { data: urlData } = sb.storage.from('leaders').getPublicUrl(filePath);
+    return urlData.publicUrl;
+}
+
 async function loadLeaders() {
+    populateAdminCommuneSelects();
     try {
-        const { data, error } = await supabase
-            .from('leaders')
+        const sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : window.supabaseClient;
+        const { data, error } = await sb
+            .from('leaders_v2')
             .select('*')
             .order('ordre_affichage', { ascending: true });
 
         if (error) throw error;
 
         leaders = data || [];
-        renderLeaders();
+        renderLeaders(leaders);
     } catch (err) {
         console.error('Error loading leaders:', err);
         showToast('Erreur lors du chargement des leaders', 'error');
     }
 }
 
-function renderLeaders() {
+function renderLeaders(list) {
     const leadersList = document.getElementById('leadersList');
-    if (!leaders || leaders.length === 0) {
-        leadersList.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#6b7280;">Aucun leader disponible</p>';
+    const countEl = document.getElementById('adminLeaderCount');
+    if (countEl) countEl.textContent = `${list.length} leader(s)`;
+
+    if (!list || list.length === 0) {
+        leadersList.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#6b7280;padding:2rem;">Aucun leader disponible</p>';
         return;
     }
 
-    leadersList.innerHTML = leaders.map(leader => `
-        <div style="background:#f9fafb;border-radius:12px;padding:16px;border:1px solid #e5e7eb;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                <img src="${leader.photo_url}" alt="${leader.prenom}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #fbbf24;">
-                <div>
-                    <h3 style="margin:0;font-size:1rem;font-weight:700;">${leader.prenom} ${leader.nom}</h3>
-                    <p style="margin:0;font-size:0.85rem;color:#6b7280;">${leader.poste}</p>
-                </div>
+    leadersList.innerHTML = list.map(leader => `
+        <div style="background:#f9fafb;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;position:relative;">
+            <div style="position:relative;">
+                <img src="${leader.flyer_url}" alt="Leader - ${leader.commune}" 
+                    style="width:100%;height:220px;object-fit:cover;display:block;"
+                    onerror="this.style.background='#f1f5f9';this.style.height='120px';">
+                <span style="position:absolute;bottom:8px;left:8px;background:#00209F;color:white;padding:4px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;">
+                    <i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>${leader.commune}
+                </span>
+                <span style="position:absolute;top:8px;right:8px;background:${leader.est_actif ? '#22c55e' : '#ef4444'};color:white;padding:3px 8px;border-radius:6px;font-size:0.7rem;font-weight:700;">
+                    ${leader.est_actif ? 'Actif' : 'Inactif'}
+                </span>
             </div>
-            <div style="display:flex;gap:8px;">
-                <button onclick="editLeader('${leader.id}')" style="flex:1;padding:8px;background:#4f46e5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;">
+            <div style="padding:12px;display:flex;gap:6px;">
+                <button onclick="editLeader('${leader.id}')" style="flex:1;padding:8px;background:#4f46e5;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">
                     <i class="fas fa-edit"></i> Modifier
                 </button>
-                <button onclick="toggleLeaderActive('${leader.id}', ${leader.est_actif})" style="flex:1;padding:8px;background:${leader.est_actif ? '#ef4444' : '#22c55e'};color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;">
-                    ${leader.est_actif ? '<i class="fas fa-ban"></i> Désactiver' : '<i class="fas fa-check"></i> Activer'}
+                <button onclick="toggleLeaderActive('${leader.id}', ${leader.est_actif})" style="flex:1;padding:8px;background:${leader.est_actif ? '#f59e0b' : '#22c55e'};color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.8rem;font-weight:600;">
+                    ${leader.est_actif ? '<i class="fas fa-eye-slash"></i> Masquer' : '<i class="fas fa-eye"></i> Afficher'}
                 </button>
-                <button onclick="deleteLeader('${leader.id}')" style="padding:8px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;cursor:pointer;font-size:0.85rem;" title="Supprimer">
+                <button onclick="deleteLeader('${leader.id}')" style="padding:8px 10px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;cursor:pointer;font-size:0.8rem;" title="Supprimer">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -1897,10 +1981,22 @@ function renderLeaders() {
     `).join('');
 }
 
+function filterAdminLeaders() {
+    const selected = document.getElementById('adminCommuneFilter').value;
+    if (!selected) {
+        renderLeaders(leaders);
+    } else {
+        renderLeaders(leaders.filter(l => l.commune === selected));
+    }
+}
+
 function showAddLeaderModal() {
+    populateAdminCommuneSelects();
     document.getElementById('leaderModalTitle').textContent = "Ajouter un Leader";
     document.getElementById('leaderId').value = "";
+    document.getElementById('leaderExistingFlyerUrl').value = "";
     document.getElementById('leaderForm').reset();
+    document.getElementById('flyerPreviewContainer').style.display = 'none';
     document.getElementById('leaderModal').classList.remove('hidden');
 }
 
@@ -1916,27 +2012,39 @@ async function saveLeader(event) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
     const id = document.getElementById('leaderId').value;
-    const payload = {
-        prenom: document.getElementById('leaderPrenom').value,
-        nom: document.getElementById('leaderNom').value,
-        poste: document.getElementById('leaderPoste').value,
-        photo_url: document.getElementById('leaderPhotoUrl').value,
-        bio: document.getElementById('leaderBio').value,
-        responsabilites: document.getElementById('leaderResponsibilities').value,
-        communites_responsables: document.getElementById('leaderCommunities').value,
-        linkedin: document.getElementById('leaderLinkedIn').value,
-        instagram: document.getElementById('leaderInstagram').value,
-        email: document.getElementById('leaderEmail').value,
-        ordre_affichage: parseInt(document.getElementById('leaderOrdre').value) || 0,
-        est_actif: true
-    };
+    const commune = document.getElementById('leaderCommune').value;
+    const ordre = parseInt(document.getElementById('leaderOrdre').value) || 0;
+    const fileInput = document.getElementById('leaderFlyerFile');
+    const existingUrl = document.getElementById('leaderExistingFlyerUrl').value;
 
     try {
+        let flyerUrl = existingUrl;
+
+        // Upload new flyer if file selected
+        if (fileInput.files && fileInput.files[0]) {
+            flyerUrl = await uploadFlyerToSupabase(fileInput.files[0]);
+        }
+
+        if (!flyerUrl) {
+            showToast('Veuillez sélectionner un flyer', 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            return;
+        }
+
+        const payload = {
+            flyer_url: flyerUrl,
+            commune: commune,
+            ordre_affichage: ordre,
+            est_actif: true
+        };
+
+        const sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : window.supabaseClient;
         let result;
         if (id) {
-            result = await supabase.from('leaders').update(payload).eq('id', id);
+            result = await sb.from('leaders_v2').update(payload).eq('id', id);
         } else {
-            result = await supabase.from('leaders').insert([payload]);
+            result = await sb.from('leaders_v2').insert([payload]);
         }
 
         if (result.error) throw result.error;
@@ -1954,22 +2062,28 @@ async function saveLeader(event) {
 }
 
 async function editLeader(leaderId) {
+    populateAdminCommuneSelects();
     const leader = leaders.find(l => l.id === leaderId);
     if (!leader) return;
 
     document.getElementById('leaderModalTitle').textContent = "Modifier le Leader";
     document.getElementById('leaderId').value = leader.id;
-    document.getElementById('leaderPrenom').value = leader.prenom;
-    document.getElementById('leaderNom').value = leader.nom;
-    document.getElementById('leaderPoste').value = leader.poste;
-    document.getElementById('leaderPhotoUrl').value = leader.photo_url;
-    document.getElementById('leaderBio').value = leader.bio || '';
-    document.getElementById('leaderResponsibilities').value = leader.responsabilites || '';
-    document.getElementById('leaderCommunities').value = leader.communites_responsables || '';
-    document.getElementById('leaderLinkedIn').value = leader.linkedin || '';
-    document.getElementById('leaderInstagram').value = leader.instagram || '';
-    document.getElementById('leaderEmail').value = leader.email || '';
+    document.getElementById('leaderExistingFlyerUrl').value = leader.flyer_url || '';
+    document.getElementById('leaderCommune').value = leader.commune || '';
     document.getElementById('leaderOrdre').value = leader.ordre_affichage || 0;
+
+    // Show existing flyer preview
+    const container = document.getElementById('flyerPreviewContainer');
+    const preview = document.getElementById('flyerPreview');
+    if (leader.flyer_url) {
+        preview.src = leader.flyer_url;
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+    }
+
+    // Clear file input
+    document.getElementById('leaderFlyerFile').value = '';
 
     document.getElementById('leaderModal').classList.remove('hidden');
 }
@@ -1978,8 +2092,9 @@ async function deleteLeader(leaderId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce leader ? Cette action est irréversible.')) return;
 
     try {
-        const { error } = await supabase
-            .from('leaders')
+        const sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : window.supabaseClient;
+        const { error } = await sb
+            .from('leaders_v2')
             .delete()
             .eq('id', leaderId);
 
@@ -1995,8 +2110,9 @@ async function deleteLeader(leaderId) {
 
 async function toggleLeaderActive(leaderId, currentStatus) {
     try {
-        const { error } = await supabase
-            .from('leaders')
+        const sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : window.supabaseClient;
+        const { error } = await sb
+            .from('leaders_v2')
             .update({ est_actif: !currentStatus })
             .eq('id', leaderId);
 
@@ -2017,6 +2133,8 @@ window.saveLeader = saveLeader;
 window.editLeader = editLeader;
 window.deleteLeader = deleteLeader;
 window.toggleLeaderActive = toggleLeaderActive;
+window.previewFlyerImage = previewFlyerImage;
+window.filterAdminLeaders = filterAdminLeaders;
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation Admin Panel...');

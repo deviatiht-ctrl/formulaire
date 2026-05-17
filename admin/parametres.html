@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="responsiveadmin.css">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -164,14 +165,14 @@
                 </div>
             </div>
 
-            <!-- Leaders Management -->
+            <!-- Leaders Management (v2 — Flyer + Commune) -->
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-user-tie card-icon purple"></i>
                     <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
                         <div>
                             <h2>Gestion des Leaders</h2>
-                            <p>Équipe de direction et membres clés</p>
+                            <p>Upload flyer + commune responsable</p>
                         </div>
                         <button class="btn-primary" onclick="showAddLeaderModal()">
                             <i class="fas fa-plus"></i> Nouveau Leader
@@ -179,6 +180,16 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <!-- Commune Filter + Count -->
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem;padding:12px 16px;background:#f1f5f9;border-radius:12px;">
+                        <label style="font-weight:700;font-size:0.85rem;color:#374151;white-space:nowrap;">
+                            <i class="fas fa-filter" style="margin-right:6px;color:#8b5cf6;"></i>Filtrer :
+                        </label>
+                        <select id="adminCommuneFilter" onchange="filterLeadersByCommune()" style="flex:1;min-width:180px;padding:9px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:0.88rem;font-weight:600;cursor:pointer;background:white;">
+                            <option value="">Toutes les communes</option>
+                        </select>
+                        <span id="leaderCount" style="font-size:0.82rem;color:#6b7280;font-weight:600;">0 leader(s)</span>
+                    </div>
                     <div id="leadersList" class="leaders-grid">
                         <p class="no-data">Chargement des leaders...</p>
                     </div>
@@ -203,9 +214,9 @@
         </main>
     </div>
 
-    <!-- Leader Modal -->
+    <!-- Leader Modal (v2 — Flyer + Commune) -->
     <div class="modal-overlay hidden" id="leaderModal">
-        <div class="modal-content" style="max-width:700px;">
+        <div class="modal-content" style="max-width:560px;">
             <div class="modal-header">
                 <h2 id="leaderModalTitle">Ajouter un Leader</h2>
                 <button class="modal-close" onclick="closeLeaderModal()">&times;</button>
@@ -213,67 +224,50 @@
             <div class="modal-body">
                 <form id="leaderForm" onsubmit="saveLeader(event)">
                     <input type="hidden" id="leaderId">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Prénom *</label>
-                            <input type="text" id="leaderPrenom" required placeholder="Ex: Jean">
-                        </div>
-                        <div class="form-group">
-                            <label>Nom *</label>
-                            <input type="text" id="leaderNom" required placeholder="Ex: Dupont">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Poste *</label>
-                            <input type="text" id="leaderPoste" required placeholder="Ex: Président">
-                        </div>
-                        <div class="form-group">
-                            <label>Ordre d'affichage</label>
-                            <input type="number" id="leaderOrdre" value="0">
-                        </div>
-                    </div>
+                    <input type="hidden" id="leaderExistingFlyerUrl">
+
+                    <!-- Flyer Upload -->
                     <div class="form-group">
-                        <label>Photo du Leader *</label>
+                        <label><i class="fas fa-image"></i> Flyer du Leader *</label>
+                        <div id="flyerPreviewContainer" style="display:none;margin-bottom:0.75rem;">
+                            <img id="flyerPreview" src="" alt="Aperçu" style="width:100%;max-height:280px;object-fit:contain;border-radius:12px;border:2px solid #e2e8f0;">
+                        </div>
                         <div class="file-upload">
-                            <input type="file" id="leaderPhotoFile" accept="image/*">
-                            <label for="leaderPhotoFile" class="file-label">
+                            <input type="file" id="leaderFlyerFile" accept="image/*" onchange="previewFlyer(this)">
+                            <label for="leaderFlyerFile" class="file-label">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <span>Cliquez pour uploader une photo</span>
+                                <span>Cliquez pour uploader le flyer</span>
                             </label>
                         </div>
-                        <div id="leaderPhotoPreview" class="flyer-preview"></div>
-                        <input type="hidden" id="leaderPhotoUrl">
+                        <p style="font-size:0.75rem;color:#94a3b8;margin:0.5rem 0 0;">Le flyer doit contenir toutes les informations du leader (nom, poste, photo, bio...)</p>
                     </div>
+
+                    <!-- Commune Select with Custom Add -->
                     <div class="form-group">
-                        <label>Description / Bio</label>
-                        <textarea id="leaderBio" rows="3" style="width:100%; padding:0.75rem; border:2px solid #e2e8f0; border-radius:10px; font-family:inherit;"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Responsabilités</label>
-                        <textarea id="leaderResponsibilities" rows="2" style="width:100%; padding:0.75rem; border:2px solid #e2e8f0; border-radius:10px; font-family:inherit;"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Communautés responsables</label>
-                        <input type="text" id="leaderCommunities" placeholder="Ex: Port-au-Prince, Delmas">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>LinkedIn</label>
-                            <input type="url" id="leaderLinkedIn" placeholder="https://linkedin.com/in/...">
-                        </div>
-                        <div class="form-group">
-                            <label>Instagram</label>
-                            <input type="url" id="leaderInstagram" placeholder="https://instagram.com/...">
+                        <label><i class="fas fa-map-marker-alt"></i> Commune responsable *</label>
+                        <select id="leaderCommune" required style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;background:#f8fafc;font-family:inherit;">
+                            <option value="">— Sélectionner une commune —</option>
+                        </select>
+                        <!-- Custom commune add -->
+                        <div style="margin-top:0.5rem;display:flex;gap:8px;align-items:center;">
+                            <input type="text" id="customCommuneInput" placeholder="Commune pas dans la liste ? Tapez ici..." style="flex:1;padding:0.6rem 0.75rem;border:2px dashed #cbd5e1;border-radius:10px;font-size:0.85rem;font-family:inherit;background:#fefce8;">
+                            <button type="button" onclick="addCustomCommune()" style="padding:0.6rem 1rem;background:#8b5cf6;color:white;border:none;border-radius:10px;font-size:0.8rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Ordre d'affichage -->
                     <div class="form-group">
-                        <label>Email Contact</label>
-                        <input type="email" id="leaderEmail" placeholder="email@exemple.com">
+                        <label><i class="fas fa-sort-numeric-up"></i> Ordre d'affichage</label>
+                        <input type="number" id="leaderOrdre" value="0" min="0">
                     </div>
+
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" onclick="closeLeaderModal()">Annuler</button>
-                        <button type="submit" class="btn-primary" id="btnSaveLeader">Enregistrer</button>
+                        <button type="submit" class="btn-primary" id="btnSaveLeader">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
                     </div>
                 </form>
             </div>
@@ -415,55 +409,23 @@
         /* Leaders Grid */
         .leaders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.25rem;
         }
-
-        .leader-item {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 1.25rem;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .leader-item-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .leader-item-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #8b5cf6;
-        }
-
-        .leader-item-info h3 { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0; }
-        .leader-item-info p { font-size: 0.8rem; color: #64748b; margin: 0; }
-
-        .leader-item-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: auto;
-        }
-
-        .btn-mini {
-            padding: 0.4rem 0.75rem;
-            font-size: 0.75rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-        .btn-mini.edit { background: #e0e7ff; color: #4338ca; }
-        .btn-mini.delete { background: #fee2e2; color: #dc2626; }
-        .btn-mini:hover { opacity: 0.8; transform: translateY(-1px); }
+        .leader-card { background:#f8fafc; border-radius:14px; overflow:hidden; border:1px solid #e2e8f0; transition:transform 0.2s,box-shadow 0.2s; }
+        .leader-card:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.08); }
+        .leader-card img.lc-img { width:100%; height:200px; object-fit:cover; display:block; }
+        .lc-body { padding:12px; }
+        .lc-commune { display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg,#00209F,#1d4ed8); color:white; padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; }
+        .lc-status { display:inline-block; padding:3px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; margin-left:6px; }
+        .lc-status.on { background:#dcfce7; color:#166534; }
+        .lc-status.off { background:#fee2e2; color:#991b1b; }
+        .lc-actions { display:flex; gap:6px; margin-top:10px; }
+        .btn-mini { padding:0.4rem 0.75rem; font-size:0.75rem; border-radius:8px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; }
+        .btn-mini.edit { background:#e0e7ff; color:#4338ca; flex:1; }
+        .btn-mini.toggle { flex:1; color:white; }
+        .btn-mini.delete { background:#fee2e2; color:#dc2626; }
+        .btn-mini:hover { opacity:0.85; transform:translateY(-1px); }
 
         /* Modal */
         .modal-overlay {
@@ -791,200 +753,222 @@
         }
         window.toggleSidebar = toggleSidebar;
 
-        // ===== LEADERS LOGIC =====
+        // ===== LEADERS v2 (Flyer + Commune) =====
         let allLeaders = [];
 
+        const COMMUNES_HAITI = [
+            "Acul-du-Nord","Anse-à-Foleur","Anse-à-Galets","Anse-à-Pitres","Anse-à-Veau",
+            "Anse-d'Hainault","Anse-Rouge","Aquin","Arcahaie","Arnaud","Arniquet",
+            "Bahon","Baie-de-Henne","Bainet","Baradères","Bas-Limbé","Beaumont",
+            "Belladère","Belle-Anse","Bombardopolis","Bonbon","Borgne","Boucan-Carré",
+            "Cabaret","Carice","Carrefour","Cavaillon","Cayes-Jacmel","Cerca-Carvajal",
+            "Cerca-la-Source","Chambellan","Chantal","Chardonières","Citronnier","Corail",
+            "Cornillon","Côtes-de-Fer","Coteaux","Croix-des-Bouquets","Croix-des-Missions",
+            "Dame-Marie","Delmas","Dessalines","Dondon","Ennery","Fonds-des-Nègres",
+            "Fonds-Verrettes","Fort-Liberté","Ganthier","Gonâves","Grand-Gosier",
+            "Grand-Goâve","Grande-Rivière-du-Nord","Grande-Saline","Gressier","Gros-Morne",
+            "Hinche","Île-à-Vache","Jacmel","Jean-Rabel","Jérémie","Kenscoff",
+            "La Chapelle","La Vallée","Lascahobas","Léogâne","Les Anglais","Les Cayes",
+            "Les Irois","Limbé","Limonade","Maïssade","Maniche","Marmelade","Marigot",
+            "Milot","Miragoâne","Mirebalais","Moïse","Môle-Saint-Nicolas","Mont-Organisé",
+            "Ouanaminthe","Paillant","Pétion-Ville","Petit-Goâve","Petit-Trou-de-Nippes",
+            "Petite-Anse","Petite-Rivière-de-l'Artibonite","Pilate","Plaine-du-Nord",
+            "Plaisance","Pointe-à-Raquette","Port-à-Piment","Port-au-Prince","Port-de-Paix",
+            "Port-Margot","Port-Salut","Quartier-Morin","Ranquitte","Roche-à-Bateau",
+            "Roseaux","Sainte-Suzanne","Saint-Jean-du-Sud","Saint-Louis-du-Nord",
+            "Saint-Louis-du-Sud","Saint-Marc","Saint-Michel-de-l'Attalaye","Saint-Raphaël",
+            "Saut-d'Eau","Séguin","Tabarre","Terre-Neuve","Thiotte","Thomassique",
+            "Thomazeau","Thomonde","Tiburon","Torbeck","Trou-du-Nord","Vallières","Verrettes"
+        ];
+
+        function populateCommuneSelects() {
+            ['leaderCommune','adminCommuneFilter'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel || sel.querySelectorAll('option[data-c]').length > 0) return;
+                COMMUNES_HAITI.forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c; o.textContent = c; o.setAttribute('data-c','1');
+                    sel.appendChild(o);
+                });
+            });
+        }
+
+        function addCustomCommune() {
+            const input = document.getElementById('customCommuneInput');
+            const val = input.value.trim();
+            if (!val) { showToast('Entrez un nom de commune', 'error'); return; }
+            const sel = document.getElementById('leaderCommune');
+            // Check if already exists
+            for (let i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value.toLowerCase() === val.toLowerCase()) {
+                    sel.value = sel.options[i].value;
+                    input.value = '';
+                    showToast('Commune déjà dans la liste, sélectionnée !');
+                    return;
+                }
+            }
+            const o = document.createElement('option');
+            o.value = val; o.textContent = val + ' (ajoutée)'; o.setAttribute('data-c','1');
+            sel.appendChild(o);
+            sel.value = val;
+            // Also add to filter
+            const filter = document.getElementById('adminCommuneFilter');
+            if (filter) { const o2 = o.cloneNode(true); filter.appendChild(o2); }
+            input.value = '';
+            showToast('Commune "' + val + '" ajoutée !');
+        }
+        window.addCustomCommune = addCustomCommune;
+
+        function previewFlyer(input) {
+            const container = document.getElementById('flyerPreviewContainer');
+            const preview = document.getElementById('flyerPreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { preview.src = e.target.result; container.style.display = 'block'; };
+                reader.readAsDataURL(input.files[0]);
+            } else { container.style.display = 'none'; }
+        }
+        window.previewFlyer = previewFlyer;
+
+        async function uploadFlyer(file) {
+            const ext = file.name.split('.').pop();
+            const name = `leader_${Date.now()}_${Math.random().toString(36).substring(2,8)}.${ext}`;
+            const path = `leaders/${name}`;
+            const { data, error } = await window.supabaseClient.storage.from('leaders').upload(path, file, { cacheControl:'3600', upsert:false });
+            if (error) throw error;
+            const { data: u } = window.supabaseClient.storage.from('leaders').getPublicUrl(path);
+            return u.publicUrl;
+        }
+
         async function loadLeaders() {
+            populateCommuneSelects();
             try {
                 const { data, error } = await window.supabaseClient
-                    .from('leaders')
-                    .select('*')
-                    .order('ordre_affichage', { ascending: true });
-
+                    .from('leaders_v2').select('*').order('ordre_affichage', { ascending: true });
                 if (error) throw error;
                 allLeaders = data || [];
-                renderLeaders();
+                renderLeaders(allLeaders);
             } catch (err) {
                 console.error('Error loading leaders:', err);
-                const list = document.getElementById('leadersList');
-                if (list) list.innerHTML = '<p class="no-data">Erreur de chargement</p>';
+                document.getElementById('leadersList').innerHTML = '<p class="no-data">Erreur de chargement</p>';
             }
         }
 
-        function renderLeaders() {
-            const container = document.getElementById('leadersList');
-            if (!container) return;
-
-            if (allLeaders.length === 0) {
-                container.innerHTML = '<p class="no-data">Aucun leader trouvé</p>';
-                return;
-            }
-
-            container.innerHTML = allLeaders.map(leader => `
-                <div class="leader-item">
-                    <div class="leader-item-header">
-                        <img src="${leader.photo_url || '../assets/default-avatar.png'}" class="leader-item-img">
-                        <div class="leader-item-info">
-                            <h3>${leader.prenom} ${leader.nom}</h3>
-                            <p>${leader.poste}</p>
+        function renderLeaders(list) {
+            const c = document.getElementById('leadersList');
+            const cnt = document.getElementById('leaderCount');
+            if (cnt) cnt.textContent = list.length + ' leader(s)';
+            if (!list.length) { c.innerHTML = '<p class="no-data">Aucun leader trouvé</p>'; return; }
+            c.innerHTML = list.map(l => `
+                <div class="leader-card">
+                    <img class="lc-img" src="${l.flyer_url}" alt="${l.commune}" onerror="this.style.background='#f1f5f9';this.style.height='80px';">
+                    <div class="lc-body">
+                        <span class="lc-commune"><i class="fas fa-map-marker-alt"></i> ${l.commune}</span>
+                        <span class="lc-status ${l.est_actif ? 'on' : 'off'}">${l.est_actif ? 'Actif' : 'Inactif'}</span>
+                        <div class="lc-actions">
+                            <button class="btn-mini edit" onclick="editLeader('${l.id}')"><i class="fas fa-edit"></i> Modifier</button>
+                            <button class="btn-mini toggle" style="background:${l.est_actif ? '#f59e0b' : '#22c55e'}" onclick="toggleLeader('${l.id}',${l.est_actif})">
+                                ${l.est_actif ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>'}
+                            </button>
+                            <button class="btn-mini delete" onclick="deleteLeader('${l.id}')"><i class="fas fa-trash"></i></button>
                         </div>
-                    </div>
-                    <div class="leader-item-actions">
-                        <button class="btn-mini edit" onclick="editLeader('${leader.id}')">
-                            <i class="fas fa-edit"></i> Modifier
-                        </button>
-                        <button class="btn-mini delete" onclick="deleteLeader('${leader.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
                     </div>
                 </div>
             `).join('');
         }
 
+        function filterLeadersByCommune() {
+            const v = document.getElementById('adminCommuneFilter').value;
+            renderLeaders(v ? allLeaders.filter(l => l.commune === v) : allLeaders);
+        }
+        window.filterLeadersByCommune = filterLeadersByCommune;
+
         function showAddLeaderModal() {
+            populateCommuneSelects();
             document.getElementById('leaderModal').classList.remove('hidden');
             document.getElementById('leaderModalTitle').textContent = 'Ajouter un Leader';
             document.getElementById('leaderForm').reset();
             document.getElementById('leaderId').value = '';
-            document.getElementById('leaderPhotoPreview').innerHTML = '';
-            document.getElementById('leaderPhotoPreview').classList.remove('show');
-            document.getElementById('leaderPhotoUrl').value = '';
+            document.getElementById('leaderExistingFlyerUrl').value = '';
+            document.getElementById('flyerPreviewContainer').style.display = 'none';
         }
-
-        function closeLeaderModal() {
-            document.getElementById('leaderModal').classList.add('hidden');
-        }
-
+        function closeLeaderModal() { document.getElementById('leaderModal').classList.add('hidden'); }
         window.showAddLeaderModal = showAddLeaderModal;
         window.closeLeaderModal = closeLeaderModal;
 
         async function editLeader(id) {
-            const leader = allLeaders.find(l => l.id === id);
-            if (!leader) return;
-
-            showAddLeaderModal();
+            populateCommuneSelects();
+            const l = allLeaders.find(x => x.id === id);
+            if (!l) return;
+            document.getElementById('leaderModal').classList.remove('hidden');
             document.getElementById('leaderModalTitle').textContent = 'Modifier Leader';
-            document.getElementById('leaderId').value = leader.id;
-            document.getElementById('leaderPrenom').value = leader.prenom;
-            document.getElementById('leaderNom').value = leader.nom;
-            document.getElementById('leaderPoste').value = leader.poste;
-            document.getElementById('leaderOrdre').value = leader.ordre_affichage || 0;
-            document.getElementById('leaderBio').value = leader.bio || '';
-            document.getElementById('leaderResponsibilities').value = leader.responsabilites || '';
-            document.getElementById('leaderCommunities').value = leader.communites_responsables || '';
-            document.getElementById('leaderLinkedIn').value = leader.linkedin || '';
-            document.getElementById('leaderInstagram').value = leader.instagram || '';
-            document.getElementById('leaderEmail').value = leader.email || '';
-            document.getElementById('leaderPhotoUrl').value = leader.photo_url || '';
-
-            if (leader.photo_url) {
-                document.getElementById('leaderPhotoPreview').innerHTML = `<img src="${leader.photo_url}">`;
-                document.getElementById('leaderPhotoPreview').classList.add('show');
-            }
+            document.getElementById('leaderId').value = l.id;
+            document.getElementById('leaderExistingFlyerUrl').value = l.flyer_url || '';
+            document.getElementById('leaderCommune').value = l.commune || '';
+            document.getElementById('leaderOrdre').value = l.ordre_affichage || 0;
+            document.getElementById('leaderFlyerFile').value = '';
+            if (l.flyer_url) {
+                document.getElementById('flyerPreview').src = l.flyer_url;
+                document.getElementById('flyerPreviewContainer').style.display = 'block';
+            } else { document.getElementById('flyerPreviewContainer').style.display = 'none'; }
         }
         window.editLeader = editLeader;
 
         async function saveLeader(event) {
             event.preventDefault();
             const btn = document.getElementById('btnSaveLeader');
-            const originalText = btn.innerHTML;
+            const orig = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
 
             const id = document.getElementById('leaderId').value;
-            const photoUrl = document.getElementById('leaderPhotoUrl').value;
-            
-            if (!photoUrl) {
-                showToast('Veuillez uploader une photo', 'error');
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                return;
-            }
-
-            const payload = {
-                prenom: document.getElementById('leaderPrenom').value,
-                nom: document.getElementById('leaderNom').value,
-                poste: document.getElementById('leaderPoste').value,
-                ordre_affichage: parseInt(document.getElementById('leaderOrdre').value) || 0,
-                bio: document.getElementById('leaderBio').value,
-                responsabilites: document.getElementById('leaderResponsibilities').value,
-                communites_responsables: document.getElementById('leaderCommunities').value,
-                photo_url: photoUrl,
-                linkedin: document.getElementById('leaderLinkedIn').value,
-                instagram: document.getElementById('leaderInstagram').value,
-                email: document.getElementById('leaderEmail').value,
-                est_actif: true
-            };
+            const commune = document.getElementById('leaderCommune').value;
+            const ordre = parseInt(document.getElementById('leaderOrdre').value) || 0;
+            const fileInput = document.getElementById('leaderFlyerFile');
+            let flyerUrl = document.getElementById('leaderExistingFlyerUrl').value;
 
             try {
-                let error;
-                if (id) {
-                    const res = await window.supabaseClient.from('leaders').update(payload).eq('id', id);
-                    error = res.error;
-                } else {
-                    const res = await window.supabaseClient.from('leaders').insert([payload]);
-                    error = res.error;
+                if (fileInput.files && fileInput.files[0]) {
+                    flyerUrl = await uploadFlyer(fileInput.files[0]);
                 }
+                if (!flyerUrl) { showToast('Veuillez uploader un flyer', 'error'); btn.disabled = false; btn.innerHTML = orig; return; }
 
-                if (error) throw error;
+                const payload = { flyer_url: flyerUrl, commune, ordre_affichage: ordre, est_actif: true };
+                let res;
+                if (id) { res = await window.supabaseClient.from('leaders_v2').update(payload).eq('id', id); }
+                else { res = await window.supabaseClient.from('leaders_v2').insert([payload]); }
+                if (res.error) throw res.error;
 
                 showToast('Leader enregistré !');
                 closeLeaderModal();
                 loadLeaders();
             } catch (err) {
                 console.error('Error saving leader:', err);
-                showToast('Erreur d\'enregistrement', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
+                showToast('Erreur: ' + err.message, 'error');
+            } finally { btn.disabled = false; btn.innerHTML = orig; }
         }
         window.saveLeader = saveLeader;
 
         async function deleteLeader(id) {
             if (!confirm('Supprimer ce leader ?')) return;
             try {
-                const { error } = await window.supabaseClient.from('leaders').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('leaders_v2').delete().eq('id', id);
                 if (error) throw error;
                 showToast('Leader supprimé');
                 loadLeaders();
-            } catch (err) {
-                showToast('Erreur suppression', 'error');
-            }
+            } catch (err) { showToast('Erreur suppression', 'error'); }
         }
         window.deleteLeader = deleteLeader;
 
-        // Handle Photo Upload
-        document.getElementById('leaderPhotoFile').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const btn = document.getElementById('btnSaveLeader');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = 'Uploading...';
-
+        async function toggleLeader(id, current) {
             try {
-                const fileName = `leader_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-                const { data, error } = await window.supabaseClient.storage
-                    .from('events') // Assumant le bucket 'events' est accessible
-                    .upload(fileName, file);
-
+                const { error } = await window.supabaseClient.from('leaders_v2').update({ est_actif: !current }).eq('id', id);
                 if (error) throw error;
-
-                const { data: { publicUrl } } = window.supabaseClient.storage.from('events').getPublicUrl(fileName);
-                
-                document.getElementById('leaderPhotoUrl').value = publicUrl;
-                document.getElementById('leaderPhotoPreview').innerHTML = `<img src="${publicUrl}">`;
-                document.getElementById('leaderPhotoPreview').classList.add('show');
-                showToast('Photo uploadée !');
-            } catch (err) {
-                alert('Erreur upload: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        });
+                showToast('Statut mis à jour');
+                loadLeaders();
+            } catch (err) { showToast('Erreur', 'error'); }
+        }
+        window.toggleLeader = toggleLeader;
     </script>
 </body>
 </html>

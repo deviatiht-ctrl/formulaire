@@ -819,6 +819,68 @@ async function getZoomConfigFromDb() {
     };
 }
 
+// ============================================
+// DONATION RECEIPT EMAIL
+// ============================================
+
+function _donationReceiptHtml(donation) {
+    const donorName = donation.est_anonyme ? 'Donateur Anonyme' : (donation.nom_donateur || donation.association_nom || 'Donateur');
+    const dateStr = new Date(donation.created_at || Date.now()).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+    return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
+  <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
+    <img src="${SITE_URL}/assets/logorasin.PNG" alt="RASIN AYITI" style="height:50px;width:auto;margin-bottom:10px;" />
+    <h1 style="color:#fff;font-size:1.2rem;margin:0;">RASIN AYITI</h1>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.85rem;margin:4px 0 0;">Département de Développement Juvénile</p>
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:56px;height:56px;line-height:56px;font-size:1.6rem;">🎉</div>
+      <h2 style="color:#1f2937;font-size:1.15rem;margin:12px 0 4px;">Merci pour votre don !</h2>
+      <p style="color:#6b7280;font-size:0.88rem;margin:0;">Votre générosité fait la différence</p>
+    </div>
+    <div style="background:#f0f9ff;border:2px solid #667eea;border-radius:12px;padding:20px;margin:20px 0;">
+      <h3 style="font-size:0.85rem;color:#667eea;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 14px;text-align:center;">Reçu de Don</h3>
+      <table style="width:100%;font-size:0.88rem;color:#374151;">
+        <tr><td style="padding:6px 0;font-weight:700;">Donateur :</td><td style="padding:6px 0;">${donorName}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:700;">Montant :</td><td style="padding:6px 0;font-size:1.1rem;font-weight:800;color:#667eea;">${donation.montant} ${donation.devise || 'HTG'}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:700;">But :</td><td style="padding:6px 0;">${donation.but_don || 'Général'}${donation.activite_specifique ? ' — ' + donation.activite_specifique : ''}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:700;">Méthode :</td><td style="padding:6px 0;text-transform:capitalize;">${donation.methode_paiement || '-'}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:700;">Date :</td><td style="padding:6px 0;">${dateStr}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:700;">Statut :</td><td style="padding:6px 0;"><span style="background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;">En attente de vérification</span></td></tr>
+      </table>
+    </div>
+    <p style="color:#6b7280;font-size:0.85rem;line-height:1.7;margin:16px 0;">Votre don sera vérifié sous peu. Vous pouvez contacter notre équipe pour toute question :</p>
+    <div style="text-align:center;margin:16px 0;">
+      <a href="https://wa.me/50946807922" style="display:inline-block;background:#25D366;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.88rem;">📱 WhatsApp : +509 46807922</a>
+    </div>
+  </div>
+  <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 RASIN AYITI — Département de Développement Juvénile</p>
+</div>`;
+}
+
+async function sendDonationReceiptEmail(donation) {
+    if (!donation.email) throw new Error('Pas d\'email pour ce don');
+    const subject = '🎉 Reçu de votre don — RASIN AYITI';
+    const html = _donationReceiptHtml(donation);
+
+    const cleanEmail = donation.email.trim().replace(/\.$/, '').replace(/\s/g, '');
+    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+        throw new Error('Email invalide: ' + donation.email);
+    }
+
+    const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: cleanEmail, subject, html }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.message || 'HTTP ' + res.status);
+    return data;
+}
+
+// Expose globally
+window.sendDonationReceiptEmail = sendDonationReceiptEmail;
+
 // Expose globally for seminar pages
 window.validateAccessCode = validateAccessCode;
 window.checkIsAdmin       = checkIsAdmin;
