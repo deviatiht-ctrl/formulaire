@@ -3,17 +3,85 @@
 // ============================================
 
 const SITE_URL = 'https://formulaire-iota.vercel.app'; // URL Vercel du site
-const SUPABASE_URL = 'https://silpnglpfzeoqkqvwdsn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbHBuZ2xwZnplb3FrcXZ3ZHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNjAxNjMsImV4cCI6MjA5MjYzNjE2M30.DKkAvKjh6AyQfIrc3aAG3GVp-6B7lrGd7Bf_CMNkk9o';
+const SUPABASE_URL = 'https://oykuhhogcdbmoybskexd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95a3VoaG9nY2RibW95YnNrZXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MTk1OTksImV4cCI6MjA5NjQ5NTU5OX0.xbIdgA6-DCILYkDQcl_VzWgz7HmIlHYhmRp0u_a87F4';
 
 // Initialisation Supabase
+let rawSupabaseClient;
 let supabaseClient;
 
+const RASINAYITI_PREFIX = 'rasinayiti_';
+const RASINAYITI_TABLE_MAP = {
+    'categories': 'rasinayiti_categories',
+    'formations': 'rasinayiti_formations',
+    'seminaires': 'rasinayiti_seminaires',
+    'etudiants': 'rasinayiti_etudiants',
+    'inscriptions': 'rasinayiti_inscriptions',
+    'progressions': 'rasinayiti_progressions',
+    'modules': 'rasinayiti_modules',
+    'completions_modules': 'rasinayiti_completions_modules',
+    'galerie': 'rasinayiti_galerie',
+    'notifications': 'rasinayiti_notifications',
+    'administrateurs': 'rasinayiti_administrateurs',
+    'admins': 'rasinayiti_administrateurs',
+    'admin_users': 'rasinayiti_administrateurs',
+    'parametres': 'rasinayiti_parametres',
+    'logs_activite': 'rasinayiti_logs_activite',
+    'events': 'rasinayiti_events',
+    'event_questions': 'rasinayiti_event_questions',
+    'inscriptions_evenements': 'rasinayiti_inscriptions_evenements',
+    'donations': 'rasinayiti_donations',
+    'maillots': 'rasinayiti_maillots',
+    'maillot_orders': 'rasinayiti_maillot_orders',
+    'leaders': 'rasinayiti_leaders_v2',
+    'leaders_v2': 'rasinayiti_leaders_v2',
+    'participants': 'rasinayiti_participants',
+    'zoom_config': 'rasinayiti_zoom_config',
+    'live_viewers': 'rasinayiti_live_viewers',
+    'live_reactions': 'rasinayiti_live_reactions'
+};
+
+const RASINAYITI_BUCKET_MAP = {
+    'paiements': 'rasinayiti_paiements',
+    'events': 'rasinayiti_events',
+    'maillots': 'rasinayiti_maillots',
+    'leaders': 'rasinayiti_leaders',
+    'galerie': 'rasinayiti_galerie'
+};
+
+function resolveRasinAyitiTable(tableName) {
+    if (!tableName) return tableName;
+    if (tableName.startsWith(RASINAYITI_PREFIX)) return tableName;
+    return RASINAYITI_TABLE_MAP[tableName] || (RASINAYITI_PREFIX + tableName);
+}
+
+function resolveRasinAyitiBucket(bucketName) {
+    if (!bucketName) return bucketName;
+    if (bucketName.startsWith(RASINAYITI_PREFIX)) return bucketName;
+    return RASINAYITI_BUCKET_MAP[bucketName] || (RASINAYITI_PREFIX + bucketName);
+}
+
 try {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // Make it globally available
+    rawSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Create wrapper with automatic rasinayiti_ table and bucket resolution
+    const originalFrom = rawSupabaseClient.from.bind(rawSupabaseClient);
+    rawSupabaseClient.from = function(tableName) {
+        const resolved = resolveRasinAyitiTable(tableName);
+        return originalFrom(resolved);
+    };
+
+    if (rawSupabaseClient.storage) {
+        const originalStorageFrom = rawSupabaseClient.storage.from.bind(rawSupabaseClient.storage);
+        rawSupabaseClient.storage.from = function(bucketName) {
+            const resolved = resolveRasinAyitiBucket(bucketName);
+            return originalStorageFrom(resolved);
+        };
+    }
+
+    supabaseClient = rawSupabaseClient;
     window.supabaseClient = supabaseClient;
-    console.log('✅ Supabase connecté');
+    console.log('✅ Supabase connecté ak sipò Rasin Ayiti 2.0 (rasinayiti_ prefix)');
 } catch (error) {
     console.error('❌ Erreur connexion Supabase:', error);
     supabaseClient = null;
@@ -257,11 +325,8 @@ async function emailExists(email) {
 }
 
 // ============================================
-// FONCTIONS EMAIL (Resend API direct)
+// FONCTIONS EMAIL (via /api/send-email — Brevo)
 // ============================================
-
-const RESEND_API_KEY = 're_3fzBXEVJ_5xcYX4bahNNtizCWcFdkuymS';
-const RESEND_FROM    = 'Rasin Ayiti <onboarding@resend.dev>';
 
 function _registrationHtml(prenom, nom, email) {
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">

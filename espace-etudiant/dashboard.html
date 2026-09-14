@@ -50,13 +50,20 @@
             </div>
         </aside>
 
+        <div class="sidebar-overlay" id="studentOverlay" onclick="toggleStudentSidebar()"></div>
+
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="header-left">
-                    <h1>Tableau de bord</h1>
-                    <p>Bienvenue, <span id="studentName">...</span></p>
+                    <button class="mobile-toggle" onclick="toggleStudentSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1>Tableau de bord</h1>
+                        <p>Bienvenue, <span id="studentName">...</span></p>
+                    </div>
                 </div>
                 <div class="header-right">
                     <div class="notification-bell">
@@ -436,6 +443,35 @@
             transition: width 0.5s ease;
         }
 
+        .mobile-toggle {
+            display: none;
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #1e293b;
+            font-size: 1.2rem;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            backdrop-filter: blur(2px);
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .sidebar.active {
+            transform: translateX(0) !important;
+        }
+
         @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -446,12 +482,31 @@
         }
 
         @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .header-left {
+                display: flex;
+                align-items: center;
+                width: 100%;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
             .sidebar {
                 transform: translateX(-100%);
                 z-index: 100;
+                transition: transform 0.3s ease;
             }
             .main-content {
                 margin-left: 0;
+                padding: 1.25rem 1rem;
             }
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -463,6 +518,12 @@
     <script src="../supabase.js"></script>
     
     <script>
+        function toggleStudentSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('studentOverlay');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
         let currentEtudiant = null;
 
         // Check authentication

@@ -211,6 +211,30 @@
         #waitingMessage {
             display: none;
         }
+
+        @media (max-width: 580px) {
+            .payment-methods {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .payment-amount {
+                font-size: 2rem;
+            }
+            .payment-steps {
+                gap: 8px;
+            }
+            .step-number {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+            .step-label {
+                font-size: 0.75rem;
+            }
+            .file-upload {
+                padding: 24px 16px;
+            }
+        }
     </style>
 </head>
 <body>

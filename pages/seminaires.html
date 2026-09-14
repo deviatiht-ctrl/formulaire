@@ -28,7 +28,7 @@
                 <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
                 <span>Rasin Ayiti</span>
             </div>
-            <ul class="nav-links">
+            <ul class="nav-links" id="navLinks">
                 <li><a href="../index.html">Accueil</a></li>
                 <li><a href="formations.html">Formations</a></li>
                 <li><a href="seminaires.html" class="active">Séminaires</a></li>
@@ -39,6 +39,10 @@
                     <i class="fas fa-user"></i> Connexion
                 </a>
             </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <span class="hamburger-line line-1"></span>
+                <span class="hamburger-line line-2"></span>
+            </button>
         </div>
     </nav>
 
@@ -312,12 +316,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
+    <script src="../assets/js/mobile-nav.js"></script>
     
     <script>
         // Load upcoming seminaires
         async function loadSeminaires() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('seminaires')
                     .select('*, formations(titre, couleur)')
                     .in('status', ['planifie', 'en_cours'])
@@ -356,7 +361,7 @@
         // Load past seminaires
         async function loadPastSeminaires() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('seminaires')
                     .select('*, formations(titre)')
                     .in('status', ['termine', 'annule'])

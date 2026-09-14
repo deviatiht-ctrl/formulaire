@@ -28,7 +28,7 @@
                 <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
                 <span>Rasin Ayiti</span>
             </div>
-            <ul class="nav-links">
+            <ul class="nav-links" id="navLinks">
                 <li><a href="../index.html">Accueil</a></li>
                 <li><a href="formations.html">Formations</a></li>
                 <li><a href="seminaires.html">Séminaires</a></li>
@@ -38,6 +38,10 @@
                     <i class="fas fa-user"></i> Connexion
                 </a>
             </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <span class="hamburger-line line-1"></span>
+                <span class="hamburger-line line-2"></span>
+            </button>
         </div>
     </nav>
 
@@ -514,6 +518,7 @@
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
+    <script src="../assets/js/mobile-nav.js"></script>
     
     <script>
         // Get URL parameters
@@ -527,7 +532,7 @@
                 let data, error;
                 
                 if (itemType === 'formation') {
-                    ({ data, error } = await supabase
+                    ({ data, error } = await window.supabaseClient
                         .from('formations')
                         .select('*')
                         .eq('id', itemId)
@@ -542,7 +547,7 @@
                         document.querySelector('.event-icon i').className = 'fas fa-graduation-cap';
                     }
                 } else if (itemType === 'seminaire') {
-                    ({ data, error } = await supabase
+                    ({ data, error } = await window.supabaseClient
                         .from('seminaires')
                         .select('*, formations(titre)')
                         .eq('id', itemId)
@@ -643,7 +648,7 @@
                 };
 
                 // Insert into etudiants table
-                const { data: etudiant, error: etudiantError } = await supabase
+                const { data: etudiant, error: etudiantError } = await window.supabaseClient
                     .from('etudiants')
                     .insert([formData])
                     .select()
@@ -653,14 +658,14 @@
 
                 // Create inscription
                 if (itemType === 'formation') {
-                    await supabase.from('inscriptions').insert([{
+                    await window.supabaseClient.from('inscriptions').insert([{
                         etudiant_id: etudiant.id,
                         formation_id: itemId,
                         statut_paiement: 'en_attente',
                         date_inscription: new Date().toISOString()
                     }]);
                 } else if (itemType === 'seminaire') {
-                    await supabase.from('inscriptions').insert([{
+                    await window.supabaseClient.from('inscriptions').insert([{
                         etudiant_id: etudiant.id,
                         seminaire_id: itemId,
                         statut_paiement: 'en_attente',
