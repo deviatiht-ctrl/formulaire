@@ -901,6 +901,10 @@
                     <label>Ville</label>
                     <input type="text" id="regVille" class="form-input" placeholder="Ex: Port-au-Prince">
                 </div>
+                <div class="form-group">
+                    <label>Mot de passe * <small style="font-weight:400;color:#64748b;">(kreye kont ou)</small></label>
+                    <input type="password" id="regPassword" class="form-input" required minlength="6" placeholder="Minimòm 6 karaktè">
+                </div>
 
                 <!-- Quiz Section -->
                 <div id="quizSection" class="hidden" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px dashed #e2e8f0;">
@@ -1407,8 +1411,30 @@
                 quiz_score: score,
                 statut: 'en_attente'
             };
+            const password = document.getElementById('regPassword').value;
 
             try {
+                // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou kontinye
+                try {
+                    const { error: signUpError } = await window.supabaseClient.auth.signUp({
+                        email: payload.email,
+                        password: password
+                    });
+                    if (signUpError && !/already|registered|existe/i.test(signUpError.message)) {
+                        console.warn('SignUp:', signUpError.message);
+                    }
+                    await window.supabaseClient.from('etudiants').upsert([{
+                        prenom: payload.prenom,
+                        nom: payload.nom,
+                        email: payload.email,
+                        telephone: payload.telephone || null,
+                        whatsapp: payload.telephone || null,
+                        ville: payload.ville || null
+                    }], { onConflict: 'email' });
+                } catch (accountErr) {
+                    console.warn('Kont pa kreye:', accountErr.message);
+                }
+
                 const { error } = await window.supabaseClient
                     .from('inscriptions_evenements')
                     .insert([payload]);

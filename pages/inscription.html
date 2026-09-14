@@ -169,6 +169,15 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="password">Mot de passe <span style="color:#ef4444;">*</span> <small style="font-weight:400;color:#64748b;">(kreye kont ou)</small></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="password" name="password" placeholder="Minimòm 6 karaktè" required minlength="6">
+                        </div>
+                        <span class="error-message" id="passwordError"></span>
+                    </div>
+
                     <button type="submit" class="btn-submit" id="submitBtn">
                         <span class="btn-text">S'inscrire maintenant</span>
                         <i class="fas fa-arrow-right"></i>
@@ -622,6 +631,13 @@
                 isValid = false;
             }
 
+            const password = document.getElementById('password').value;
+            if (!password || password.length < 6) {
+                document.getElementById('passwordError').textContent = 'Modpas la dwe gen omwen 6 karaktè';
+                document.getElementById('password').classList.add('error');
+                isValid = false;
+            }
+
             return isValid;
         }
 
@@ -647,10 +663,21 @@
                     profession: document.getElementById('profession').value.trim(),
                 };
 
-                // Insert into etudiants table
+                const password = document.getElementById('password').value;
+
+                // Kreye kont itilizatè a nan Supabase Auth (si email la egziste deja, nou kontinye)
+                const { error: signUpError } = await window.supabaseClient.auth.signUp({
+                    email: formData.email,
+                    password: password
+                });
+                if (signUpError && !/already|registered|existe/i.test(signUpError.message)) {
+                    throw signUpError;
+                }
+
+                // Insert into etudiants table (upsert pou email ki egziste deja)
                 const { data: etudiant, error: etudiantError } = await window.supabaseClient
                     .from('etudiants')
-                    .insert([formData])
+                    .upsert([formData], { onConflict: 'email' })
                     .select()
                     .single();
 

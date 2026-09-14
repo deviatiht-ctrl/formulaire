@@ -61,14 +61,32 @@ function resolveRasinAyitiBucket(bucketName) {
     return RASINAYITI_BUCKET_MAP[bucketName] || (RASINAYITI_PREFIX + bucketName);
 }
 
+// Rewrite embedded table names inside select() strings.
+// PostgREST needs the real prefixed table name for joins, so
+// 'categories(nom)' becomes 'categories:rasinayiti_categories(nom)'
+// and the result key stays 'categories'.
+function rewriteRasinAyitiSelect(selectQuery) {
+    if (typeof selectQuery !== 'string') return selectQuery;
+    Object.keys(RASINAYITI_TABLE_MAP).forEach(function(alias) {
+        const re = new RegExp('(^|[\\s,])' + alias + '(\\s*\\()', 'g');
+        selectQuery = selectQuery.replace(re, '$1' + alias + ':' + RASINAYITI_TABLE_MAP[alias] + '$2');
+    });
+    return selectQuery;
+}
+
 try {
     rawSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
+
     // Create wrapper with automatic rasinayiti_ table and bucket resolution
     const originalFrom = rawSupabaseClient.from.bind(rawSupabaseClient);
     rawSupabaseClient.from = function(tableName) {
         const resolved = resolveRasinAyitiTable(tableName);
-        return originalFrom(resolved);
+        const builder = originalFrom(resolved);
+        const originalSelect = builder.select.bind(builder);
+        builder.select = function(query, opts) {
+            return originalSelect(rewriteRasinAyitiSelect(query), opts);
+        };
+        return builder;
     };
 
     if (rawSupabaseClient.storage) {
