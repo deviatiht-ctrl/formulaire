@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Certificats - Espace Étudiant | Rasin Ayiti</title>
+
+    <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="student-dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti" class="sidebar-logo">
+                <span>Rasin Ayiti</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Tableau de bord</span></a>
+                <a href="mes-formations.html" class="nav-item"><i class="fas fa-graduation-cap"></i><span>Mes Formations</span></a>
+                <a href="mes-seminaires.html" class="nav-item"><i class="fas fa-video"></i><span>Mes Séminaires</span></a>
+                <a href="mes-evenements.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Mes Événements</span></a>
+                <a href="certificats.html" class="nav-item active"><i class="fas fa-certificate"></i><span>Certificats</span></a>
+                <a href="profil.html" class="nav-item"><i class="fas fa-user"></i><span>Mon Profil</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Déconnexion</span></a>
+            </div>
+        </aside>
+
+        <div class="sidebar-overlay" id="studentOverlay" onclick="toggleStudentSidebar()"></div>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="mobile-toggle" onclick="toggleStudentSidebar()"><i class="fas fa-bars"></i></button>
+                    <div>
+                        <h1>Mes Certificats</h1>
+                        <p>Tous les certificats que vous avez demandés</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-body" id="certificatsList">
+                    <p class="no-data">Chargement...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .student-dashboard { display:flex; min-height:100vh; background:#f8fafc; }
+        .sidebar { width:260px; background:linear-gradient(180deg,#1e293b,#0f172a); padding:1.5rem; display:flex; flex-direction:column; position:fixed; height:100vh; left:0; top:0; }
+        .sidebar-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:2.5rem; padding-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo { width:45px; height:45px; border-radius:10px; }
+        .sidebar-header span { color:white; font-weight:700; font-size:1.1rem; }
+        .sidebar-nav { flex:1; display:flex; flex-direction:column; gap:0.5rem; }
+        .nav-item { display:flex; align-items:center; gap:1rem; padding:0.875rem 1rem; color:#94a3b8; text-decoration:none; border-radius:10px; transition:all 0.3s; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.1); color:white; }
+        .nav-item i { width:20px; text-align:center; }
+        .sidebar-footer { padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.1); }
+        .logout-btn { display:flex; align-items:center; gap:1rem; padding:0.875rem 1rem; color:#ef4444; text-decoration:none; border-radius:10px; }
+        .logout-btn:hover { background:rgba(239,68,68,0.1); }
+        .main-content { flex:1; margin-left:260px; padding:2rem; }
+        .dashboard-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2.5rem; }
+        .dashboard-header h1 { font-size:1.75rem; font-weight:800; color:#0f172a; margin-bottom:0.25rem; }
+        .dashboard-header p { color:#64748b; }
+        .card { background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); overflow:hidden; }
+        .card-header { display:flex; justify-content:space-between; align-items:center; padding:1.5rem; border-bottom:1px solid #e2e8f0; }
+        .card-body { padding:1.5rem; }
+        .no-data { color:#94a3b8; text-align:center; padding:2rem 0; }
+        .mobile-toggle { display:none; background:white; border:2px solid #e2e8f0; padding:0.5rem 0.75rem; border-radius:10px; cursor:pointer; color:#1e293b; font-size:1.2rem; margin-right:0.75rem; }
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; }
+        .sidebar-overlay.active { display:block; }
+        .sidebar.active { transform:translateX(0) !important; }
+        .cert-item { display:flex; align-items:center; gap:1rem; padding:1.25rem; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:1rem; }
+        .cert-icon { width:55px; height:55px; border-radius:12px; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+        .cert-info { flex:1; }
+        .cert-info h4 { margin:0 0 0.25rem; color:#0f172a; }
+        .cert-info p { margin:0; color:#64748b; font-size:0.85rem; }
+        .cert-badge { font-size:0.75rem; padding:4px 10px; border-radius:12px; font-weight:600; white-space:nowrap; }
+        .badge-verifie { background:#d1fae5; color:#065f46; }
+        .badge-en_attente { background:#fef3c7; color:#92400e; }
+        .badge-refuse { background:#fee2e2; color:#991b1b; }
+        .badge-delivre { background:#dbeafe; color:#1e40af; }
+        @media (max-width: 768px) {
+            .mobile-toggle { display:block; }
+            .header-left { display:flex; align-items:center; width:100%; }
+            .sidebar { transform:translateX(-100%); z-index:100; transition:transform 0.3s ease; }
+            .main-content { margin-left:0; padding:1.25rem 1rem; }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script src="../assets/js/mobile-nav.js"></script>
+
+    <script>
+        let currentEtudiant = null;
+
+        function checkAuth() {
+            const e = sessionStorage.getItem('etudiant');
+            if (!e) { window.location.href = 'login.html'; return false; }
+            currentEtudiant = JSON.parse(e);
+            return true;
+        }
+        function logout() { sessionStorage.clear(); window.location.href = 'login.html'; }
+
+        function certBadge(ins) {
+            if (ins.certificat_delivre) return '<span class="cert-badge badge-delivre"><i class="fas fa-award"></i> Délivré</span>';
+            const s = ins.certificat_statut_paiement;
+            if (s === 'verifie') return '<span class="cert-badge badge-verifie">Paiement vérifié</span>';
+            if (s === 'en_attente') return '<span class="cert-badge badge-en_attente">Paiement en attente</span>';
+            if (s === 'refuse') return '<span class="cert-badge badge-refuse">Paiement refusé</span>';
+            return '<span class="cert-badge badge-verifie">Demandé (gratuit)</span>';
+        }
+
+        async function loadCertificats() {
+            const container = document.getElementById('certificatsList');
+            try {
+                const [insRes, evtRes] = await Promise.all([
+                    window.supabaseClient.from('inscriptions')
+                        .select('*, formations(titre), seminaires(titre)')
+                        .eq('etudiant_id', currentEtudiant.id)
+                        .eq('veut_certificat', true),
+                    window.supabaseClient.from('inscriptions_evenements')
+                        .select('*, events(titre)')
+                        .eq('etudiant_id', currentEtudiant.id)
+                        .eq('veut_certificat', true)
+                ]);
+
+                const items = [];
+                (insRes.data || []).forEach(i => items.push({
+                    titre: i.formations?.titre || i.seminaires?.titre || '—',
+                    type: i.formation_id ? 'Formation' : 'Séminaire',
+                    date: i.date_inscription,
+                    prix: i.certificat_prix,
+                    badge: certBadge(i)
+                }));
+                (evtRes.data || []).forEach(i => items.push({
+                    titre: i.events?.titre || '—',
+                    type: 'Événement',
+                    date: i.created_at,
+                    prix: i.certificat_prix,
+                    badge: certBadge(i)
+                }));
+
+                if (items.length === 0) {
+                    container.innerHTML = '<p class="no-data">Vous n\'avez demandé aucun certificat pour le moment.</p>';
+                    return;
+                }
+
+                container.innerHTML = items.map(c => `
+                    <div class="cert-item">
+                        <div class="cert-icon"><i class="fas fa-certificate"></i></div>
+                        <div class="cert-info">
+                            <h4>${c.titre}</h4>
+                            <p>${c.type} · Inscrit le ${new Date(c.date).toLocaleDateString('fr-FR')}${c.prix > 0 ? ' · ' + c.prix + ' HTG' : ' · Gratuit'}</p>
+                        </div>
+                        ${c.badge}
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p class="no-data">Erreur de chargement</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) loadCertificats();
+        });
+    </script>
+</body>
+</html>

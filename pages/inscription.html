@@ -178,6 +178,46 @@
                         <span class="error-message" id="passwordError"></span>
                     </div>
 
+                    <!-- Certificat Section -->
+                    <div id="certificatSection" style="display:none; border-top:2px dashed #e2e8f0; padding-top:1.5rem; margin-top:0.5rem;">
+                        <div class="form-group">
+                            <label for="veutCertificat"><i class="fas fa-certificate" style="color:#f59e0b;"></i> Voulez-vous un certificat ?</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-certificate input-icon"></i>
+                                <select id="veutCertificat" onchange="toggleCertificatPayment()">
+                                    <option value="false">Non</option>
+                                    <option value="true">Oui</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="certificatPayment" style="display:none; background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:1rem; margin-bottom:1rem;">
+                            <p style="margin:0 0 0.75rem; font-weight:700; color:#92400e;">
+                                Prix certificat: <span id="certificatPriceLabel"></span> HTG
+                            </p>
+                            <div class="form-group">
+                                <label for="certificatMode">Mode de paiement *</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-mobile-alt input-icon"></i>
+                                    <select id="certificatMode" onchange="showCertificatPaymentInfo()">
+                                        <option value="">Choisir...</option>
+                                        <option value="moncash">MonCash</option>
+                                        <option value="natcash">Natcash</option>
+                                    </select>
+                                </div>
+                                <span class="error-message" id="certificatModeError"></span>
+                            </div>
+                            <div id="certificatPaymentInfo" style="display:none; background:white; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.9rem;"></div>
+                            <div class="form-group">
+                                <label for="certificatProof">Preuve de paiement (photo reçu) *</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-image input-icon"></i>
+                                    <input type="file" id="certificatProof" accept="image/*">
+                                </div>
+                                <span class="error-message" id="certificatProofError"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-submit" id="submitBtn">
                         <span class="btn-text">S'inscrire maintenant</span>
                         <i class="fas fa-arrow-right"></i>
@@ -534,6 +574,36 @@
         const urlParams = new URLSearchParams(window.location.search);
         const itemId = urlParams.get('id');
         const itemType = urlParams.get('type'); // 'formation' or 'seminaire'
+        let currentItem = null;
+
+        const CERTIFICAT_PAYMENT_NUMBERS = {
+            moncash: { numero: '+509 46807922', nom: 'Rasin Ayiti' },
+            natcash: { numero: '+509 43331145', nom: 'Jude Joseph' }
+        };
+
+        function setupCertificatSection() {
+            if (!currentItem || !currentItem.avec_certificat) return;
+            document.getElementById('certificatSection').style.display = 'block';
+            document.getElementById('certificatPriceLabel').textContent = currentItem.prix_certificat || 0;
+        }
+
+        function toggleCertificatPayment() {
+            const veut = document.getElementById('veutCertificat').value === 'true';
+            const payant = (currentItem?.prix_certificat || 0) > 0;
+            document.getElementById('certificatPayment').style.display = (veut && payant) ? 'block' : 'none';
+        }
+
+        function showCertificatPaymentInfo() {
+            const mode = document.getElementById('certificatMode').value;
+            const info = document.getElementById('certificatPaymentInfo');
+            if (mode && CERTIFICAT_PAYMENT_NUMBERS[mode]) {
+                const p = CERTIFICAT_PAYMENT_NUMBERS[mode];
+                info.innerHTML = `<strong>${mode === 'moncash' ? 'MonCash' : 'Natcash'}:</strong> ${p.numero}<br><strong>Bénéficiaire:</strong> ${p.nom}<br><em>Envoyez ${currentItem.prix_certificat} HTG puis uploadez la photo du reçu.</em>`;
+                info.style.display = 'block';
+            } else {
+                info.style.display = 'none';
+            }
+        }
 
         // Load event details
         async function loadEventDetails() {
@@ -571,6 +641,9 @@
                         document.querySelector('.event-icon i').className = 'fas fa-video';
                     }
                 }
+
+                currentItem = data;
+                setupCertificatSection();
 
                 if (error || !data) {
                     console.error('Error loading event:', error);
@@ -638,6 +711,20 @@
                 isValid = false;
             }
 
+            // Sètifika: si peyan, mode + preuve obligatwa
+            const veutCertificat = document.getElementById('veutCertificat')?.value === 'true';
+            const certPrix = currentItem?.prix_certificat || 0;
+            if (veutCertificat && certPrix > 0) {
+                if (!document.getElementById('certificatMode').value) {
+                    document.getElementById('certificatModeError').textContent = 'Chwazi yon mode de paiement';
+                    isValid = false;
+                }
+                if (!document.getElementById('certificatProof').files[0]) {
+                    document.getElementById('certificatProofError').textContent = 'Preuve de paiement obligatwa';
+                    isValid = false;
+                }
+            }
+
             return isValid;
         }
 
@@ -683,22 +770,45 @@
 
                 if (etudiantError) throw etudiantError;
 
-                // Create inscription
-                if (itemType === 'formation') {
-                    await window.supabaseClient.from('inscriptions').insert([{
-                        etudiant_id: etudiant.id,
-                        formation_id: itemId,
-                        statut_paiement: 'en_attente',
-                        date_inscription: new Date().toISOString()
-                    }]);
-                } else if (itemType === 'seminaire') {
-                    await window.supabaseClient.from('inscriptions').insert([{
-                        etudiant_id: etudiant.id,
-                        seminaire_id: itemId,
-                        statut_paiement: 'en_attente',
-                        date_inscription: new Date().toISOString()
-                    }]);
+                // Sètifika: upload preuve si peyan
+                const veutCertificat = document.getElementById('veutCertificat')?.value === 'true';
+                const certPrix = currentItem?.prix_certificat || 0;
+                const certificatFields = {
+                    veut_certificat: veutCertificat,
+                    certificat_prix: veutCertificat ? certPrix : 0,
+                    certificat_mode_paiement: null,
+                    certificat_preuve_url: null,
+                    certificat_statut_paiement: 'non_requis'
+                };
+
+                if (veutCertificat && certPrix > 0) {
+                    const proofFile = document.getElementById('certificatProof').files[0];
+                    const fileName = `certificat_${Date.now()}_${proofFile.name.replace(/\s+/g, '_')}`;
+                    const { data: upData, error: upErr } = await window.supabaseClient.storage
+                        .from('paiements')
+                        .upload(fileName, proofFile);
+                    if (upErr) throw upErr;
+                    certificatFields.certificat_preuve_url = window.supabaseClient.storage
+                        .from('paiements').getPublicUrl(upData.path).data.publicUrl;
+                    certificatFields.certificat_mode_paiement = document.getElementById('certificatMode').value;
+                    certificatFields.certificat_statut_paiement = 'en_attente';
+                } else if (veutCertificat) {
+                    certificatFields.certificat_statut_paiement = 'verifie';
                 }
+
+                // Create inscription
+                const inscriptionData = {
+                    etudiant_id: etudiant.id,
+                    statut_paiement: 'en_attente',
+                    date_inscription: new Date().toISOString(),
+                    ...certificatFields
+                };
+                if (itemType === 'formation') {
+                    inscriptionData.formation_id = itemId;
+                } else if (itemType === 'seminaire') {
+                    inscriptionData.seminaire_id = itemId;
+                }
+                await window.supabaseClient.from('inscriptions').insert([inscriptionData]);
 
                 // Show success
                 document.getElementById('successModal').classList.remove('hidden');

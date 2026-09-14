@@ -1278,6 +1278,36 @@
                     <input type="password" id="regPassword" class="form-input" required minlength="6" placeholder="Minimòm 6 karaktè">
                 </div>
 
+                <!-- Certificat Section -->
+                <div id="certificatSection" class="hidden" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px dashed #e2e8f0;">
+                    <div class="form-group">
+                        <label><i class="fas fa-certificate" style="color:#f59e0b;"></i> Voulez-vous un certificat ?</label>
+                        <select id="regVeutCertificat" class="form-input" onchange="toggleCertificatPayment()">
+                            <option value="false">Non</option>
+                            <option value="true">Oui</option>
+                        </select>
+                    </div>
+                    <div id="certificatPayment" class="hidden" style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:1rem;">
+                        <p style="margin:0 0 0.75rem; font-weight:700; color:#92400e;">
+                            Prix certificat: <span id="certificatPriceLabel"></span> HTG
+                        </p>
+                        <div class="form-group">
+                            <label>Mode de paiement *</label>
+                            <select id="regCertificatMode" class="form-input" onchange="showCertificatPaymentInfo()">
+                                <option value="">Choisir...</option>
+                                <option value="moncash">MonCash</option>
+                                <option value="natcash">Natcash</option>
+                            </select>
+                        </div>
+                        <div id="certificatPaymentInfo" class="hidden" style="background:white; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.9rem;"></div>
+                        <div class="form-group">
+                            <label>Preuve de paiement (photo reçu) *</label>
+                            <input type="file" id="regCertificatProof" class="form-input" accept="image/*">
+                            <img id="certificatProofPreview" class="hidden" style="margin-top:0.5rem; max-width:100%; max-height:150px; border-radius:8px;">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Quiz Section -->
                 <div id="quizSection" class="hidden" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px dashed #e2e8f0;">
                     <h3 style="font-size: 1.1rem; color: #1e40af; margin-bottom: 1rem;"><i class="fas fa-brain"></i> Quiz sur Haïti (Gagnez des points pour votre ville !)</h3>
@@ -1639,6 +1669,7 @@
         }
 
         // Load events
+        let allEventsData = [];
         async function loadEvents() {
             try {
                 const { data, error } = await window.supabaseClient
@@ -1649,6 +1680,7 @@
                     .order('date_evenement', { ascending: true });
 
                 if (error) throw error;
+                allEventsData = data || [];
 
                 const eventsGrid = document.getElementById('eventsGrid');
                 if (!data || data.length === 0) {
@@ -1774,12 +1806,62 @@
         let currentEventWALink = "";
         let currentEventQuiz = false;
         let quizQuestionsData = [];
+        let currentEventCertificat = { dispo: false, prix: 0 };
+
+        const CERTIFICAT_PAYMENT_NUMBERS = {
+            moncash: { numero: '+509 46807922', nom: 'Rasin Ayiti' },
+            natcash: { numero: '+509 43331145', nom: 'Jude Joseph' }
+        };
+
+        function toggleCertificatPayment() {
+            const veut = document.getElementById('regVeutCertificat').value === 'true';
+            const payant = currentEventCertificat.prix > 0;
+            document.getElementById('certificatPayment').classList.toggle('hidden', !(veut && payant));
+        }
+
+        function showCertificatPaymentInfo() {
+            const mode = document.getElementById('regCertificatMode').value;
+            const info = document.getElementById('certificatPaymentInfo');
+            if (mode && CERTIFICAT_PAYMENT_NUMBERS[mode]) {
+                const p = CERTIFICAT_PAYMENT_NUMBERS[mode];
+                info.innerHTML = `<strong>${mode === 'moncash' ? 'MonCash' : 'Natcash'}:</strong> ${p.numero}<br><strong>Bénéficiaire:</strong> ${p.nom}<br><em>Envoyez ${currentEventCertificat.prix} HTG puis uploadez la photo du reçu.</em>`;
+                info.classList.remove('hidden');
+            } else {
+                info.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('regCertificatProof').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('certificatProofPreview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => { preview.src = ev.target.result; preview.classList.remove('hidden'); };
+                reader.readAsDataURL(file);
+            } else {
+                preview.classList.add('hidden');
+            }
+        });
 
         async function openRegModal(id, titre, waLink, hasQuiz) {
             document.getElementById('regEventId').value = id;
             document.getElementById('regModalTitle').textContent = `S'inscrire : ${titre}`;
             currentEventWALink = waLink;
             currentEventQuiz = (hasQuiz === 'true' || hasQuiz === true);
+
+            // Certificat setup
+            const evt = allEventsData.find(e => e.id === id);
+            currentEventCertificat = { dispo: !!(evt && evt.avec_certificat), prix: (evt && evt.prix_certificat) || 0 };
+            const certSection = document.getElementById('certificatSection');
+            certSection.classList.toggle('hidden', !currentEventCertificat.dispo);
+            document.getElementById('certificatPriceLabel').textContent = currentEventCertificat.prix;
+            document.getElementById('regVeutCertificat').value = 'false';
+            document.getElementById('regCertificatMode').value = '';
+            document.getElementById('certificatPayment').classList.add('hidden');
+            document.getElementById('certificatPaymentInfo').classList.add('hidden');
+            document.getElementById('regCertificatProof').value = '';
+            document.getElementById('certificatProofPreview').classList.add('hidden');
+            
             
             const quizDiv = document.getElementById('quizSection');
             const questionsDiv = document.getElementById('quizQuestions');
@@ -2029,7 +2111,47 @@
             const password = document.getElementById('regPassword').value;
 
             try {
+                // Sètifika: verifye si peyan epi preuve la obligatwa
+                const veutCertificat = document.getElementById('regVeutCertificat').value === 'true';
+                const certificatMode = document.getElementById('regCertificatMode').value;
+                const proofFile = document.getElementById('regCertificatProof').files[0];
+
+                if (veutCertificat && currentEventCertificat.prix > 0) {
+                    if (!certificatMode) {
+                        alert('Veuillez choisir un mode de paiement pour le certificat (MonCash ou Natcash).');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer mon inscription';
+                        return;
+                    }
+                    if (!proofFile) {
+                        alert('La preuve de paiement du certificat est obligatoire.');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer mon inscription';
+                        return;
+                    }
+                }
+
+                // Upload preuve sètifika si genyen
+                let certificatPreuveUrl = null;
+                if (veutCertificat && proofFile) {
+                    const fileName = `certificat_${Date.now()}_${proofFile.name.replace(/\s+/g, '_')}`;
+                    const { data: upData, error: upErr } = await window.supabaseClient.storage
+                        .from('paiements')
+                        .upload(fileName, proofFile);
+                    if (upErr) throw upErr;
+                    certificatPreuveUrl = window.supabaseClient.storage.from('paiements').getPublicUrl(upData.path).data.publicUrl;
+                }
+
+                payload.veut_certificat = veutCertificat;
+                payload.certificat_prix = veutCertificat ? currentEventCertificat.prix : 0;
+                payload.certificat_mode_paiement = veutCertificat && currentEventCertificat.prix > 0 ? certificatMode : null;
+                payload.certificat_preuve_url = certificatPreuveUrl;
+                payload.certificat_statut_paiement = veutCertificat
+                    ? (currentEventCertificat.prix > 0 ? 'en_attente' : 'verifie')
+                    : 'non_requis';
+
                 // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou kontinye
+                let etudiantId = null;
                 try {
                     const { error: signUpError } = await window.supabaseClient.auth.signUp({
                         email: payload.email,
@@ -2038,17 +2160,19 @@
                     if (signUpError && !/already|registered|existe/i.test(signUpError.message)) {
                         console.warn('SignUp:', signUpError.message);
                     }
-                    await window.supabaseClient.from('etudiants').upsert([{
+                    const { data: etu } = await window.supabaseClient.from('etudiants').upsert([{
                         prenom: payload.prenom,
                         nom: payload.nom,
                         email: payload.email,
                         telephone: payload.telephone || null,
                         whatsapp: payload.telephone || null,
                         ville: payload.ville || null
-                    }], { onConflict: 'email' });
+                    }], { onConflict: 'email' }).select('id').single();
+                    etudiantId = etu?.id || null;
                 } catch (accountErr) {
                     console.warn('Kont pa kreye:', accountErr.message);
                 }
+                payload.etudiant_id = etudiantId;
 
                 const { error } = await window.supabaseClient
                     .from('inscriptions_evenements')

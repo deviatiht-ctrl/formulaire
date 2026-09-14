@@ -181,6 +181,20 @@
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Certificat disponible ?</label>
+                        <select id="avecCertificat" onchange="toggleCertificatField()">
+                            <option value="false">Non</option>
+                            <option value="true">Oui</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="certificatPriceGroup" style="display: none;">
+                        <label>Prix certificat (HTG) — 0 = Gratuit</label>
+                        <input type="number" id="prixCertificat" min="0" step="0.01" placeholder="0">
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Images de la formation (Plusieurs possibles) *</label>
                     <input type="file" id="imageFiles" accept="image/*" class="form-input" multiple>
@@ -663,6 +677,11 @@
             document.getElementById('formationModal').classList.add('hidden');
         }
 
+        function toggleCertificatField() {
+            const hasCert = document.getElementById('avecCertificat').value === 'true';
+            document.getElementById('certificatPriceGroup').style.display = hasCert ? 'block' : 'none';
+        }
+
         async function loadFormationData(id) {
             try {
                 const { data, error } = await window.supabaseClient.from('formations').select('*').eq('id', id).single();
@@ -677,7 +696,10 @@
                 document.getElementById('duree').value = data.duree || '';
                 document.getElementById('couleur').value = data.couleur || '#2563eb';
                 document.getElementById('statut').value = data.status || 'brouillon';
-                
+                document.getElementById('avecCertificat').value = String(data.avec_certificat === true);
+                document.getElementById('prixCertificat').value = data.prix_certificat || 0;
+                toggleCertificatField();
+
                 const imagesArr = data.images || (data.image_principale ? [data.image_principale] : []);
                 document.getElementById('imagesData').value = JSON.stringify(imagesArr);
                 renderImagesPreview(imagesArr);
@@ -777,6 +799,8 @@
                     duree: document.getElementById('duree').value,
                     couleur: document.getElementById('couleur').value,
                     status: document.getElementById('statut').value,
+                    avec_certificat: document.getElementById('avecCertificat').value === 'true',
+                    prix_certificat: parseFloat(document.getElementById('prixCertificat').value) || 0,
                     image_principale: imagesArr[0] || '', // First image as main
                     images: imagesArr
                 };

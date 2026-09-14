@@ -247,6 +247,20 @@
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Certificat disponible ?</label>
+                        <select id="avecCertificat" class="filter-select" onchange="toggleCertificatField()">
+                            <option value="false">Non</option>
+                            <option value="true">Oui</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="certificatPriceGroup" style="display: none;">
+                        <label>Prix certificat (HTG) — 0 = Gratuit</label>
+                        <input type="number" id="prixCertificat" min="0" step="0.01" class="search-input" placeholder="0">
+                    </div>
+                </div>
+
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
                     <button type="submit" class="btn-primary">Enregistrer</button>
@@ -899,13 +913,16 @@
                     document.getElementById('placesMax').value = event.places_max || '';
                     document.getElementById('whatsappLink').value = event.whatsapp_link || '';
                     document.getElementById('hasQuiz').value = String(event.has_quiz === true);
+                    document.getElementById('avecCertificat').value = String(event.avec_certificat === true);
+                    document.getElementById('prixCertificat').value = event.prix_certificat || 0;
                     
                     // Load images
                     const imagesArr = event.images || (event.flyer_url ? [event.flyer_url] : []);
                     document.getElementById('imagesData').value = JSON.stringify(imagesArr);
                     renderImagesPreview(imagesArr);
-                    
+
                     togglePriceField();
+                    toggleCertificatField();
                 }
             } else {
                 document.getElementById('eventForm').reset();
@@ -922,6 +939,7 @@
                 document.getElementById('imagesData').value = '[]';
                 document.getElementById('imagesPreviewList').innerHTML = '';
                 togglePriceField();
+                toggleCertificatField();
             }
         }
 
@@ -983,6 +1001,7 @@
 
         // View inscriptions
         async function viewInscriptions(eventId, titre) {
+            currentInscriptionsEvent = { id: eventId, titre: titre };
             document.getElementById('inscriptionsModalTitle').textContent = `Inscrits — ${titre}`;
             document.getElementById('inscriptionsModalBody').innerHTML = '<p style="color:#94a3b8;">Chargement...</p>';
             document.getElementById('inscriptionsModal').classList.remove('hidden');
@@ -1014,6 +1033,7 @@
                                 <th>Email</th>
                                 <th>Téléphone</th>
                                 <th>Ville</th>
+                                <th>Certificat</th>
                                 <th>Statut</th>
                                 <th>Date</th>
                                 <th>Action</th>
@@ -1026,6 +1046,16 @@
                                     <td>${ins.email}</td>
                                     <td>${ins.telephone || '-'}</td>
                                     <td>${ins.ville || '-'}</td>
+                                    <td>
+                                        ${ins.veut_certificat ? `
+                                            <div style="font-size:0.8rem;">
+                                                <i class="fas fa-certificate" style="color:#f59e0b;"></i>
+                                                ${ins.certificat_prix > 0 ? ins.certificat_prix + ' HTG' : 'Gratuit'}
+                                                <br><span style="color:${ins.certificat_statut_paiement === 'verifie' ? '#059669' : '#d97706'};">${ins.certificat_statut_paiement}</span>
+                                                ${ins.certificat_preuve_url ? `<br><a href="${ins.certificat_preuve_url}" target="_blank" style="color:#2563eb;">Voir preuve</a>` : ''}
+                                                ${ins.certificat_statut_paiement === 'en_attente' ? `<br><button onclick="verifyCertificat('${ins.id}', true)" style="padding:2px 8px;background:#059669;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.7rem;margin-top:2px;">✓ Valider</button> <button onclick="verifyCertificat('${ins.id}', false)" style="padding:2px 8px;background:#ef4444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.7rem;margin-top:2px;">✕ Refuser</button>` : ''}
+                                            </div>` : '-'}
+                                    </td>
                                     <td>
                                         <span class="badge-${ins.statut}">${ins.statut}</span>
                                     </td>
@@ -1044,6 +1074,23 @@
                 console.error(err);
                 document.getElementById('inscriptionsModalBody').innerHTML =
                     '<p style="color:#ef4444;">Erreur de chargement</p>';
+            }
+        }
+
+        let currentInscriptionsEvent = { id: null, titre: '' };
+
+        async function verifyCertificat(id, ok) {
+            const statut = ok ? 'verifie' : 'refuse';
+            const { error } = await window.supabaseClient
+                .from('inscriptions_evenements')
+                .update({ certificat_statut_paiement: statut })
+                .eq('id', id);
+            if (error) {
+                alert('Erreur: ' + error.message);
+                return;
+            }
+            if (currentInscriptionsEvent.id) {
+                viewInscriptions(currentInscriptionsEvent.id, currentInscriptionsEvent.titre);
             }
         }
 
@@ -1069,6 +1116,11 @@
         function togglePriceField() {
             const isPayant = document.getElementById('estPayant').value === 'true';
             document.getElementById('priceGroup').style.display = isPayant ? 'block' : 'none';
+        }
+
+        function toggleCertificatField() {
+            const hasCert = document.getElementById('avecCertificat').value === 'true';
+            document.getElementById('certificatPriceGroup').style.display = hasCert ? 'block' : 'none';
         }
 
         // Handle file upload
@@ -1149,6 +1201,8 @@
                     places_max: parseInt(document.getElementById('placesMax').value) || null,
                     whatsapp_link: document.getElementById('whatsappLink').value || null,
                     has_quiz: document.getElementById('hasQuiz').value === 'true',
+                    avec_certificat: document.getElementById('avecCertificat').value === 'true',
+                    prix_certificat: parseFloat(document.getElementById('prixCertificat').value) || 0,
                     images: imagesArr,
                     flyer_url: imagesArr[0] || null // First image as flyer for backward compatibility
                 };
