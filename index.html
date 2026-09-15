@@ -1601,17 +1601,20 @@
                     .select('*')
                     .eq('publie', true)
                     .order('created_at', { ascending: false })
-                    .limit(8);
-                
+                    .limit(12);
+
                 if (error) throw error;
-                
+
                 const container = document.getElementById('galerieGrid');
                 if (data && data.length > 0) {
                     container.innerHTML = data.map(g => `
                         <div class="galerie-item" data-aos="zoom-in">
-                            <img src="${g.url_fichier}" alt="${g.titre}" loading="lazy">
+                            ${g.type_media === 'video'
+                                ? `<video src="${g.url_fichier}" controls preload="metadata" playsinline></video>`
+                                : `<img src="${g.url_fichier}" alt="${g.titre || 'Galerie'}" loading="lazy">`
+                            }
                             <div class="galerie-overlay">
-                                <h4>${g.titre}</h4>
+                                <h4>${g.titre || ''}</h4>
                             </div>
                         </div>
                     `).join('');
