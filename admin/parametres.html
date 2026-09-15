@@ -196,6 +196,14 @@
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-header"><h2>Utilisation des codes leaders</h2></div>
+                <div class="card-body">
+                    <p>Classement : certificats payants avec paiement vérifié, hors inscriptions annulées.</p>
+                    <div id="leaderReport" style="margin-top:16px;">Chargement...</div>
+                </div>
+            </div>
+
             <!-- Logout -->
             <div class="card danger-card">
                 <div class="card-header">
@@ -225,6 +233,24 @@
                 <form id="leaderForm" onsubmit="saveLeader(event)">
                     <input type="hidden" id="leaderId">
                     <input type="hidden" id="leaderExistingFlyerUrl">
+                    <div class="form-group">
+                        <label for="leaderNom">Nom du leader *</label>
+                        <input id="leaderNom" type="text" maxlength="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="leaderCode">Code unique (automatique si vide)</label>
+                        <input id="leaderCode" type="text" maxlength="40" pattern="[A-Za-z0-9-]{4,40}" placeholder="Ex. RA-JEAN">
+                        <small>Le code reste permanent après sa création pour conserver son historique.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="leaderReduction">Rabais sur les certificats (%) *</label>
+                        <input id="leaderReduction" type="number" min="0.01" max="100" step="0.01" value="30" required>
+                        <small>30% : un certificat de 500 HTG revient à 350 HTG. Un certificat gratuit ne compte pas comme un paiement.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="leaderCodeActif">Code de réduction</label>
+                        <select id="leaderCodeActif"><option value="true">Actif</option><option value="false">Désactivé</option></select>
+                    </div>
 
                     <!-- Flyer Upload -->
                     <div class="form-group">
@@ -597,6 +623,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
+    <script src="../assets/js/leader-tools.js"></script>
 
     <script>
         // ===== AUTH CHECK =====
@@ -865,12 +892,16 @@
                     <div class="lc-body">
                         <span class="lc-commune"><i class="fas fa-map-marker-alt"></i> ${l.commune}</span>
                         <span class="lc-status ${l.est_actif ? 'on' : 'off'}">${l.est_actif ? 'Actif' : 'Inactif'}</span>
+                        <p><strong>${LeaderTools.escape(l.nom || l.commune)}</strong></p>
+                        <p style="overflow-wrap:anywhere;">Code : ${LeaderTools.escape(l.code_reduction || 'Migration 09 requise')}</p>
+                        <p>Rabais : ${LeaderTools.escape(l.reduction_pourcentage ?? 30)}% · ${l.code_actif && l.est_actif ? 'Code actif' : 'Code désactivé'}</p>
+                        <button type="button" class="btn-mini edit" onclick="copyLeaderCode('${l.id}')">Copier le code</button>
                         <div class="lc-actions">
                             <button class="btn-mini edit" onclick="editLeader('${l.id}')"><i class="fas fa-edit"></i> Modifier</button>
                             <button class="btn-mini toggle" style="background:${l.est_actif ? '#f59e0b' : '#22c55e'}" onclick="toggleLeader('${l.id}',${l.est_actif})">
                                 ${l.est_actif ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>'}
                             </button>
-                            <button class="btn-mini delete" onclick="deleteLeader('${l.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="btn-mini delete" onclick="deleteLeader('${l.id}')" title="Archiver le leader" aria-label="Archiver le leader"><i class="fas fa-archive"></i></button>
                         </div>
                     </div>
                 </div>
@@ -889,6 +920,7 @@
             document.getElementById('leaderModalTitle').textContent = 'Ajouter un Leader';
             document.getElementById('leaderForm').reset();
             document.getElementById('leaderId').value = '';
+            document.getElementById('leaderCode').readOnly = false;
             document.getElementById('leaderExistingFlyerUrl').value = '';
             document.getElementById('flyerPreviewContainer').style.display = 'none';
         }
@@ -903,6 +935,11 @@
             document.getElementById('leaderModal').classList.remove('hidden');
             document.getElementById('leaderModalTitle').textContent = 'Modifier Leader';
             document.getElementById('leaderId').value = l.id;
+            document.getElementById('leaderNom').value = l.nom || '';
+            document.getElementById('leaderCode').value = l.code_reduction || '';
+            document.getElementById('leaderCode').readOnly = !!l.code_reduction;
+            document.getElementById('leaderReduction').value = l.reduction_pourcentage ?? 30;
+            document.getElementById('leaderCodeActif').value = String(l.code_actif !== false);
             document.getElementById('leaderExistingFlyerUrl').value = l.flyer_url || '';
             document.getElementById('leaderCommune').value = l.commune || '';
             document.getElementById('leaderOrdre').value = l.ordre_affichage || 0;
@@ -933,10 +970,17 @@
                 }
                 if (!flyerUrl) { showToast('Veuillez uploader un flyer', 'error'); btn.disabled = false; btn.innerHTML = orig; return; }
 
-                const payload = { flyer_url: flyerUrl, commune, ordre_affichage: ordre, est_actif: true };
+                const payload = {
+                    flyer_url: flyerUrl, commune, ordre_affichage: ordre,
+                    est_actif: id ? allLeaders.find(l => l.id === id)?.est_actif !== false : true,
+                    nom: document.getElementById('leaderNom').value.trim(),
+                    code_reduction: document.getElementById('leaderCode').value.trim().toUpperCase() || null,
+                    reduction_pourcentage: Number(document.getElementById('leaderReduction').value),
+                    code_actif: document.getElementById('leaderCodeActif').value === 'true'
+                };
                 let res;
-                if (id) { res = await window.supabaseClient.from('leaders_v2').update(payload).eq('id', id); }
-                else { res = await window.supabaseClient.from('leaders_v2').insert([payload]); }
+                if (id) { res = await window.supabaseClient.from('leaders_v2').update(payload).eq('id', id).select('id').single(); }
+                else { res = await window.supabaseClient.from('leaders_v2').insert([payload]).select('id').single(); }
                 if (res.error) throw res.error;
 
                 showToast('Leader enregistré !');
@@ -949,12 +993,19 @@
         }
         window.saveLeader = saveLeader;
 
+        async function copyLeaderCode(id) {
+            const code = allLeaders.find(l => l.id === id)?.code_reduction;
+            if (!code) { showToast('Appliquez la migration 09 avant de partager les codes.', 'error'); return; }
+            try { await navigator.clipboard.writeText(code); showToast('Code copié'); }
+            catch (_) { window.prompt('Copiez ce code leader :', code); }
+        }
+
         async function deleteLeader(id) {
-            if (!confirm('Supprimer ce leader ?')) return;
+            if (!confirm('Archiver ce leader et désactiver son code ? Son historique sera conservé.')) return;
             try {
-                const { error } = await window.supabaseClient.from('leaders_v2').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('leaders_v2').update({ est_actif: false, code_actif: false }).eq('id', id).select('id').single();
                 if (error) throw error;
-                showToast('Leader supprimé');
+                showToast('Leader archivé');
                 loadLeaders();
             } catch (err) { showToast('Erreur suppression', 'error'); }
         }
@@ -962,7 +1013,7 @@
 
         async function toggleLeader(id, current) {
             try {
-                const { error } = await window.supabaseClient.from('leaders_v2').update({ est_actif: !current }).eq('id', id);
+                const { error } = await window.supabaseClient.from('leaders_v2').update({ est_actif: !current }).eq('id', id).select('id').single();
                 if (error) throw error;
                 showToast('Statut mis à jour');
                 loadLeaders();

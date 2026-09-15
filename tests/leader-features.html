@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>Leader feature tests</title></head>
+<body>
+<pre id="results">RUNNING</pre>
+<nav><button id="navToggle">Menu</button><ul id="navLinks"><li><a href="#fixture">Link</a></li></ul></nav>
+<form id="fixture"><select id="choice"><option value="false">Non</option><option value="true">Oui</option></select><div id="payment"></div></form>
+<script src="../assets/js/certificate-discount.js"></script>
+<script src="../assets/js/leader-tools.js"></script>
+<script src="../assets/js/mobile-nav.js"></script>
+<script type="module">
+const results = document.getElementById('results');
+const logs = [];
+const assert = (value, label) => { if (!value) throw new Error(label); logs.push('PASS ' + label); results.textContent = logs.join('\n'); };
+const rejects = async (fn, label) => { let rejected = false; try { await fn(); } catch (_) { rejected = true; } assert(rejected, label); };
+try {
+    for (const file of ['index.html','evenements.html','leaders.html','pages/inscription.html','pages/formations.html','pages/seminaires.html','admin/parametres.html','admin/inscriptions.html','admin/inscriptions-evenements.html']) {
+        const source = await (await fetch('../' + file)).text();
+        const doc = new DOMParser().parseFromString(source, 'text/html');
+        for (const script of doc.querySelectorAll('script:not([src])')) new Function(script.textContent);
+        assert(true, file + ' inline JavaScript syntax');
+        if (doc.getElementById('navToggle')) {
+            assert(source.includes('mobile-nav.js'), file + ' shared navigation loaded');
+            assert(!source.includes('navToggle.addEventListener'), file + ' no competing menu listener');
+        }
+    }
+    const choice = document.getElementById('choice');
+    const unlock = CertificateDiscount.lockForm(document.getElementById('fixture'));
+    assert(choice.disabled && document.getElementById('fixture').dataset.submitting, 'submission locks editable form controls');
+    unlock();
+    assert(!choice.disabled && !document.getElementById('fixture').dataset.submitting, 'submission restores controls after completion');
+    let changes = 0;
+    let finalPrice = 350;
+    window.supabaseClient = { rpc: async (name, args) => ({ data: {
+        leader_nom: 'Leader Test', code_leader: args.p_code?.trim().toUpperCase() || null,
+        certificat_prix_initial: 500, reduction_pourcentage: 30, certificat_reduction: 150,
+        certificat_prix: args.p_code ? finalPrice : 500
+    } }) };
+    const discount = new CertificateDiscount({ choiceId: 'choice', paymentId: 'payment', onChange: () => changes++ });
+    discount.reset({ type: 'event', id: 'test', price: 500, available: true });
+    assert(discount.box.hidden && discount.price() === 500, 'discount hidden without certificate');
+    choice.value = 'true'; choice.dispatchEvent(new Event('change'));
+    assert(!discount.box.hidden, 'discount offered for paid certificate');
+    discount.input.value = ' test '; discount.input.dispatchEvent(new Event('input'));
+    await rejects(() => discount.ensure(), 'unapplied code blocks submission');
+    await discount.fetchQuote();
+    assert(discount.price() === 350 && discount.code() === 'TEST', 'server quote 500 to 350 and normalized code');
+    assert(discount.message.textContent.includes('350') && changes > 0, 'quote updates visible amount');
+    await discount.ensure();
+    finalPrice = 300;
+    await rejects(() => discount.ensure(), 'changed server price requires reconfirmation');
+    assert(discount.price() === 300, 'new price displayed after change');
+    choice.value = 'false'; choice.dispatchEvent(new Event('change'));
+    assert(discount.code() === null && discount.price() === 500 && !discount.input.value, 'removing certificate clears discount');
+    choice.value = 'true'; choice.dispatchEvent(new Event('change'));
+    let resolve;
+    window.supabaseClient.rpc = () => new Promise(r => resolve = r);
+    discount.input.value = 'OLD';
+    const pending = discount.fetchQuote();
+    discount.reset({ type: 'formation', id: 'other', price: 900, available: true });
+    resolve({ data: { certificat_prix: 350, code_leader: 'OLD' } });
+    await rejects(() => pending, 'stale quote rejected after activity change');
+    assert(discount.price() === 900 && discount.code() === null, 'stale discount cannot leak into another activity');
+    discount.reset({ type: 'event', id: 'free', price: 0, available: true });
+    assert(discount.box.hidden && discount.price() === 0, 'free certificate has no discount field');
+    assert(!LeaderTools.escape('<img src=x onerror=alert(1)>').includes('<'), 'leader text safely escaped');
+    assert(LeaderTools.contact({ etudiant_prenom: 'Inscription', etudiants: { prenom: 'Profil' } }).prenom === 'Inscription', 'registration contact snapshot takes precedence over profile');
+    assert(LeaderTools.certificateCell({ veut_certificat: true, id: 'test', code_leader: '<script>', leader_nom: '<img>', certificat_prix: 350 }, 'event').includes('&lt;script&gt;'), 'admin certificate text safely escaped');
+    window.initMobileNav(); window.initMobileNav();
+    const toggle = document.getElementById('navToggle');
+    const links = document.getElementById('navLinks');
+    toggle.click();
+    assert(links.classList.contains('active') && toggle.getAttribute('aria-expanded') === 'true', 'one click opens after repeated initialization');
+    toggle.click();
+    assert(!links.classList.contains('active') && document.body.style.overflow === '', 'second click closes and restores scroll');
+    toggle.click(); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    assert(!links.classList.contains('active') && document.activeElement === toggle, 'Escape closes menu and restores focus');
+    toggle.click(); document.getElementById('mobileMenuOverlay').click();
+    assert(!links.classList.contains('active'), 'overlay closes menu');
+    toggle.click(); links.querySelector('a').click();
+    assert(!links.classList.contains('active'), 'navigation link closes menu');
+    toggle.click(); toggle.style.display = 'none'; window.dispatchEvent(new Event('resize'));
+    assert(!links.classList.contains('active') && !links.inert, 'desktop resize restores navigation and scrolling');
+    const navScript = await (await fetch('../assets/js/mobile-nav.js')).text();
+    for (const file of ['index.html','evenements.html','leaders.html','pages/inscription.html','pages/formations.html','pages/seminaires.html']) {
+        const pageURL = new URL('../' + file, location.href);
+        const page = new DOMParser().parseFromString(await (await fetch(pageURL)).text(), 'text/html');
+        let css = '';
+        for (const link of page.querySelectorAll('link[rel="stylesheet"]')) {
+            if (!/^https?:/.test(link.getAttribute('href'))) css += await (await fetch(new URL(link.getAttribute('href'), pageURL))).text();
+        }
+        css += [...page.querySelectorAll('style')].map(s => s.textContent).join('\n');
+        const frame = document.createElement('iframe'); frame.style.cssText = 'width:375px;height:750px;';
+        frame.srcdoc = '<!doctype html><html><head><style>' + css + '</style></head><body>' + page.querySelector('nav').outerHTML + '</body></html>';
+        await new Promise(resolve => { frame.onload = resolve; document.body.append(frame); });
+        const win = frame.contentWindow; win.eval(navScript); win.initMobileNav();
+        const button = win.document.getElementById('navToggle'); button.click();
+        const menu = win.document.getElementById('navLinks');
+        assert(win.getComputedStyle(button).display !== 'none' && menu.classList.contains('active'), file + ' mobile toggle visible and opens');
+        menu.style.setProperty('transition', 'none', 'important');
+        const rect = menu.getBoundingClientRect();
+        assert(rect.width > 0 && rect.left >= -1 && rect.right <= 377 && rect.top >= 0 && rect.top < 750, file + ' mobile menu inside viewport');
+        const hit = win.document.elementFromPoint(rect.left + rect.width / 2, rect.top + Math.min(rect.height / 2, 30));
+        assert(hit && menu.contains(hit), file + ' mobile menu not blocked by overlay (hit: ' + hit?.tagName + '.' + hit?.className + ', nav z-index: ' + win.getComputedStyle(win.document.querySelector('nav')).zIndex + ')');
+        frame.remove();
+    }
+    results.textContent += '\nLoading isolated PostgreSQL tests...';
+    const { PGlite } = await import('https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.3.7/dist/index.js');
+    const db = new PGlite();
+    await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
+        CREATE SCHEMA auth;
+        CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$ SELECT coalesce(nullif(current_setting('test.jwt', true), ''), '{}')::jsonb $$;
+        CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT (auth.jwt()->>'sub')::uuid $$;`);
+    for (const file of ['01_tables.sql','07_fix_missing_columns.sql','08_certificats.sql','03_rls_policies.sql','09_codes_leaders.sql']) {
+        await db.exec(await (await fetch('../sql2.0/' + file)).text());
+        assert(true, file + ' executes in PostgreSQL');
+    }
+    await db.exec(await (await fetch('../sql2.0/09_codes_leaders.sql')).text());
+    assert(true, 'migration 09 is rerunnable');
+    const leader = '11111111-1111-4111-8111-111111111111';
+    const event = '22222222-2222-4222-8222-222222222222';
+    const formation = '33333333-3333-4333-8333-333333333333';
+    const seminar = '44444444-4444-4444-8444-444444444444';
+    await db.exec(`INSERT INTO rasinayiti_administrateurs (prenom,nom,email,mot_de_passe_hash,role) VALUES ('Admin','Test','admin@example.test','fixture','admin');
+        INSERT INTO rasinayiti_leaders_v2 (id,nom,commune,flyer_url,code_reduction) VALUES ('${leader}','Leader Test','Test','fixture',' test ');
+        INSERT INTO rasinayiti_events (id,titre,avec_certificat,prix_certificat) VALUES ('${event}','Event',true,500);
+        INSERT INTO rasinayiti_formations (id,titre,avec_certificat,prix_certificat,status) VALUES ('${formation}','Formation',true,500,'publie');
+        INSERT INTO rasinayiti_seminaires (id,titre,date_seminaire,avec_certificat,prix_certificat) VALUES ('${seminar}','Seminar',current_date,true,500);
+        GRANT USAGE ON SCHEMA public, auth TO anon, authenticated;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;`);
+    const query = (sql, args = []) => db.query(sql, args);
+    const quote = async (type, id, code = 'test') => (await query('SELECT rasinayiti_certificate_quote($1,$2,$3) AS q', [type,id,code])).rows[0].q;
+    for (const [type, id] of [['event', event], ['formation', formation], ['seminaire', seminar]]) {
+        const q = await quote(type,id,' test ');
+        assert(q.certificat_prix === 350 && q.certificat_reduction === 150 && q.code_leader === 'TEST', type + ' server quote 30% discount');
+    }
+    await rejects(() => quote('event',event,'unknown'), 'invalid code rejected by database');
+    await rejects(() => query('INSERT INTO rasinayiti_leaders_v2 (commune,flyer_url,code_reduction) VALUES ($1,$2,$3)', ['Test','fixture','test']), 'duplicate leader code rejected');
+    await db.exec(`UPDATE rasinayiti_leaders_v2 SET code_actif = false WHERE id = '${leader}'`);
+    await rejects(() => quote('event',event), 'inactive code rejected');
+    await db.exec(`UPDATE rasinayiti_events SET has_quiz = true WHERE id = '${event}';
+        INSERT INTO rasinayiti_event_questions(id,event_id,question_text,option_a,option_b,option_c,option_d,correct_option,points)
+        VALUES ('55555555-5555-4555-8555-555555555555','${event}','Test','A','B','C','D','A',2);
+        UPDATE rasinayiti_leaders_v2 SET code_actif = true WHERE id = '${leader}'; SET ROLE anon;`);
+    const payload = { prenom: 'Participant', nom: 'Test', email: 'one@example.test', telephone: '123', veut_certificat: true, code_leader: 'test', certificat_prix: 350, certificat_mode_paiement: 'moncash', certificat_preuve_url: 'https://example.test/proof.png', certificat_statut_paiement: 'verifie' };
+    const register = async (type,id,p) => (await query('SELECT rasinayiti_register($1,$2,$3::jsonb) AS id', [type,id,JSON.stringify(p)])).rows[0].id;
+    payload.quiz_score = 999;
+    payload.quiz_reponses = { '55555555-5555-4555-8555-555555555555': 'A' };
+    const registration = await register('event',event,payload);
+    assert(!!registration, 'anonymous registration accepted through validated RPC');
+    assert((await query('SELECT * FROM rasinayiti_inscriptions_evenements')).rows.length === 0, 'anonymous users cannot read participant details');
+    assert((await query('SELECT * FROM rasinayiti_etudiants')).rows.length === 0, 'anonymous users cannot read student contacts');
+    await rejects(() => query('INSERT INTO rasinayiti_inscriptions_evenements (event_id,prenom,nom,email) VALUES ($1,$2,$3,$4)', [event,'Forged','Test','forged@example.test']), 'direct anonymous registration bypass rejected');
+    assert((await query('UPDATE rasinayiti_leaders_v2 SET reduction_pourcentage = 99 RETURNING id')).rows.length === 0, 'anonymous user cannot change discounts');
+    assert((await query('UPDATE rasinayiti_inscriptions_evenements SET certificat_statut_paiement = $1 RETURNING id', ['verifie'])).rows.length === 0, 'anonymous user cannot verify a payment');
+    await rejects(() => register('event',event,{ ...payload, email: ' ONE@EXAMPLE.TEST ' }), 'case-insensitive duplicate registration rejected');
+    await rejects(() => register('event',event,{ ...payload, email: 'forged@example.test', certificat_prix: 1 }), 'forged price rejected');
+    await rejects(() => register('event',event,{ ...payload, email: 'missing@example.test', certificat_preuve_url: null }), 'paid certificate requires proof');
+    const courseRegistration = await register('formation',formation,{ ...payload, email: 'course@example.test' });
+    const seminarRegistration = await register('seminaire',seminar,{ ...payload, email: 'seminar@example.test' });
+    await rejects(() => register('seminaire',seminar,{ ...payload, email: 'seminar@example.test' }), 'duplicate seminar registration rejected');
+    const ranking = async () => (await query('SELECT * FROM rasinayiti_leader_ranking()')).rows;
+    assert(Number((await ranking())[0].inscriptions) === 0, 'pending payments do not count');
+    await db.exec(`RESET ROLE; SET test.jwt = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","email":"admin@example.test"}'; SET ROLE authenticated;`);
+    const saved = (await query('SELECT * FROM rasinayiti_inscriptions_evenements WHERE id = $1', [registration])).rows[0];
+    assert(saved.quiz_score === 2, 'event quiz score preserved and recalculated by server');
+    assert(Number(saved.certificat_prix) === 350 && saved.certificat_statut_paiement === 'en_attente' && saved.leader_id === leader, 'server stores snapshots and ignores forged payment status');
+    await query('UPDATE rasinayiti_inscriptions_evenements SET certificat_statut_paiement = $1 WHERE id = $2', ['verifie',registration]);
+    assert(Number((await ranking())[0].inscriptions) === 1, 'verified event payment counted');
+    await query('UPDATE rasinayiti_inscriptions SET certificat_statut_paiement = $1 WHERE id IN ($2,$3)', ['verifie',courseRegistration,seminarRegistration]);
+    assert(Number((await ranking())[0].inscriptions) === 3, 'ranking combines all three activity types');
+    await query('UPDATE rasinayiti_inscriptions_evenements SET certificat_statut_paiement = $1 WHERE id = $2', ['refuse',registration]);
+    assert(Number((await ranking())[0].inscriptions) === 2, 'refused payment removed from ranking');
+    await query('UPDATE rasinayiti_inscriptions SET status_inscription = $1 WHERE id = $2', ['annule',courseRegistration]);
+    assert(Number((await ranking())[0].inscriptions) === 1, 'cancelled registration excluded from ranking');
+    await query('UPDATE rasinayiti_leaders_v2 SET reduction_pourcentage = 20 WHERE id = $1', [leader]);
+    const historic = (await query('SELECT certificat_prix FROM rasinayiti_inscriptions_evenements WHERE id = $1', [registration])).rows[0];
+    assert(Number(historic.certificat_prix) === 350 && (await quote('event',event)).certificat_prix === 400, 'discount changes preserve historical prices');
+    await rejects(() => query('UPDATE rasinayiti_inscriptions_evenements SET certificat_prix = 1 WHERE id = $1', [registration]), 'saved prices are immutable');
+    await rejects(() => query('DELETE FROM rasinayiti_leaders_v2 WHERE id = $1', [leader]), 'used leader cannot be deleted');
+    await query('UPDATE rasinayiti_events SET inscription_ouverte = false WHERE id = $1', [event]);
+    await rejects(() => quote('event',event), 'closed event refuses certificate quote');
+    await query('UPDATE rasinayiti_events SET inscription_ouverte = true, prix_certificat = 0 WHERE id = $1', [event]);
+    await rejects(() => quote('event',event), 'leader discount rejected for free certificate');
+    await query('UPDATE rasinayiti_events SET prix_certificat = 500 WHERE id = $1', [event]);
+    await query('UPDATE rasinayiti_leaders_v2 SET reduction_pourcentage = 100 WHERE id = $1', [leader]);
+    const freeRegistration = await register('event',event,{ ...payload, email: 'full-discount@example.test', certificat_prix: 0, certificat_mode_paiement: null, certificat_preuve_url: null });
+    assert(!!freeRegistration && Number((await ranking())[0].inscriptions) === 1, '100% discount needs no payment and adds no paid ranking credit');
+    const noCertificate = await register('event',event,{ ...payload, email: 'no-certificate@example.test', veut_certificat: false, certificat_prix: 0 });
+    const noCertificateRow = (await query('SELECT code_leader,certificat_statut_paiement FROM rasinayiti_inscriptions_evenements WHERE id = $1', [noCertificate])).rows[0];
+    assert(noCertificateRow.code_leader === null && noCertificateRow.certificat_statut_paiement === 'non_requis', 'no certificate clears submitted leader attribution');
+    await db.exec(`RESET ROLE; SET test.jwt = '{"sub":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","email":"one@example.test"}'; SET ROLE authenticated;`);
+    assert((await query('SELECT * FROM rasinayiti_inscriptions_evenements')).rows.length === 1, 'authenticated participant only sees own event registration');
+    assert((await query('SELECT * FROM rasinayiti_administrateurs')).rows.length === 0, 'participant cannot read admin accounts');
+    await rejects(() => query("INSERT INTO rasinayiti_administrateurs(prenom,nom,email,mot_de_passe_hash) VALUES ('Forged','Admin','one@example.test','fixture')"), 'participant cannot promote self to admin');
+    assert((await query("UPDATE rasinayiti_inscriptions_evenements SET certificat_statut_paiement = 'verifie' RETURNING id")).rows.length === 0, 'authenticated participant cannot validate payment');
+    const publicRanking = await ranking();
+    assert(Object.keys(publicRanking[0]).sort().join(',') === 'commune,id,inscriptions,nom', 'ranking exposes only approved public fields');
+    await db.close();
+    results.textContent = 'SUCCESS: ' + logs.length + ' checks\n' + logs.join('\n');
+    document.title = 'PASS';
+} catch (error) {
+    results.textContent = 'FAIL: ' + error.message + '\n' + logs.join('\n') + '\n' + JSON.stringify({ position: error.position, internalPosition: error.internalPosition, internalQuery: error.internalQuery, where: error.where }) + '\n' + error.stack;
+    if (error.position) {
+        const sql = await (await fetch('../sql2.0/09_codes_leaders.sql')).text();
+        results.textContent += '\nSQL context: ' + sql.slice(Number(error.position) - 100, Number(error.position) + 100);
+    }
+    document.title = 'FAIL';
+}
+</script>
+</body>
+</html>

@@ -98,6 +98,7 @@
                 <select id="eventFilter" class="filter-select">
                     <option value="">Tous les événements</option>
                 </select>
+                <select id="leaderFilter" class="filter-select" aria-label="Leader"><option value="">Tous les leaders</option></select>
                 <select id="statusFilter" class="filter-select">
                     <option value="all">Tous les statuts</option>
                     <option value="en_attente">En attente</option>
@@ -507,6 +508,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
+    <script src="../assets/js/leader-tools.js"></script>
     
     <script>
         let currentAdmin = null;
@@ -560,14 +562,13 @@
         // Load inscriptions
         async function loadInscriptions() {
             try {
-                const { data, error } = await window.supabaseClient
+                const data = await LeaderTools.all(() => window.supabaseClient
                     .from('inscriptions')
-                    .select('*, etudiants(prenom, nom, email), formations(titre), seminaires(titre)')
-                    .order('date_inscription', { ascending: false });
-
-                if (error) throw error;
+                    .select('*, etudiants(prenom, nom, email, telephone), formations(titre), seminaires(titre)')
+                    .order('date_inscription', { ascending: false }).order('id'));
                 
                 allInscriptions = data || [];
+                LeaderTools.populateFilter(allInscriptions);
                 filterAndDisplayInscriptions();
                 updateStats();
             } catch (err) {
@@ -584,6 +585,7 @@
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
 
             let filtered = allInscriptions.filter(ins => {
+                if (!LeaderTools.matches(ins)) return false;
                 // Event type filter
                 if (eventType === 'formation' && !ins.formation_id) return false;
                 if (eventType === 'seminaire' && !ins.seminaire_id) return false;
@@ -600,9 +602,9 @@
                 
                 // Search
                 if (searchInput) {
-                    const student = ins.etudiants || {};
+                    const student = LeaderTools.contact(ins);
                     const event = ins.formations || ins.seminaires || {};
-                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre}`.toLowerCase();
+                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase();
                     if (!searchStr.includes(searchInput)) return false;
                 }
                 
@@ -622,15 +624,15 @@
             }
 
             tbody.innerHTML = inscriptions.map(ins => {
-                const student = ins.etudiants || {};
+                const student = LeaderTools.contact(ins);
                 const event = ins.formations || ins.seminaires || {};
                 const eventType = ins.formation_id ? 'Formation' : 'Séminaire';
                 
                 return `
                     <tr>
                         <td>
-                            <div style="font-weight: 600;">${student.prenom || ''} ${student.nom || ''}</div>
-                            <div style="font-size: 0.85rem; color: #64748b;">${student.email || ''}</div>
+                            <div style="font-weight: 600;">${LeaderTools.escape(student.prenom)} ${LeaderTools.escape(student.nom)}</div>
+                            <div style="font-size: 0.85rem; color: #64748b;">${LeaderTools.escape(student.email)}</div>
                         </td>
                         <td>${event.titre || '-'}</td>
                         <td>${eventType}</td>
@@ -639,7 +641,7 @@
                             <span class="status-badge status-${ins.status_inscription}">${ins.status_inscription || 'en_attente'}</span>
                         </td>
                         <td>${ins.status_paiement || '-'}</td>
-                        <td>${ins.montant_paye || 0} HTG</td>
+                        <td>${ins.montant_paye || 0} HTG${LeaderTools.certificateCell(ins, ins.formation_id ? 'formation' : 'seminaire')}</td>
                         <td>
                             <button class="btn-action btn-view" onclick="viewDetails('${ins.id}')">
                                 <i class="fas fa-eye"></i>
@@ -688,7 +690,7 @@
 
         // View details (placeholder)
         function viewDetails(id) {
-            alert('Détails inscription ID: ' + id);
+            LeaderTools.review(allInscriptions.find(i => i.id === id)?.formation_id ? 'formation' : 'seminaire', id);
         }
 
         // Export to Excel (CSV)
@@ -705,6 +707,7 @@
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
 
             let filtered = allInscriptions.filter(ins => {
+                if (!LeaderTools.matches(ins)) return false;
                 if (eventType === 'formation' && !ins.formation_id) return false;
                 if (eventType === 'seminaire' && !ins.seminaire_id) return false;
                 if (eventFilter) {
@@ -714,20 +717,20 @@
                 }
                 if (statusFilter !== 'all' && ins.status_inscription !== statusFilter) return false;
                 if (searchInput) {
-                    const student = ins.etudiants || {};
+                    const student = LeaderTools.contact(ins);
                     const event = ins.formations || ins.seminaires || {};
-                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre}`.toLowerCase();
+                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase();
                     if (!searchStr.includes(searchInput)) return false;
                 }
                 return true;
             });
 
             // Create CSV header
-            const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Événement', 'Type', 'Date Inscription', 'Statut', 'Statut Paiement', 'Montant Payé', 'Date Confirmation'];
+            const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Événement', 'Type', 'Date Inscription', 'Statut', 'Statut Paiement', 'Montant Payé', 'Date Confirmation', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat'];
             
             // Create CSV rows
             const rows = filtered.map(ins => {
-                const student = ins.etudiants || {};
+                const student = LeaderTools.contact(ins);
                 const event = ins.formations || ins.seminaires || {};
                 const eventType = ins.formation_id ? 'Formation' : 'Séminaire';
                 
@@ -742,23 +745,15 @@
                     ins.status_inscription || '',
                     ins.status_paiement || '',
                     ins.montant_paye || 0,
-                    ins.date_confirmation ? new Date(ins.date_confirmation).toLocaleDateString('fr-FR') : ''
-                ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+                    ins.date_confirmation ? new Date(ins.date_confirmation).toLocaleDateString('fr-FR') : '',
+                    ins.leader_nom, ins.code_leader, ins.certificat_prix_initial, ins.reduction_pourcentage,
+                    ins.certificat_reduction, ins.certificat_prix, ins.certificat_statut_paiement
+                ];
             });
 
             // Combine header and rows
-            const csvContent = [headers.join(','), ...rows].join('\n');
-
             // Create download link
-            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `inscriptions_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            LeaderTools.csv(headers, rows, `inscriptions_${new Date().toISOString().split('T')[0]}.csv`);
         }
 
         // Event listeners
@@ -766,6 +761,7 @@
         document.getElementById('eventFilter').addEventListener('change', filterAndDisplayInscriptions);
         document.getElementById('statusFilter').addEventListener('change', filterAndDisplayInscriptions);
         document.getElementById('searchInput').addEventListener('input', filterAndDisplayInscriptions);
+        document.getElementById('leaderFilter').addEventListener('change', filterAndDisplayInscriptions);
         document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
         // Initialize

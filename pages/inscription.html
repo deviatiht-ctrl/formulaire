@@ -567,7 +567,8 @@
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
-    <script src="../assets/js/mobile-nav.js"></script>
+    <script src="../assets/js/mobile-nav.js?v=2026.3"></script>
+    <script src="../assets/js/certificate-discount.js"></script>
     
     <script>
         // Get URL parameters
@@ -575,6 +576,14 @@
         const itemId = urlParams.get('id');
         const itemType = urlParams.get('type'); // 'formation' or 'seminaire'
         let currentItem = null;
+        const certificateDiscount = new CertificateDiscount({
+            choiceId: 'veutCertificat', paymentId: 'certificatPayment',
+            onChange: () => {
+                document.getElementById('certificatPriceLabel').textContent = certificateDiscount.price();
+                toggleCertificatPayment();
+                showCertificatPaymentInfo();
+            }
+        });
 
         const CERTIFICAT_PAYMENT_NUMBERS = {
             moncash: { numero: '+509 46807922', nom: 'Rasin Ayiti' },
@@ -584,12 +593,12 @@
         function setupCertificatSection() {
             if (!currentItem || !currentItem.avec_certificat) return;
             document.getElementById('certificatSection').style.display = 'block';
-            document.getElementById('certificatPriceLabel').textContent = currentItem.prix_certificat || 0;
+            certificateDiscount.reset({ type: itemType, id: itemId, price: currentItem.prix_certificat || 0, available: currentItem.avec_certificat });
         }
 
         function toggleCertificatPayment() {
             const veut = document.getElementById('veutCertificat').value === 'true';
-            const payant = (currentItem?.prix_certificat || 0) > 0;
+            const payant = (certificateDiscount.price()) > 0;
             document.getElementById('certificatPayment').style.display = (veut && payant) ? 'block' : 'none';
         }
 
@@ -598,7 +607,7 @@
             const info = document.getElementById('certificatPaymentInfo');
             if (mode && CERTIFICAT_PAYMENT_NUMBERS[mode]) {
                 const p = CERTIFICAT_PAYMENT_NUMBERS[mode];
-                info.innerHTML = `<strong>${mode === 'moncash' ? 'MonCash' : 'Natcash'}:</strong> ${p.numero}<br><strong>Bénéficiaire:</strong> ${p.nom}<br><em>Envoyez ${currentItem.prix_certificat} HTG puis uploadez la photo du reçu.</em>`;
+                info.innerHTML = `<strong>${mode === 'moncash' ? 'MonCash' : 'Natcash'}:</strong> ${p.numero}<br><strong>Bénéficiaire:</strong> ${p.nom}<br><em>Envoyez ${certificateDiscount.price()} HTG puis uploadez la photo du reçu.</em>`;
                 info.style.display = 'block';
             } else {
                 info.style.display = 'none';
@@ -713,7 +722,7 @@
 
             // Sètifika: si peyan, mode + preuve obligatwa
             const veutCertificat = document.getElementById('veutCertificat')?.value === 'true';
-            const certPrix = currentItem?.prix_certificat || 0;
+            const certPrix = certificateDiscount.price();
             if (veutCertificat && certPrix > 0) {
                 if (!document.getElementById('certificatMode').value) {
                     document.getElementById('certificatModeError').textContent = 'Chwazi yon mode de paiement';
@@ -732,13 +741,15 @@
         async function handleSubmit(e) {
             e.preventDefault();
 
-            if (!validateForm()) return;
+            if (e.target.dataset.submitting || !validateForm()) return;
 
+            const unlockForm = CertificateDiscount.lockForm(e.target);
             const btn = document.getElementById('submitBtn');
             btn.classList.add('loading');
             btn.disabled = true;
 
             try {
+                await certificateDiscount.ensure();
                 const formData = {
                     nom: document.getElementById('nom').value.trim(),
                     prenom: document.getElementById('prenom').value.trim(),
@@ -762,17 +773,11 @@
                 }
 
                 // Insert into etudiants table (upsert pou email ki egziste deja)
-                const { data: etudiant, error: etudiantError } = await window.supabaseClient
-                    .from('etudiants')
-                    .upsert([formData], { onConflict: 'email' })
-                    .select()
-                    .single();
-
-                if (etudiantError) throw etudiantError;
+                formData.email = formData.email.toLowerCase();
 
                 // Sètifika: upload preuve si peyan
                 const veutCertificat = document.getElementById('veutCertificat')?.value === 'true';
-                const certPrix = currentItem?.prix_certificat || 0;
+                const certPrix = certificateDiscount.price();
                 const certificatFields = {
                     veut_certificat: veutCertificat,
                     certificat_prix: veutCertificat ? certPrix : 0,
@@ -798,7 +803,8 @@
 
                 // Create inscription
                 const inscriptionData = {
-                    etudiant_id: etudiant.id,
+                    ...formData,
+                    code_leader: certificateDiscount.code(),
                     statut_paiement: 'en_attente',
                     date_inscription: new Date().toISOString(),
                     ...certificatFields
@@ -808,7 +814,10 @@
                 } else if (itemType === 'seminaire') {
                     inscriptionData.seminaire_id = itemId;
                 }
-                await window.supabaseClient.from('inscriptions').insert([inscriptionData]);
+                const { error: registrationError } = await window.supabaseClient.rpc('rasinayiti_register', {
+                    p_type: itemType, p_id: itemId, p_data: inscriptionData
+                });
+                if (registrationError) throw registrationError;
 
                 // Show success
                 document.getElementById('successModal').classList.remove('hidden');
@@ -817,8 +826,9 @@
 
             } catch (error) {
                 console.error('Error submitting form:', error);
-                alert('Une erreur est survenue. Veuillez réessayer.');
+                alert(error.message || 'Une erreur est survenue. Veuillez réessayer.');
             } finally {
+                unlockForm();
                 btn.classList.remove('loading');
                 btn.disabled = false;
             }

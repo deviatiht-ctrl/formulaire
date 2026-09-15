@@ -339,6 +339,7 @@
                 <select id="eventFilter" class="filter-select">
                     <option value="">Tous les événements</option>
                 </select>
+                <select id="leaderFilter" class="filter-select" aria-label="Leader"><option value="">Tous les leaders</option></select>
                 <select id="statusFilter" class="filter-select">
                     <option value="">Tous les statuts</option>
                     <option value="en_attente">En attente</option>
@@ -372,6 +373,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
+    <script src="../assets/js/leader-tools.js"></script>
     <script>
         let allInscriptions = [];
         let allEvents = [];
@@ -404,17 +406,18 @@
         }
 
         async function loadInscriptions() {
-            const { data, error } = await window.supabaseClient
-                .from('inscriptions_evenements')
-                .select('*, events(titre)')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error(error);
+            let data;
+            try {
+                data = await LeaderTools.all(() => window.supabaseClient
+                    .from('inscriptions_evenements').select('*, events(titre)')
+                    .order('created_at', { ascending: false }).order('id'));
+            } catch (error) {
+                document.getElementById('inscriptionsBody').innerHTML = '<tr><td colspan="7">Impossible de charger les inscriptions. Reconnectez-vous et réessayez.</td></tr>';
                 return;
             }
 
             allInscriptions = data || [];
+            LeaderTools.populateFilter(allInscriptions);
             
             // Check for event ID in URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -465,7 +468,8 @@
             const status = document.getElementById('statusFilter').value;
 
             const filtered = allInscriptions.filter(ins => {
-                const matchesSearch = (ins.nom + ins.prenom + ins.email).toLowerCase().includes(search);
+                if (!LeaderTools.matches(ins)) return false;
+                const matchesSearch = `${ins.nom} ${ins.prenom} ${ins.email} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase().includes(search);
                 const matchesEvent = !eventId || ins.event_id === eventId;
                 const matchesStatus = !status || ins.statut === status;
                 return matchesSearch && matchesEvent && matchesStatus;
@@ -480,23 +484,23 @@
                 <tr>
                     <td>
                         <div class="user-info">
-                            <span class="user-name">${ins.prenom} ${ins.nom}</span>
-                            <span class="user-email">${ins.email}</span>
+                            <span class="user-name">${LeaderTools.escape(ins.prenom)} ${LeaderTools.escape(ins.nom)}</span>
+                            <span class="user-email">${LeaderTools.escape(ins.email)}</span>
                         </div>
                     </td>
                     <td><span style="font-weight:600; color:var(--primary);">${ins.events?.titre || 'Événement supprimé'}</span></td>
                     <td>
                         <div style="font-size:0.85rem;">
-                            <i class="fab fa-whatsapp" style="color:#25D366;"></i> ${ins.telephone || '-'}
+                            <i class="fab fa-whatsapp" style="color:#25D366;"></i> ${LeaderTools.escape(ins.telephone || '-')}
                         </div>
                     </td>
-                    <td>${ins.ville || '-'}</td>
+                    <td>${LeaderTools.escape(ins.ville || '-')}</td>
                     <td>
                         <div style="font-weight: 800; color: var(--primary); font-size: 1rem; text-align: center;">
                             ${ins.quiz_score || 0} <small style="font-size: 0.65rem; font-weight: 500;">pts</small>
                         </div>
                     </td>
-                    <td><span class="badge badge-${ins.statut}">${ins.statut.replace('_', ' ')}</span></td>
+                    <td><span class="badge badge-${ins.statut}">${ins.statut.replace('_', ' ')}</span>${LeaderTools.certificateCell(ins, 'event')}</td>
                     <td>
                         <div class="actions">
                             ${ins.statut !== 'confirme' ? `
@@ -540,21 +544,20 @@
 
         function exportToExcel() {
             // Simple CSV export
-            const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Ville', 'Événement', 'Statut', 'Date'];
-            const rows = allInscriptions.map(i => [
-                i.nom, i.prenom, i.email, i.telephone, i.ville, i.events?.titre, i.statut, i.created_at
+            const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Ville', 'Événement', 'Statut', 'Date', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat'];
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const eventId = document.getElementById('eventFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const rows = allInscriptions.filter(i => LeaderTools.matches(i) && (!eventId || i.event_id === eventId) && (!status || i.statut === status)
+                && `${i.nom} ${i.prenom} ${i.email} ${i.leader_nom || ''} ${i.code_leader || ''}`.toLowerCase().includes(search)).map(i => [
+                i.nom, i.prenom, i.email, i.telephone, i.ville, i.events?.titre, i.statut, i.created_at,
+                i.leader_nom, i.code_leader, i.certificat_prix_initial, i.reduction_pourcentage, i.certificat_reduction, i.certificat_prix, i.certificat_statut_paiement
             ]);
-            
-            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "inscriptions_evenements.csv");
-            document.body.appendChild(link);
-            link.click();
+            LeaderTools.csv(headers, rows, 'inscriptions_evenements.csv');
         }
 
         document.getElementById('searchInput').addEventListener('input', renderTable);
+        document.getElementById('leaderFilter').addEventListener('change', renderTable);
         document.getElementById('eventFilter').addEventListener('change', renderTable);
         document.getElementById('statusFilter').addEventListener('change', renderTable);
 

@@ -1000,6 +1000,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=2026.1"></script>
+    <script src="assets/js/certificate-discount.js"></script>
+    <script src="assets/js/mobile-nav.js?v=2026.3"></script>
     <script>
         lucide.createIcons();
         let allEventsData = [];
@@ -1174,59 +1176,12 @@
 
         // Responsive Menu Logic (Premium Bottom Sheet Modal)
         document.addEventListener('DOMContentLoaded', () => {
-            const navToggle = document.getElementById('navToggle');
-            const navLinks = document.getElementById('navLinks');
-
             // Create glassmorphic overlay for mobile menu dynamically
-            let overlay = document.getElementById('mobileMenuOverlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'mobileMenuOverlay';
-                overlay.className = 'mobile-menu-overlay';
-                document.body.appendChild(overlay);
-            }
-
-            if (navToggle && navLinks) {
-                navToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navToggle.classList.toggle('active');
-                    navLinks.classList.toggle('active');
-                    overlay.classList.toggle('active');
-
-                    // Toggle scroll lock on body when menu is active
-                    if (navLinks.classList.contains('active')) {
-                        document.body.style.overflow = 'hidden';
-                    } else {
-                        document.body.style.overflow = '';
-                    }
-                });
-
-                window.closeMenu = function() {
-                    navToggle.classList.remove('active');
-                    navLinks.classList.remove('active');
-                    overlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                };
-
-                // Close menu when clicking overlay
-                overlay.addEventListener('click', () => {
-                    closeMenu();
-                });
-
-                // Close menu when clicking a link
-                navLinks.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        closeMenu();
-                    });
-                });
-
-                // Close menu when clicking outside of navLinks
-                document.addEventListener('click', (e) => {
-                    if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !navToggle.contains(e.target)) {
-                        closeMenu();
-                    }
-                });
-            }
+            // Toggle scroll lock on body when menu is active
+            // Close menu when clicking overlay
+            // Close menu when clicking a link
+            // Close menu when clicking outside of navLinks
+            window.initMobileNav();
 
             // --- AUTH NAVBAR LOGIC ---
             updateNavbarAuth();
@@ -1456,6 +1411,14 @@
         let currentEventWALink = '';
         let quizQuestionsData = [];
         let currentEventCertificat = { dispo: false, prix: 0 };
+        const certificateDiscount = new CertificateDiscount({
+            choiceId: 'regVeutCertificat', paymentId: 'certificatPayment',
+            onChange: () => {
+                document.getElementById('certificatPriceLabel').textContent = certificateDiscount.price();
+                toggleCertificatPayment();
+                showCertificatPaymentInfo();
+            }
+        });
 
         const CERTIFICAT_PAYMENT_NUMBERS = {
             moncash: { numero: '+509 46807922', nom: 'Rasin Ayiti' },
@@ -1464,7 +1427,7 @@
 
         function toggleCertificatPayment() {
             const veut = document.getElementById('regVeutCertificat').value === 'true';
-            const payant = currentEventCertificat.prix > 0;
+            const payant = certificateDiscount.price() > 0;
             document.getElementById('certificatPayment').classList.toggle('hidden', !(veut && payant));
         }
 
@@ -1473,7 +1436,7 @@
             const info = document.getElementById('certificatPaymentInfo');
             if (mode && CERTIFICAT_PAYMENT_NUMBERS[mode]) {
                 const p = CERTIFICAT_PAYMENT_NUMBERS[mode];
-                info.innerHTML = `<strong>${mode === 'moncash' ? 'MonCash' : 'Natcash'}:</strong> ${p.numero}<br><strong>Bénéficiaire:</strong> ${p.nom}<br><em>Envoyez ${currentEventCertificat.prix} HTG puis uploadez la photo du reçu.</em>`;
+                info.innerHTML = `<strong>${mode === 'moncash' ? 'MonCash' : 'Natcash'}:</strong> ${p.numero}<br><strong>Bénéficiaire:</strong> ${p.nom}<br><em>Envoyez ${certificateDiscount.price()} HTG puis uploadez la photo du reçu.</em>`;
                 info.classList.remove('hidden');
             } else {
                 info.classList.add('hidden');
@@ -1493,6 +1456,7 @@
         });
 
         async function openRegModal(id, titre, waLink, hasQuiz) {
+            if (document.getElementById('eventRegForm').dataset.submitting) return;
             document.getElementById('regEventId').value = id;
             document.getElementById('regModalTitle').textContent = `S'inscrire : ${titre}`;
             currentEventWALink = waLink;
@@ -1502,7 +1466,7 @@
             const evt = allEventsData.find(e => e.id === id);
             currentEventCertificat = { dispo: !!(evt && evt.avec_certificat), prix: (evt && evt.prix_certificat) || 0 };
             document.getElementById('certificatSection').classList.toggle('hidden', !currentEventCertificat.dispo);
-            document.getElementById('certificatPriceLabel').textContent = currentEventCertificat.prix;
+            document.getElementById('certificatPriceLabel').textContent = certificateDiscount.price();
             document.getElementById('regVeutCertificat').value = 'false';
             document.getElementById('regCertificatMode').value = '';
             document.getElementById('certificatPayment').classList.add('hidden');
@@ -1510,6 +1474,7 @@
             document.getElementById('regCertificatProof').value = '';
             document.getElementById('certificatProofPreview').classList.add('hidden');
 
+            certificateDiscount.reset({ type: 'event', id, price: evt?.prix_certificat || 0, available: currentEventCertificat.dispo });
             const quizDiv = document.getElementById('quizSection');
             const questionsDiv = document.getElementById('quizQuestions');
             
@@ -1522,6 +1487,7 @@
                         .from('event_questions')
                         .select('*')
                         .eq('is_active', true)
+                        .or(`event_id.is.null,event_id.eq.${id}`)
                         .limit(3);
                     
                     if (error) {
@@ -1567,6 +1533,8 @@
 
         document.getElementById('eventRegForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (e.target.dataset.submitting) return;
+            const unlockForm = CertificateDiscount.lockForm(e.target);
             const btn = document.getElementById('btnSubmitReg');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
@@ -1595,11 +1563,12 @@
 
             try {
                 // Sètifika: verifye si peyan epi preuve la obligatwa
+                await certificateDiscount.ensure();
                 const veutCertificat = document.getElementById('regVeutCertificat').value === 'true';
                 const certificatMode = document.getElementById('regCertificatMode').value;
                 const proofFile = document.getElementById('regCertificatProof').files[0];
 
-                if (veutCertificat && currentEventCertificat.prix > 0) {
+                if (veutCertificat && certificateDiscount.price() > 0) {
                     if (!certificatMode) {
                         alert('Veuillez choisir un mode de paiement pour le certificat (MonCash ou Natcash).');
                         btn.disabled = false;
@@ -1625,41 +1594,23 @@
                     certificatPreuveUrl = window.supabaseClient.storage.from('paiements').getPublicUrl(upData.path).data.publicUrl;
                 }
 
+                payload.code_leader = certificateDiscount.code();
+                payload.quiz_reponses = Object.fromEntries(quizQuestionsData.map(q => [q.id, document.querySelector(`input[name="q_${q.id}"]:checked`)?.value || '']));
                 payload.veut_certificat = veutCertificat;
-                payload.certificat_prix = veutCertificat ? currentEventCertificat.prix : 0;
-                payload.certificat_mode_paiement = veutCertificat && currentEventCertificat.prix > 0 ? certificatMode : null;
+                payload.certificat_prix = veutCertificat ? certificateDiscount.price() : 0;
+                payload.certificat_mode_paiement = veutCertificat && certificateDiscount.price() > 0 ? certificatMode : null;
                 payload.certificat_preuve_url = certificatPreuveUrl;
                 payload.certificat_statut_paiement = veutCertificat
-                    ? (currentEventCertificat.prix > 0 ? 'en_attente' : 'verifie')
+                    ? (certificateDiscount.price() > 0 ? 'en_attente' : 'verifie')
                     : 'non_requis';
 
                 // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou kontinye
-                let etudiantId = null;
-                try {
-                    const { error: signUpError } = await window.supabaseClient.auth.signUp({
-                        email: payload.email,
-                        password: password
-                    });
-                    if (signUpError && !/already|registered|existe/i.test(signUpError.message)) {
-                        console.warn('SignUp:', signUpError.message);
-                    }
-                    const { data: etu } = await window.supabaseClient.from('etudiants').upsert([{
-                        prenom: payload.prenom,
-                        nom: payload.nom,
-                        email: payload.email,
-                        telephone: payload.telephone || null,
-                        whatsapp: payload.telephone || null,
-                        ville: payload.ville || null
-                    }], { onConflict: 'email' }).select('id').single();
-                    etudiantId = etu?.id || null;
-                } catch (accountErr) {
-                    console.warn('Kont pa kreye:', accountErr.message);
-                }
-                payload.etudiant_id = etudiantId;
+                const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
+                if (signUpError && !/already|registered|existe/i.test(signUpError.message)) throw signUpError;
 
-                const { error } = await window.supabaseClient
-                    .from('inscriptions_evenements')
-                    .insert([payload]);
+                const { error } = await window.supabaseClient.rpc('rasinayiti_register', {
+                    p_type: 'event', p_id: payload.event_id, p_data: payload
+                });
 
                 if (error) throw error;
 
@@ -1670,6 +1621,7 @@
                 console.error('Registration error:', err);
                 alert('Erreur lors de l\'inscription: ' + err.message);
             } finally {
+                unlockForm();
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmer mon inscription';
             }
@@ -1677,11 +1629,7 @@
 
         async function loadEventProgress(eventId, maxPlaces) {
             try {
-                const { count, error } = await window.supabaseClient
-                    .from('inscriptions_evenements')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('event_id', eventId)
-                    .eq('statut', 'confirme');
+                const { data: count, error } = await window.supabaseClient.rpc('rasinayiti_event_registration_count', { p_id: eventId });
                 
                 if (error) throw error;
                 
@@ -1710,59 +1658,12 @@
 
         // Responsive Menu Logic (Premium Bottom Sheet Modal)
         document.addEventListener('DOMContentLoaded', () => {
-            const navToggle = document.getElementById('navToggle');
-            const navLinks = document.getElementById('navLinks');
-            
             // Create glassmorphic overlay for mobile menu dynamically
-            let overlay = document.getElementById('mobileMenuOverlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'mobileMenuOverlay';
-                overlay.className = 'mobile-menu-overlay';
-                document.body.appendChild(overlay);
-            }
-            
-            if (navToggle && navLinks) {
-                navToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navToggle.classList.toggle('active');
-                    navLinks.classList.toggle('active');
-                    overlay.classList.toggle('active');
-                    
-                    // Toggle scroll lock on body when menu is active
-                    if (navLinks.classList.contains('active')) {
-                        document.body.style.overflow = 'hidden';
-                    } else {
-                        document.body.style.overflow = '';
-                    }
-                });
-
-                window.closeMenu = function() {
-                    navToggle.classList.remove('active');
-                    navLinks.classList.remove('active');
-                    overlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                };
-
-                // Close menu when clicking overlay
-                overlay.addEventListener('click', () => {
-                    closeMenu();
-                });
-
-                // Close menu when clicking a link
-                navLinks.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        closeMenu();
-                    });
-                });
-                
-                // Close menu when clicking outside of navLinks
-                document.addEventListener('click', (e) => {
-                    if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !navToggle.contains(e.target)) {
-                        closeMenu();
-                    }
-                });
-            }
+            // Toggle scroll lock on body when menu is active
+            // Close menu when clicking overlay
+            // Close menu when clicking a link
+            // Close menu when clicking outside of navLinks
+            window.initMobileNav();
 
             // Check scroll and apply sticky class
             window.addEventListener('scroll', () => {

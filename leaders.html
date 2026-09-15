@@ -466,6 +466,13 @@
         </div>
     </div>
 
+    <section class="leaders-container" aria-labelledby="rankingTitle">
+        <h2 id="rankingTitle">Classement des leaders</h2>
+        <p>Enskripsyon ki itilize kòd lidè yo, avèk peman sètifika verifye. Enskripsyon anile ak sètifika gratis pa konte.</p>
+        <button type="button" onclick="LeaderTools.loadRanking()" style="margin:12px 0;padding:10px;">Actualiser</button>
+        <div id="leaderRanking" role="status" aria-live="polite">Chargement...</div>
+    </section>
+
     <!-- Leaders Grid -->
     <div class="leaders-container">
         <div class="leaders-grid" id="leadersGrid">
@@ -493,6 +500,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=2026.2"></script>
+    <script src="assets/js/leader-tools.js"></script>
+    <script src="assets/js/mobile-nav.js?v=2026.3"></script>
     <script>
         lucide.createIcons();
 
@@ -619,47 +628,7 @@
             loadLeaders();
 
             // Nav menu logic
-            const navToggle = document.getElementById('navToggle');
-            const navLinks = document.getElementById('navLinks');
-
-            let overlay = document.getElementById('mobileMenuOverlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'mobileMenuOverlay';
-                overlay.className = 'mobile-menu-overlay';
-                document.body.appendChild(overlay);
-            }
-
-            if (navToggle && navLinks) {
-                navToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    navToggle.classList.toggle('active');
-                    navLinks.classList.toggle('active');
-                    overlay.classList.toggle('active');
-                    if (navLinks.classList.contains('active')) {
-                        document.body.style.overflow = 'hidden';
-                    } else {
-                        document.body.style.overflow = '';
-                    }
-                });
-
-                window.closeMenu = function() {
-                    navToggle.classList.remove('active');
-                    navLinks.classList.remove('active');
-                    overlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                };
-
-                overlay.addEventListener('click', () => closeMenu());
-                navLinks.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => closeMenu());
-                });
-                document.addEventListener('click', (e) => {
-                    if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !navToggle.contains(e.target)) {
-                        closeMenu();
-                    }
-                });
-            }
+            window.initMobileNav();
 
             updateNavbarAuth();
 
