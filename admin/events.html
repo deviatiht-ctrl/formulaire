@@ -572,6 +572,9 @@
         .btn-edit:hover { background: #1d4ed8; }
         .btn-delete { background: #ef4444; color: white; }
         .btn-delete:hover { background: #dc2626; }
+        .btn-share { background: #0891b2; color: white; }
+        .btn-share:hover { background: #0e7490; }
+        .btn-share.copied { background: #22c55e; }
 
         /* Inscriptions table in modal */
         .ins-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -855,6 +858,9 @@
                                 <button class="btn-action btn-inscriptions" onclick="location.href='inscriptions-evenements.html?event='+event.id">
                                     <i class="fas fa-users"></i> Inscrits
                                 </button>
+                                <button class="btn-action btn-share" onclick="copyEventLink('${event.id}', this)">
+                                    <i class="fas fa-link"></i> Lien
+                                </button>
                                 <button class="btn-action btn-edit" onclick="editEvent('${event.id}')">
                                     <i class="fas fa-edit"></i> Modifier
                                 </button>
@@ -871,6 +877,29 @@
         // View flyer
         function viewFlyer(url) {
             window.open(url, '_blank');
+        }
+
+        // Kopye lyen piblik evènman an (pou pataje pou enskripsyon)
+        async function copyEventLink(eventId, btn) {
+            const url = new URL('../evenements.html', location.href);
+            url.searchParams.set('event', eventId);
+            try {
+                await navigator.clipboard.writeText(url.href);
+            } catch (_) {
+                const tmp = document.createElement('input');
+                tmp.value = url.href;
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                tmp.remove();
+            }
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.remove('copied');
+            }, 2000);
         }
 
         // Load registration counts

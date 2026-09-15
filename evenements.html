@@ -604,6 +604,53 @@
             background: #1d4ed8;
         }
 
+        /* Share / copy link bar */
+        .event-share {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .event-share-url {
+            flex: 1;
+            min-width: 0;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: #64748b;
+            background: #f8fafc;
+            text-overflow: ellipsis;
+        }
+
+        .btn-copy-link {
+            padding: 0.5rem 0.875rem;
+            background: #f1f5f9;
+            color: var(--primary);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .btn-copy-link:hover {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .btn-copy-link.copied {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
+        .event-card.highlight {
+            box-shadow: 0 0 0 4px var(--primary), 0 20px 40px rgba(0,0,0,0.15);
+        }
+
         .loading {
             text-align: center;
             color: white;
@@ -1011,11 +1058,12 @@
                     const typeLabel = event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne';
 
                     const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
-                    
+
                     const carouselId = `carousel-${event.id}`;
-                    
+                    const shareUrl = `${location.origin}${location.pathname}?event=${event.id}`;
+
                     return `
-                        <div class="event-card">
+                        <div class="event-card" id="event-${event.id}">
                             ${(() => {
                                 const images = event.images && event.images.length > 0 ? event.images : (event.flyer_url ? [event.flyer_url] : []);
                                 if (images.length === 0) return `
@@ -1053,6 +1101,12 @@
                                 <button class="btn-register" onclick="openRegModal('${event.id}', '${event.titre.replace(/'/g, "\\'")}', '${event.whatsapp_link || ''}', '${event.has_quiz}')">
                                     S'inscrire
                                 </button>
+                                <div class="event-share">
+                                    <input type="text" class="event-share-url" readonly value="${shareUrl}" onclick="this.select()" title="${shareUrl}">
+                                    <button type="button" class="btn-copy-link" data-url="${shareUrl}" onclick="copyEventLink(this)" title="Kopye lyen evènman an">
+                                        <i class="fas fa-copy"></i> Copier
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1060,6 +1114,9 @@
 
                 // Initialize carousels after events are loaded
                 setTimeout(initCarouselsAfterLoad, 100);
+
+                // Si lyen an se yon lyen pataje (?event=ID oswa #event-ID), ouvri evènman an
+                handleSharedLink();
             } catch (err) {
                 console.error('Error loading events:', err);
                 document.getElementById('eventsGrid').innerHTML = `
@@ -1072,11 +1129,54 @@
             }
         }
 
+        // Kopye lyen evènman an nan clipboard
+        async function copyEventLink(btn) {
+            const url = btn.dataset.url;
+            try {
+                await navigator.clipboard.writeText(url);
+            } catch (_) {
+                const input = btn.parentElement.querySelector('.event-share-url');
+                if (input) {
+                    input.select();
+                    document.execCommand('copy');
+                }
+            }
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Louvri evènman an lè lyen pataje a gen ?event=ID oswa #event-ID
+        function handleSharedLink() {
+            if (handleSharedLink._done) return;
+            handleSharedLink._done = true;
+
+            const params = new URLSearchParams(location.search);
+            const targetId = params.get('event')
+                || (location.hash.startsWith('#event-') ? location.hash.slice(7) : null);
+            if (!targetId) return;
+
+            const card = document.getElementById(`event-${targetId}`);
+            const evt = allEventsData.find(e => String(e.id) === String(targetId));
+            if (!card || !evt) return;
+
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('highlight');
+                setTimeout(() => card.classList.remove('highlight'), 3500);
+                openRegModal(evt.id, evt.titre, evt.whatsapp_link || '', evt.has_quiz);
+            }, 400);
+        }
+
         // Responsive Menu Logic (Premium Bottom Sheet Modal)
         document.addEventListener('DOMContentLoaded', () => {
             const navToggle = document.getElementById('navToggle');
             const navLinks = document.getElementById('navLinks');
-            
+
             // Create glassmorphic overlay for mobile menu dynamically
             let overlay = document.getElementById('mobileMenuOverlay');
             if (!overlay) {
@@ -1085,14 +1185,14 @@
                 overlay.className = 'mobile-menu-overlay';
                 document.body.appendChild(overlay);
             }
-            
+
             if (navToggle && navLinks) {
                 navToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
                     navToggle.classList.toggle('active');
                     navLinks.classList.toggle('active');
                     overlay.classList.toggle('active');
-                    
+
                     // Toggle scroll lock on body when menu is active
                     if (navLinks.classList.contains('active')) {
                         document.body.style.overflow = 'hidden';
@@ -1119,7 +1219,7 @@
                         closeMenu();
                     });
                 });
-                
+
                 // Close menu when clicking outside of navLinks
                 document.addEventListener('click', (e) => {
                     if (navLinks.classList.contains('active') && !navLinks.contains(e.target) && !navToggle.contains(e.target)) {
