@@ -877,6 +877,7 @@
                 <li><a href="#formations" onclick="closeMenu()"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
                 <li><a href="#boutique" onclick="closeMenu()"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
                 <li><a href="#donations" onclick="closeMenu()"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                <li><a href="#galerie" onclick="closeMenu()"><i data-lucide="image"></i> <span>Galerie</span></a></li>
                 <li><a href="leaders.html" onclick="closeMenu()" class="nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
                 <!-- Dynamic Auth Buttons -->
                 <li id="authContainer">
@@ -1492,6 +1493,7 @@
     <script src="supabase.js?v=2026.1"></script>
     <script src="assets/js/certificate-discount.js"></script>
     <script src="assets/js/mobile-nav.js?v=2026.3"></script>
+    <script src="assets/js/scroll-reveal.js?v=2026.1"></script>
     
     <script>
         // Initialize Lucide Icons
@@ -1597,6 +1599,7 @@
         }
 
         async function loadGalerie() {
+            const container = document.getElementById('galerieGrid');
             try {
                 const { data, error } = await window.supabaseClient
                     .from('galerie')
@@ -1607,23 +1610,78 @@
 
                 if (error) throw error;
 
-                const container = document.getElementById('galerieGrid');
                 if (data && data.length > 0) {
-                    container.innerHTML = data.map(g => `
-                        <div class="galerie-item" data-aos="zoom-in">
+                    container.innerHTML = data.map(g => {
+                        const shareUrl = g.url_fichier;
+                        return `
+                        <div class="galerie-item" id="galerie-${g.id}" data-aos="zoom-in">
                             ${g.type_media === 'video'
                                 ? `<video src="${g.url_fichier}" controls preload="metadata" playsinline></video>`
                                 : `<img src="${g.url_fichier}" alt="${g.titre || 'Galerie'}" loading="lazy">`
                             }
                             <div class="galerie-overlay">
-                                <h4>${g.titre || ''}</h4>
+                                <div class="galerie-overlay-content">
+                                    <h4>${g.titre || ''}</h4>
+                                    <div class="galerie-share">
+                                        <input type="text" class="galerie-share-url" readonly value="${shareUrl}" onclick="this.select()" title="${shareUrl}">
+                                        <button type="button" class="btn-copy-link" data-url="${shareUrl}" onclick="copyGalerieLink(this)" title="Kopye lyen foto a">
+                                            <i class="fas fa-copy"></i> Copier
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`;
+                    }).join('');
+                    handleSharedGalerieLink();
+                } else {
+                    container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#64748b; padding:3rem;">Aucune photo disponible pour le moment.</p>';
                 }
             } catch (err) {
                 console.error('Error loading galerie:', err);
+                container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#991b1b; padding:3rem;">Erreur de chargement de la galerie.</p>';
             }
+        }
+
+        // Kopye lyen yon foto galerie a nan clipboard
+        async function copyGalerieLink(btn) {
+            const url = btn.dataset.url;
+            try {
+                await navigator.clipboard.writeText(url);
+            } catch (_) {
+                const input = btn.parentElement.querySelector('.galerie-share-url');
+                if (input) {
+                    input.select();
+                    document.execCommand('copy');
+                }
+            }
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Louvri foto a lè lyen pataje a gen ?galerie=ID oswa #galerie-ID
+        function handleSharedGalerieLink() {
+            if (handleSharedGalerieLink._done) return;
+            handleSharedGalerieLink._done = true;
+
+            const params = new URLSearchParams(location.search);
+            const targetId = params.get('galerie')
+                || (location.hash.startsWith('#galerie-') ? location.hash.slice(9) : null);
+            if (!targetId) return;
+
+            const item = document.getElementById(`galerie-${targetId}`);
+            if (!item) return;
+
+            item.classList.add('aos-animate');
+            setTimeout(() => {
+                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                item.classList.add('highlight');
+                setTimeout(() => item.classList.remove('highlight'), 3500);
+            }, 400);
         }
 
         // Animate numbers

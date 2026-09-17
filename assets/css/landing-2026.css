@@ -876,6 +876,56 @@
     font-weight: 600;
 }
 
+.galerie-overlay-content {
+    width: 100%;
+}
+
+/* Share / copy link bar */
+.galerie-share {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    pointer-events: auto;
+}
+
+.galerie-share-url {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--white);
+    background: rgba(0, 0, 0, 0.45);
+    text-overflow: ellipsis;
+}
+
+.btn-copy-link {
+    padding: 0.5rem 0.875rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--primary);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.btn-copy-link:hover {
+    background: var(--white);
+}
+
+.btn-copy-link.copied {
+    background: #22c55e;
+    color: var(--white);
+}
+
+.galerie-item.highlight {
+    box-shadow: 0 0 0 4px var(--primary);
+}
+
 /* =====================================================
    WHY SECTION
 ===================================================== */
@@ -1377,13 +1427,14 @@
 /* =====================================================
    UTILITIES
 ===================================================== */
-[data-aos] {
+/* [data-aos] kache selman si scroll-reveal.js chaje (li mete .aos-ready sou <html>) */
+.aos-ready [data-aos] {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-[data-aos].aos-animate {
+.aos-ready [data-aos].aos-animate {
     opacity: 1;
     transform: translateY(0);
 }
