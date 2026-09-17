@@ -1080,6 +1080,7 @@
                                             <div style="font-size:0.8rem;">
                                                 <i class="fas fa-certificate" style="color:#f59e0b;"></i>
                                                 ${ins.certificat_prix > 0 ? ins.certificat_prix + ' HTG' : 'Gratuit'}
+                                                ${ins.code_leader ? `<br><i class="fas fa-user-tag" style="color:#7c3aed;"></i> ${ins.leader_nom || ''} · <strong>${ins.code_leader}</strong> (−${ins.reduction_pourcentage || 0}%)` : ''}
                                                 <br><span style="color:${ins.certificat_statut_paiement === 'verifie' ? '#059669' : '#d97706'};">${ins.certificat_statut_paiement}</span>
                                                 ${ins.certificat_preuve_url ? `<br><a href="${ins.certificat_preuve_url}" target="_blank" style="color:#2563eb;">Voir preuve</a>` : ''}
                                                 ${ins.certificat_statut_paiement === 'en_attente' ? `<br><button onclick="verifyCertificat('${ins.id}', true)" style="padding:2px 8px;background:#059669;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.7rem;margin-top:2px;">✓ Valider</button> <button onclick="verifyCertificat('${ins.id}', false)" style="padding:2px 8px;background:#ef4444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.7rem;margin-top:2px;">✕ Refuser</button>` : ''}

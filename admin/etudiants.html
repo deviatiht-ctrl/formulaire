@@ -387,6 +387,25 @@
             color: #dc2626;
         }
 
+        .btn-action {
+            padding: 0.35rem 0.6rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: white;
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -492,7 +511,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
-    
+    <script src="../assets/js/leader-tools.js"></script>
+
     <script>
         // Load students
         async function loadStudents() {
@@ -603,37 +623,87 @@
             }
         }
 
-        // View student inscriptions
-        async function viewInscriptions(id) {
-            try {
-                const { data, error } = await window.supabaseClient
-                    .from('inscriptions')
-                    .select('*, formations(titre), seminaires(titre)')
-                    .eq('etudiant_id', id);
+        let currentStudentId = null;
 
-                if (error) throw error;
+        // Rafrechi lis enskripsyon etidyan an apre yon verifyikasyon sètifika
+        function loadInscriptions() {
+            if (currentStudentId) return viewInscriptions(currentStudentId);
+        }
+
+        // View student inscriptions (formations, séminaires, événements) + certificats
+        async function viewInscriptions(id) {
+            currentStudentId = id;
+            try {
+                const { data: student } = await window.supabaseClient
+                    .from('etudiants')
+                    .select('email')
+                    .eq('id', id)
+                    .single();
+                const email = (student?.email || '').trim().toLowerCase();
+
+                const [cours, eventsById, eventsByEmail] = await Promise.all([
+                    window.supabaseClient
+                        .from('inscriptions')
+                        .select('*, formations(titre), seminaires(titre)')
+                        .eq('etudiant_id', id),
+                    window.supabaseClient
+                        .from('inscriptions_evenements')
+                        .select('*, events(titre)')
+                        .eq('etudiant_id', id),
+                    email
+                        ? window.supabaseClient
+                            .from('inscriptions_evenements')
+                            .select('*, events(titre)')
+                            .eq('email', email)
+                        : Promise.resolve({ data: [], error: null })
+                ]);
+                if (cours.error) throw cours.error;
+                if (eventsById.error) throw eventsById.error;
+                if (eventsByEmail.error) throw eventsByEmail.error;
+
+                const eventMap = new Map();
+                [...(eventsById.data || []), ...(eventsByEmail.data || [])]
+                    .forEach(e => eventMap.set(e.id, e));
+
+                const items = [
+                    ...(cours.data || []).map(ins => ({
+                        ins,
+                        type: ins.formation_id ? 'formation' : 'seminaire',
+                        titre: ins.formations?.titre || ins.seminaires?.titre || 'N/A',
+                        statut: ins.status_inscription || ins.statut_paiement || 'en_attente',
+                        date: ins.date_inscription || ins.created_at
+                    })),
+                    ...[...eventMap.values()].map(ins => ({
+                        ins,
+                        type: 'event',
+                        titre: ins.events?.titre || 'N/A',
+                        statut: ins.statut || 'en_attente',
+                        date: ins.created_at
+                    }))
+                ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 const modal = document.getElementById('studentModal');
                 const detail = document.getElementById('studentDetail');
-                
-                if (data && data.length > 0) {
+
+                if (items.length > 0) {
                     detail.innerHTML = `
-                        <h3 style="margin-bottom:1rem;">Inscriptions (${data.length})</h3>
-                        ${data.map(ins => `
+                        <h3 style="margin-bottom:1rem;">Inscriptions (${items.length})</h3>
+                        ${items.map(({ ins, type, titre, statut, date }) => `
                             <div style="padding:1rem;background:#f8fafc;border-radius:10px;margin-bottom:0.75rem;">
-                                <strong>${ins.formations?.titre || ins.seminaires?.titre || 'N/A'}</strong>
+                                <strong>${LeaderTools.escape(titre)}</strong>
                                 <div style="font-size:0.875rem;color:#64748b;margin-top:0.25rem;">
-                                    Type: ${ins.formation_id ? 'Formation' : 'Séminaire'} |
-                                    Statut: ${ins.statut_paiement || 'En attente'} |
-                                    Date: ${new Date(ins.date_inscription).toLocaleDateString('fr-FR')}
+                                    Type: ${type === 'event' ? 'Événement' : type === 'formation' ? 'Formation' : 'Séminaire'} |
+                                    Statut: ${LeaderTools.escape(statut)} |
+                                    Date: ${date ? new Date(date).toLocaleDateString('fr-FR') : '-'}
                                 </div>
+                                <div style="margin-top:0.5rem;">${LeaderTools.certificateCell(ins, type)}</div>
                             </div>
                         `).join('')}
                     `;
                 } else {
                     detail.innerHTML = '<p style="color:#64748b;">Aucune inscription</p>';
                 }
-                
+
                 modal.classList.remove('hidden');
             } catch (err) {
                 console.error('Error loading inscriptions:', err);

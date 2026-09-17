@@ -1420,6 +1420,12 @@
         </div>
     </div>
 
+    <!-- Galerie Lightbox (foto/videyo an gran ekran) -->
+    <div class="galerie-lightbox hidden" id="galerieLightbox" onclick="closeGalerieLightbox()">
+        <button type="button" class="galerie-lightbox-close" aria-label="Fermer" onclick="closeGalerieLightbox()">&times;</button>
+        <div class="galerie-lightbox-content" id="galerieLightboxContent"></div>
+    </div>
+
     <div class="modal-overlay hidden" id="successModal">
         <div class="modal-content">
             <div class="success-content">
@@ -1598,6 +1604,16 @@
             }
         }
 
+        let galerieData = [];
+
+        function galerieShareUrl(id) {
+            const url = new URL(location.href);
+            url.search = '';
+            url.hash = '';
+            url.searchParams.set('galerie', id);
+            return url.toString();
+        }
+
         async function loadGalerie() {
             const container = document.getElementById('galerieGrid');
             try {
@@ -1611,10 +1627,11 @@
                 if (error) throw error;
 
                 if (data && data.length > 0) {
+                    galerieData = data;
                     container.innerHTML = data.map(g => {
-                        const shareUrl = g.url_fichier;
+                        const shareUrl = galerieShareUrl(g.id);
                         return `
-                        <div class="galerie-item" id="galerie-${g.id}" data-aos="zoom-in">
+                        <div class="galerie-item" id="galerie-${g.id}" data-aos="zoom-in" onclick="openGalerieLightbox('${g.id}', event)" title="Klike pou wè an gran">
                             ${g.type_media === 'video'
                                 ? `<video src="${g.url_fichier}" controls preload="metadata" playsinline></video>`
                                 : `<img src="${g.url_fichier}" alt="${g.titre || 'Galerie'}" loading="lazy">`
@@ -1663,6 +1680,41 @@
             }, 2000);
         }
 
+        // Louvri foto/videyo galerie a an gran ekran (lightbox)
+        function openGalerieLightbox(id, evt) {
+            if (evt && evt.target.closest('.galerie-share, video')) return;
+            const item = galerieData.find(g => String(g.id) === String(id));
+            if (!item) return;
+
+            const content = document.getElementById('galerieLightboxContent');
+            content.innerHTML = item.type_media === 'video'
+                ? `<video src="${item.url_fichier}" controls autoplay playsinline onclick="event.stopPropagation()"></video>`
+                : `<img src="${item.url_fichier}" alt="${String(item.titre || 'Galerie').replace(/"/g, '&quot;')}">`;
+            document.getElementById('galerieLightbox').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            const url = new URL(location.href);
+            url.hash = '';
+            url.searchParams.set('galerie', item.id);
+            history.replaceState(null, '', url);
+        }
+
+        function closeGalerieLightbox() {
+            const box = document.getElementById('galerieLightbox');
+            if (!box || box.classList.contains('hidden')) return;
+            box.classList.add('hidden');
+            document.getElementById('galerieLightboxContent').innerHTML = '';
+            document.body.style.overflow = '';
+
+            const url = new URL(location.href);
+            url.searchParams.delete('galerie');
+            history.replaceState(null, '', url);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeGalerieLightbox();
+        });
+
         // Louvri foto a lè lyen pataje a gen ?galerie=ID oswa #galerie-ID
         function handleSharedGalerieLink() {
             if (handleSharedGalerieLink._done) return;
@@ -1679,8 +1731,7 @@
             item.classList.add('aos-animate');
             setTimeout(() => {
                 item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                item.classList.add('highlight');
-                setTimeout(() => item.classList.remove('highlight'), 3500);
+                openGalerieLightbox(targetId);
             }, 400);
         }
 

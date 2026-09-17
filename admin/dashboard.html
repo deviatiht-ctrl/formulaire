@@ -167,6 +167,17 @@
                 </div>
             </div>
 
+            <!-- Paiements certificats à vérifier -->
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div class="card-header">
+                    <h2>Paiements certificats <span id="certPendingBadge" style="font-size:0.8rem;font-weight:700;color:#92400e;background:#fef3c7;padding:0.25rem 0.75rem;border-radius:20px;margin-left:0.5rem;"></span></h2>
+                    <a href="inscriptions.html" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="card-body" id="certificatPaiements">
+                    <p class="no-data">Chargement...</p>
+                </div>
+            </div>
+
             <!-- Quick Actions -->
             <div class="card">
                 <div class="card-header">
@@ -480,6 +491,47 @@
         .action-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
         .action-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
+        .btn-action {
+            padding: 0.35rem 0.6rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: white;
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .cert-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .cert-table th {
+            padding: 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .cert-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            vertical-align: top;
+        }
+
         .quick-action span {
             font-size: 0.875rem;
             font-weight: 600;
@@ -553,7 +605,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js"></script>
-    
+    <script src="../assets/js/leader-tools.js"></script>
+
     <script>
         // Check admin authentication
         function checkAdminAuth() {
@@ -659,12 +712,107 @@
             }
         }
 
+        // Load certificate payments to verify (events + formations/séminaires)
+        async function loadCertificatPaiements() {
+            const container = document.getElementById('certificatPaiements');
+            try {
+                const [events, cours] = await Promise.all([
+                    LeaderTools.all(() => window.supabaseClient
+                        .from('inscriptions_evenements')
+                        .select('*, events(titre)')
+                        .eq('veut_certificat', true)
+                        .order('created_at', { ascending: false })),
+                    LeaderTools.all(() => window.supabaseClient
+                        .from('inscriptions')
+                        .select('*, etudiants(prenom, nom, email, telephone), formations(titre), seminaires(titre)')
+                        .eq('veut_certificat', true)
+                        .order('date_inscription', { ascending: false }))
+                ]);
+
+                const rows = [
+                    ...events.map(r => ({
+                        ...r, type: 'event',
+                        activity: r.events?.titre || 'Événement supprimé',
+                        date: r.created_at
+                    })),
+                    ...cours.map(r => ({
+                        ...r,
+                        type: r.formation_id ? 'formation' : 'seminaire',
+                        activity: r.formations?.titre || r.seminaires?.titre || '-',
+                        prenom: r.etudiant_prenom || r.etudiants?.prenom,
+                        nom: r.etudiant_nom || r.etudiants?.nom,
+                        email: r.etudiant_email || r.etudiants?.email,
+                        telephone: r.etudiant_telephone || r.etudiants?.telephone,
+                        date: r.date_inscription || r.created_at
+                    }))
+                ];
+
+                const pending = rows.filter(r => r.certificat_statut_paiement === 'en_attente').length;
+                const badge = document.getElementById('certPendingBadge');
+                badge.textContent = pending ? `${pending} en attente` : '';
+                badge.style.display = pending ? '' : 'none';
+
+                rows.sort((a, b) =>
+                    (b.certificat_statut_paiement === 'en_attente') - (a.certificat_statut_paiement === 'en_attente')
+                    || new Date(b.date) - new Date(a.date));
+
+                if (!rows.length) {
+                    container.innerHTML = '<p class="no-data">Aucune demande de certificat</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div style="overflow-x:auto;">
+                    <table class="cert-table">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Activité</th>
+                                <th>Leader / code</th>
+                                <th>Date</th>
+                                <th>Certificat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map(r => `
+                                <tr>
+                                    <td>
+                                        <strong>${LeaderTools.escape(r.prenom)} ${LeaderTools.escape(r.nom)}</strong><br>
+                                        <span style="font-size:0.8rem;color:#64748b;">${LeaderTools.escape(r.email)}</span>
+                                    </td>
+                                    <td>
+                                        ${LeaderTools.escape(r.activity)}<br>
+                                        <span style="font-size:0.75rem;color:#94a3b8;">${r.type === 'event' ? 'Événement' : r.type === 'formation' ? 'Formation' : 'Séminaire'}</span>
+                                    </td>
+                                    <td>${r.code_leader
+                                        ? `${LeaderTools.escape(r.leader_nom || '')}<br><span style="font-size:0.8rem;color:#64748b;">${LeaderTools.escape(r.code_leader)}</span>`
+                                        : '-'}</td>
+                                    <td>${r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '-'}</td>
+                                    <td>${LeaderTools.certificateCell(r, r.type)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Error loading certificate payments:', err);
+                container.innerHTML = '<p class="no-data">Erreur de chargement</p>';
+            }
+        }
+
+        // Rafrechi lis peman sètifika yo apre yon verifyikasyon (LeaderTools.review)
+        function loadInscriptions() {
+            return loadCertificatPaiements();
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             if (checkAdminAuth()) {
                 loadStats();
                 loadRecentFormations();
                 loadRecentInscriptions();
+                loadCertificatPaiements();
             }
         });
 
