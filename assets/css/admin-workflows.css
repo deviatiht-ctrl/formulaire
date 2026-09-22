@@ -1,0 +1,41 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f1f5f9; color: #172337; font: 15px/1.5 Inter, system-ui, sans-serif; }
+.workflow-header { background: #14243d; color: white; padding: 24px max(20px, calc((100% - 1240px) / 2)); }
+.workflow-header h1 { margin: 16px 0 6px; font-size: clamp(24px, 4vw, 34px); }
+.workflow-header p { color: #cbd5e1; margin: 0; }
+.workflow-nav { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.workflow-nav a { color: #cbd5e1; text-decoration: none; padding: 6px 0; }
+.workflow-nav a[aria-current] { color: white; border-bottom: 2px solid #60a5fa; }
+.workflow-main { max-width: 1280px; margin: auto; padding: 24px 20px; }
+.workflow-card { background: white; padding: 24px; margin: 0 0 20px; border-radius: 14px; border: 1px solid #dce3ed; }
+.workflow-card h2 { margin: 0 0 12px; font-size: 21px; }
+.workflow-controls, .workflow-grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+.workflow-grid > label { flex: 1 1 240px; }
+.workflow-grid > div { flex: 1 1 180px; min-width: 0; overflow-wrap: anywhere; }
+.workflow-grid > div > strong { font-size: 1.5rem; }
+label { display: block; font-weight: 600; }
+input, select, button { font: inherit; border: 1px solid #aab8c9; border-radius: 8px; padding: 10px 12px; max-width: 100%; }
+label > input, label > select { display: block; width: 100%; margin-top: 6px; }
+input[type="checkbox"] { width: 18px; height: 18px; }
+button { background: #245bd7; color: white; border-color: #245bd7; cursor: pointer; }
+button.secondary { color: #233a58; background: white; border-color: #aab8c9; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+:focus-visible { outline: 3px solid #e6a817; outline-offset: 3px; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.workflow-message { padding: 14px 18px; border-radius: 10px; background: #e0ecff; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 20px; }
+.workflow-message.error { background: #fee2e2; color: #991b1b; }
+.workflow-summary { background: #f1f5f9; border-radius: 10px; padding: 16px; margin: 16px 0; }
+.workflow-table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; text-align: left; }
+th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+th { background: #edf2f8; font-size: 13px; }
+td { overflow-wrap: anywhere; min-width: 140px; }
+td button { margin: 3px; font-size: 13px; }
+small, .muted { color: #52647a; }
+.workflow-dialog { width: min(900px, 94vw); max-height: 90vh; border: 0; border-radius: 12px; padding: 24px; }
+.workflow-dialog::backdrop { background: #0f172a99; }
+.workflow-dialog pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.preview-wrap { overflow: auto; margin-top: 20px; }
+#certificatePreview { max-width: 100%; height: auto; border: 1px solid #cbd5e1; cursor: crosshair; }
+#previewImage { max-width: 100%; }
+@media (max-width: 600px) { .workflow-main { padding: 16px 10px; } .workflow-card { padding: 16px; } .workflow-controls > * { width: 100%; } }

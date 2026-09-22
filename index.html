@@ -19,8 +19,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="assets/css/landing-2026.css">
+    <link rel="stylesheet" href="style.css?v=20260922">
+    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260922">
     <style>
         /* Events Section Styles */
         .section-events {
@@ -1061,7 +1061,7 @@
                     <!-- Anonyme ou nom -->
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block; font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Type de donateur</label>
-                        <div style="display:flex; gap:1rem;">
+                        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
                             <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
                                 <input type="radio" name="donatorType" value="anonyme" checked onchange="toggleDonatorFields()"> Anonyme
                             </label>
@@ -1239,8 +1239,8 @@
                 <button class="modal-close" onclick="closeAdminLogin()">&times;</button>
             </div>
             <div class="modal-body">
-                <input type="password" id="adminPin" class="form-input" placeholder="Entrez le code PIN admin" />
-                <button onclick="verifyAdminPin()" class="btn-submit" style="margin-top:1rem;">Se connecter</button>
+                <p>Connectez-vous avec l’email et le mot de passe de votre compte administrateur Supabase Auth. Un code PIN seul ne donne pas accès aux opérations sécurisées.</p>
+                <a href="espace-etudiant/login.html" class="btn-submit" style="display:block;margin-top:1rem;text-align:center;">Connexion sécurisée</a>
             </div>
         </div>
     </div>
@@ -1496,10 +1496,10 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=2026.1"></script>
-    <script src="assets/js/certificate-discount.js"></script>
-    <script src="assets/js/mobile-nav.js?v=2026.3"></script>
-    <script src="assets/js/scroll-reveal.js?v=2026.1"></script>
+    <script src="supabase.js?v=20260922"></script>
+    <script src="assets/js/certificate-discount.js?v=20260922"></script>
+    <script src="assets/js/mobile-nav.js?v=20260922"></script>
+    <script src="assets/js/scroll-reveal.js?v=20260922"></script>
     
     <script>
         // Initialize Lucide Icons
@@ -1774,12 +1774,7 @@
         }
 
         async function verifyAdminPin() {
-            const pin = document.getElementById('adminPin').value;
-            if (pin === 'ADMIN2026') {
-                window.location.href = 'admin/dashboard.html';
-            } else {
-                alert('Code incorrect');
-            }
+            window.location.href = 'espace-etudiant/login.html';
         }
 
         // Load events

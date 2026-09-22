@@ -8,7 +8,7 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../style.css?v=20260922">
 </head>
 <body>
     <div class="student-dashboard">
@@ -78,7 +78,9 @@
         .sidebar.active { transform:translateX(0) !important; }
         .cert-item { display:flex; align-items:center; gap:1rem; padding:1.25rem; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:1rem; }
         .cert-icon { width:55px; height:55px; border-radius:12px; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
-        .cert-info { flex:1; }
+        .cert-info { flex:1; min-width:0; overflow-wrap:anywhere; }
+        .cert-item { flex-wrap:wrap; }
+        .cert-item button { white-space:normal; max-width:100%; }
         .cert-info h4 { margin:0 0 0.25rem; color:#0f172a; }
         .cert-info p { margin:0; color:#64748b; font-size:0.85rem; }
         .cert-badge { font-size:0.75rem; padding:4px 10px; border-radius:12px; font-weight:600; white-space:nowrap; }
@@ -95,83 +97,70 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js"></script>
-    <script src="../assets/js/mobile-nav.js"></script>
+    <script src="../supabase.js?v=20260922"></script>
+    <script src="../assets/js/mobile-nav.js?v=20260922"></script>
+    <script src="../assets/js/admin-workflows.js?v=20260922"></script>
 
     <script>
-        let currentEtudiant = null;
-
-        function checkAuth() {
-            const e = sessionStorage.getItem('etudiant');
-            if (!e) { window.location.href = 'login.html'; return false; }
-            currentEtudiant = JSON.parse(e);
-            return true;
+        function toggleStudentSidebar() {
+            const open = document.querySelector('.sidebar').classList.toggle('active');
+            document.getElementById('studentOverlay').classList.toggle('active', open);
+            document.querySelector('.mobile-toggle').setAttribute('aria-expanded', String(open));
         }
-        function logout() { sessionStorage.clear(); window.location.href = 'login.html'; }
 
-        function certBadge(ins) {
-            if (ins.certificat_delivre) return '<span class="cert-badge badge-delivre"><i class="fas fa-award"></i> Délivré</span>';
-            const s = ins.certificat_statut_paiement;
-            if (s === 'verifie') return '<span class="cert-badge badge-verifie">Paiement vérifié</span>';
-            if (s === 'en_attente') return '<span class="cert-badge badge-en_attente">Paiement en attente</span>';
-            if (s === 'refuse') return '<span class="cert-badge badge-refuse">Paiement refusé</span>';
-            return '<span class="cert-badge badge-verifie">Demandé (gratuit)</span>';
+        async function logout() {
+            await window.supabaseClient.auth.signOut();
+            sessionStorage.removeItem('etudiant');
+            window.location.href = 'login.html';
         }
 
         async function loadCertificats() {
             const container = document.getElementById('certificatsList');
+            container.textContent = 'Chargement...';
             try {
-                const [insRes, evtRes] = await Promise.all([
-                    window.supabaseClient.from('inscriptions')
-                        .select('*, formations(titre), seminaires(titre)')
-                        .eq('etudiant_id', currentEtudiant.id)
-                        .eq('veut_certificat', true),
-                    window.supabaseClient.from('inscriptions_evenements')
-                        .select('*, events(titre)')
-                        .eq('etudiant_id', currentEtudiant.id)
-                        .eq('veut_certificat', true)
+                const { data, error } = await window.supabaseClient.auth.getUser();
+                if (error || !data.user) { window.location.href = 'login.html'; return; }
+                const [requests, certificates] = await Promise.all([
+                    AdminWorkflows.all(() => window.supabaseClient.rpc('rasinayiti_my_certificate_requests').order('effective_type').order('canonical_id')),
+                    AdminWorkflows.all(() => window.supabaseClient.rpc('rasinayiti_my_certificates').order('id'))
                 ]);
-
-                const items = [];
-                (insRes.data || []).forEach(i => items.push({
-                    titre: i.formations?.titre || i.seminaires?.titre || '—',
-                    type: i.formation_id ? 'Formation' : 'Séminaire',
-                    date: i.date_inscription,
-                    prix: i.certificat_prix,
-                    badge: certBadge(i)
-                }));
-                (evtRes.data || []).forEach(i => items.push({
-                    titre: i.events?.titre || '—',
-                    type: 'Événement',
-                    date: i.created_at,
-                    prix: i.certificat_prix,
-                    badge: certBadge(i)
-                }));
-
-                if (items.length === 0) {
-                    container.innerHTML = '<p class="no-data">Vous n\'avez demandé aucun certificat pour le moment.</p>';
-                    return;
+                container.replaceChildren();
+                const info = document.createElement('p');
+                info.textContent = 'Les PDF sont disponibles après vérification du paiement et publication par l’administration, une fois l’activité terminée.';
+                container.append(info);
+                if (!requests.length) {
+                    const empty = document.createElement('p'); empty.className = 'no-data'; empty.textContent = 'Vous n’avez demandé aucun certificat pour le moment.'; container.append(empty);
                 }
-
-                container.innerHTML = items.map(c => `
-                    <div class="cert-item">
-                        <div class="cert-icon"><i class="fas fa-certificate"></i></div>
-                        <div class="cert-info">
-                            <h4>${c.titre}</h4>
-                            <p>${c.type} · Inscrit le ${new Date(c.date).toLocaleDateString('fr-FR')}${c.prix > 0 ? ' · ' + c.prix + ' HTG' : ' · Gratuit'}</p>
-                        </div>
-                        ${c.badge}
-                    </div>
-                `).join('');
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = '<p class="no-data">Erreur de chargement</p>';
+                for (const request of requests) {
+                    const certificate = certificates.find(c => c.id === request.certificate_id);
+                    const item = document.createElement('div'); item.className = 'cert-item';
+                    const details = document.createElement('div'); details.className = 'cert-info';
+                    const title = document.createElement('h4'); title.textContent = request.titre;
+                    const status = document.createElement('p');
+                    status.textContent = certificate ? 'Certificat publié — ' + certificate.nom_complet
+                        : request.paiement === 'verifie' ? (request.eligible ? 'Paiement vérifié — PDF en préparation' : 'Paiement vérifié — en attente de la fin de l’activité ou de validation de l’inscription')
+                        : request.paiement === 'refuse' ? 'Paiement refusé — contactez l’administration' : 'Paiement en attente de vérification';
+                    details.append(title, status); item.append(details);
+                    if (certificate) {
+                        const button = document.createElement('button'); button.type = 'button'; button.className = 'btn-primary'; button.textContent = 'Télécharger PDF';
+                        button.onclick = async () => {
+                            button.disabled = true;
+                            try { await AdminWorkflows.download(certificate.storage_path, 'certificat-' + certificate.id + '.pdf'); }
+                            catch (downloadError) { status.textContent = 'Téléchargement impossible : ' + AdminWorkflows.error(downloadError); }
+                            finally { button.disabled = false; }
+                        };
+                        item.append(button);
+                    }
+                    container.append(item);
+                }
+                const refresh = document.createElement('button'); refresh.type = 'button'; refresh.className = 'btn-primary'; refresh.textContent = 'Actualiser'; refresh.onclick = loadCertificats; container.append(refresh);
+            } catch (error) {
+                container.textContent = 'Impossible de charger les certificats : ' + AdminWorkflows.error(error);
+                const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Réessayer'; retry.onclick = loadCertificats; container.append(retry);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkAuth()) loadCertificats();
-        });
+        document.addEventListener('DOMContentLoaded', loadCertificats);
     </script>
 </body>
 </html>

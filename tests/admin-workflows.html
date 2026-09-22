@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Admin workflow tests</title></head><body>
+<pre id="results">RUNNING</pre>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../assets/js/certificate-pdf.js?v=20260922"></script>
+<script type="module">
+const output = document.getElementById('results');
+const logs = [];
+const assert = (ok, label) => { if (!ok) throw new Error(label); logs.push('PASS ' + label); output.textContent = logs.join('\n'); };
+const rejects = async (fn, label) => { let error; try { await fn(); } catch (e) { error = e; } assert(!!error, label); return error; };
+try {
+    const files = ['admin/consolidation.html','admin/certificats.html','admin/formations.html','admin/seminaires.html','admin/events.html','admin/dashboard.html','espace-etudiant/certificats.html','index.html'];
+    for (const file of files) {
+        const source = await (await fetch('../' + file)).text();
+        const doc = new DOMParser().parseFromString(source,'text/html');
+        for (const script of doc.querySelectorAll('script:not([src])')) new Function(script.textContent);
+        assert(true,file + ' inline JavaScript parses');
+    }
+    for (const file of ['admin-workflows','consolidation','admin-certificates','certificate-pdf']) {
+        new Function(await (await fetch('../assets/js/' + file + '.js')).text());
+        assert(true,file + ' JavaScript parses');
+    }
+    const template = document.createElement('canvas'); template.width = 1400; template.height = 1000;
+    const ctx = template.getContext('2d'); ctx.fillStyle = 'white'; ctx.fillRect(0,0,1400,1000);
+    template.close = () => {};
+    CertificatePDF.image = template;
+    const config = { x:50,y:50,size:5,width:80,color:'#172337' };
+    const canvas = document.createElement('canvas');
+    const normal = CertificatePDF.draw(canvas,'Marie Élodie Jean',config);
+    assert(normal.width === 1400 && normal.height === 1000,'template aspect ratio preserved');
+    assert(canvas.getContext('2d').getImageData(300,450,800,100).data.some((value,index) => index % 4 !== 3 && value < 100),'accented name rendered visibly on template');
+    const long = CertificatePDF.draw(canvas,'Élodie Jean '.repeat(25),config);
+    assert(long.fontSize < normal.fontSize,'long participant names fit available width');
+    const pdf = CertificatePDF.generate('Marie Élodie Jean',config);
+    assert(await pdf.slice(0,5).text() === '%PDF-' && pdf.size > 1000,'generator creates actual downloadable PDF');
+    await CertificatePDF.validate(pdf);
+    await rejects(() => CertificatePDF.validate(new Blob(['not a pdf'])),'invalid uploaded PDF rejected');
+    await rejects(() => CertificatePDF.load(new Blob(['<svg/>'],{type:'image/svg+xml'})),'non-raster template rejected');
+    CertificatePDF.image = template;
+    const waitFor = async fn => { for (let i=0;i<100;i++) { if (fn()) return; await new Promise(r=>setTimeout(r,10)); } throw new Error('UI did not settle'); };
+    const mockRow = {source_kind:'inscription',source_id:'s1',activity_type:'formation',activity_id:'f1',titre:'Formation <img src=x>',prenom:'Élodie',nom:'Jean',email:'student@example.test',payload:{veut_certificat:true,certificat_prix:500,certificat_statut_paiement:'verifie'},student:{telephone:'123'},activity:{status:'publie'},effective_type:'formation',effective_id:'f1',effective_title:'Formation',canonical_id:'s1'};
+    for (const name of ['consolidation','certificats']) {
+        const doc = new DOMParser().parseFromString(await (await fetch('../admin/' + name + '.html')).text(),'text/html');
+        doc.querySelectorAll('script,link').forEach(node=>node.remove());
+        const style = doc.createElement('style'); style.textContent = await (await fetch('../assets/css/admin-workflows.css')).text(); doc.head.append(style);
+        const frame = document.createElement('iframe'); frame.style.cssText = 'width:375px;height:800px;'; frame.srcdoc = doc.documentElement.outerHTML;
+        await new Promise(resolve=>{frame.onload=resolve;document.body.append(frame);});
+        const w = frame.contentWindow, d = w.document;
+        const builder = data => ({order(){return this;},select(){return this;},range:async(start,end)=>({data:data.slice(start,end+1)})});
+        const calls=[];
+        w.supabaseClient = {auth:{getUser:async()=>({data:{user:{email:'admin@example.test'}}})},rpc:(method,args)=>{
+            calls.push({method,args});
+            if(method==='rasinayiti_is_admin')return Promise.resolve({data:true});
+            if(method==='rasinayiti_admin_registrations')return builder([mockRow]);
+            if(method==='rasinayiti_admin_certificates')return builder([{...mockRow,nom_complet:'Élodie Jean',paiement:'verifie',eligible:true,certificate_id:null}]);
+            return Promise.resolve({data:{copies:1,doublons_conserves:0}});
+        },from:table=>builder(table==='formations'?[{id:'f1',titre:'Formation <img src=x>',status:'publie'}]:table==='events'?[{id:'e1',titre:'Destination',status:'actif'}]:[])};
+        w.confirm=()=>false;
+        for(const file of ['leader-tools','admin-workflows','certificate-pdf',name==='consolidation'?'consolidation':'admin-certificates']) w.eval(await (await fetch('../assets/js/'+file+'.js')).text());
+        await waitFor(()=>!d.getElementById('workspace').disabled);
+        assert(d.getElementById('rows').children.length===1,name+' loads synthetic rows through paginated RPC');
+        assert(!d.getElementById('rows').querySelector('img'),name+' escapes activity titles');
+        assert(d.documentElement.scrollWidth<=377,name+' fits mobile viewport without horizontal page overflow');
+        if(name==='consolidation') {
+            d.getElementById('source').value='formation:f1';d.getElementById('source').dispatchEvent(new w.Event('change'));
+            d.getElementById('target').value='event:e1';d.getElementById('target').dispatchEvent(new w.Event('change'));
+            assert(!d.getElementById('transfer').disabled && d.getElementById('preview').textContent.includes('1 nouvelle'),'transfer preview displays copy counts before mutation');
+            d.getElementById('transfer').click();
+            assert(!calls.some(c=>c.method==='rasinayiti_consolidate'),'declining confirmation makes no transfer call');
+            w.confirm=()=>true;d.getElementById('transfer').click();
+            await waitFor(()=>d.getElementById('message').textContent.startsWith('Transfert terminé'));
+            assert(calls.filter(c=>c.method==='rasinayiti_consolidate').length===1,'confirmed transfer invokes exactly one transactional RPC');
+        } else {
+            assert(d.getElementById('generateBatch').disabled,'batch disabled without template and selected activity');
+            d.getElementById('activity').value='formation:f1';d.getElementById('activity').dispatchEvent(new w.Event('input'));
+            assert(!d.getElementById('complete').disabled,'selected active formation can be marked complete');
+            d.getElementById('complete').click();
+            assert(!calls.some(c=>c.method==='rasinayiti_complete_activity'),'closing activity requires explicit confirmation');
+        }
+        frame.remove();
+    }
+    {
+        const source = await (await fetch('../espace-etudiant/certificats.html')).text();
+        const doc = new DOMParser().parseFromString(source,'text/html');
+        const scripts = [...doc.querySelectorAll('script:not([src])')].map(s=>s.textContent);
+        doc.querySelectorAll('script,link').forEach(node=>node.remove());
+        const frame=document.createElement('iframe');frame.style.cssText='width:375px;height:800px;';frame.srcdoc=doc.documentElement.outerHTML;
+        await new Promise(resolve=>{frame.onload=resolve;document.body.append(frame);});
+        const w=frame.contentWindow,d=w.document;
+        const builder=data=>({order(){return this;},range:async(start,end)=>({data:data.slice(start,end+1)})});
+        let signed,download;
+        w.supabaseClient={auth:{getUser:async()=>({data:{user:{email:'student@example.test'}}})},rpc:method=>builder(method==='rasinayiti_my_certificates'
+            ?[{id:'cert1',titre:'Titre <img src=x>',nom_complet:'Élodie Jean',storage_path:'issued/test.pdf'}]
+            :[{canonical_id:'one',titre:'Titre <img src=x>',paiement:'verifie',eligible:true,certificate_id:'cert1'},{canonical_id:'two',titre:'Non payé',paiement:'en_attente',eligible:false}]),
+            storage:{from:()=>({createSignedUrl:async(path,ttl)=>{signed={path,ttl};return {data:{signedUrl:'https://example.test/test.pdf'}};}})}};
+        w.fetch=async()=>({ok:true,blob:async()=>pdf});
+        w.eval(await (await fetch('../assets/js/admin-workflows.js')).text());
+        w.AdminWorkflows.save=(blob,name)=>{download={blob,name};};
+        scripts.forEach(script=>w.eval(script));await w.loadCertificats();
+        assert(d.querySelectorAll('.cert-item').length===2 && !d.querySelector('.cert-info img'),'student sees own requested certificates with escaped titles');
+        const buttons=[...d.querySelectorAll('.cert-item button')];
+        assert(buttons.length===1 && buttons[0].textContent==='Télécharger PDF','download only offered for published accessible certificate');
+        buttons[0].click();await waitFor(()=>download);
+        assert(signed.path==='issued/test.pdf' && signed.ttl===60 && download.name==='certificat-cert1.pdf','student download uses short-lived private URL and saves PDF');
+        w.toggleStudentSidebar();assert(d.querySelector('.sidebar').classList.contains('active'),'student certificate mobile sidebar opens');
+        w.toggleStudentSidebar();assert(!d.querySelector('.sidebar').classList.contains('active'),'student certificate mobile sidebar closes');
+        assert(d.documentElement.scrollWidth<=377,'student certificate page fits mobile viewport');frame.remove();
+    }
+    const { PGlite } = await import('https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.3.7/dist/index.js');
+    const db = new PGlite();
+    await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
+        CREATE SCHEMA auth; CREATE SCHEMA storage;
+        CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$ SELECT coalesce(nullif(current_setting('test.jwt',true),''),'{}')::jsonb $$;
+        CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT (auth.jwt()->>'sub')::uuid $$;
+        CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+        CREATE TABLE storage.objects(id uuid DEFAULT gen_random_uuid(),bucket_id text,name text,metadata jsonb);
+        ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;`);
+    const sql = async name => (await fetch('../sql2.0/' + name)).text();
+    for (const file of ['01_tables.sql','02_triggers_indexes.sql','07_fix_missing_columns.sql','08_certificats.sql','03_rls_policies.sql','09_codes_leaders.sql']) await db.exec(await sql(file));
+    const q = (text,args=[]) => db.query(text,args);
+    const scalar = async (text,args=[]) => Object.values((await q(text,args)).rows[0])[0];
+    const event = '10000000-0000-4000-8000-000000000001';
+    const formation = '10000000-0000-4000-8000-000000000002';
+    const seminar = '10000000-0000-4000-8000-000000000003';
+    const sourceEvent = '10000000-0000-4000-8000-000000000004';
+    await db.exec(`INSERT INTO rasinayiti_administrateurs(prenom,nom,email,mot_de_passe_hash) VALUES ('Admin','Test','admin@example.test','fixture');
+        INSERT INTO rasinayiti_events(id,titre,avec_certificat,prix_certificat) VALUES ('${event}','Destination',true,700),('${sourceEvent}','Autre événement',true,500);
+        INSERT INTO rasinayiti_formations(id,titre,status,avec_certificat,prix_certificat) VALUES ('${formation}','Formation','publie',true,500);
+        INSERT INTO rasinayiti_seminaires(id,formation_id,titre,date_seminaire,avec_certificat,prix_certificat) VALUES ('${seminar}','${formation}','Séminaire',current_date,true,500);`);
+    const register = (type,id,email,extra={}) => scalar('SELECT rasinayiti_register($1,$2,$3::jsonb)',[type,id,JSON.stringify({prenom:'Élodie',nom:'Jean',email,telephone:'1234',veut_certificat:true,certificat_mode_paiement:'moncash',certificat_preuve_url:'https://example.test/proof.png',...extra})]);
+    const native = await register('event',event,'duplicate@example.test');
+    const course = await register('formation',formation,'duplicate@example.test');
+    await q("INSERT INTO rasinayiti_leaders_v2(nom,commune,flyer_url,code_reduction) VALUES ('Leader','Test','fixture','FLOW')");
+    const course2 = await register('formation',formation,'only-course@example.test',{code_leader:'FLOW'});
+    const sem = await register('seminaire',seminar,'seminar@example.test');
+    const source = await register('event',sourceEvent,'event@example.test');
+    const deletion = await rejects(() => q('DELETE FROM rasinayiti_formations WHERE id=$1',[formation]),'reproduce direct formation deletion failure with related seminar registration');
+    assert(deletion.message.includes('historique'), 'deletion fails because FK mutation conflicts with immutable registration trigger');
+    assert(Number(await scalar('SELECT count(*) FROM rasinayiti_inscriptions')) === 3,'failed deletion rolled back registrations');
+    for (const file of ['10_consolidation.sql','11_certificats_pdf.sql']) { await db.exec(await sql(file)); await db.exec(await sql(file)); assert(true,file + ' executes and is rerunnable'); }
+    await db.exec(`GRANT USAGE ON SCHEMA public,auth,storage TO anon,authenticated;
+        GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO anon,authenticated;
+        GRANT SELECT,INSERT,UPDATE,DELETE ON rasinayiti_events,rasinayiti_formations,rasinayiti_seminaires,rasinayiti_inscriptions,rasinayiti_inscriptions_evenements,rasinayiti_etudiants TO anon,authenticated;
+        SET ROLE anon;`);
+    await rejects(() => q('SELECT * FROM rasinayiti_admin_registrations()'),'anonymous global listing denied');
+    await rejects(() => q('SELECT rasinayiti_consolidate($1,$2,$3)',['formation',formation,event]),'anonymous transfer denied');
+    const setUser = async email => db.exec(`RESET ROLE; SET test.jwt = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","email":"${email}"}'; SET ROLE authenticated;`);
+    await setUser('student@example.test');
+    await rejects(() => q('SELECT rasinayiti_archive_activity($1,$2)',['formation',formation]),'student cannot archive');
+    await rejects(() => q('SELECT * FROM rasinayiti_admin_certificates()'),'student cannot list other certificates');
+    await setUser('admin@example.test');
+    await q("UPDATE rasinayiti_inscriptions SET certificat_statut_paiement='verifie' WHERE id IN ($1,$2,$3)",[course,course2,sem]);
+    const before = await scalar('SELECT to_jsonb(i) FROM rasinayiti_inscriptions i WHERE id=$1',[course2]);
+    const nativeBefore = await scalar('SELECT to_jsonb(i) FROM rasinayiti_inscriptions_evenements i WHERE id=$1',[native]);
+    const result = await scalar('SELECT rasinayiti_consolidate($1,$2,$3)',['formation',formation,event]);
+    assert(result.copies === 1 && result.doublons_conserves === 1,'transfer copies new participant and links duplicate without overwriting');
+    assert(JSON.stringify(before) === JSON.stringify(await scalar('SELECT to_jsonb(i) FROM rasinayiti_inscriptions i WHERE id=$1',[course2])),'original registration preserved exactly');
+    assert(JSON.stringify(nativeBefore) === JSON.stringify(await scalar('SELECT to_jsonb(i) FROM rasinayiti_inscriptions_evenements i WHERE id=$1',[native])),'existing destination preserved exactly including pending payment');
+    const copied = (await q('SELECT * FROM rasinayiti_inscriptions_evenements WHERE consolidation_source_id=$1',[course2])).rows[0];
+    assert(Number(copied.certificat_prix) === 350 && copied.code_leader === 'FLOW' && Number(copied.certificat_reduction) === 150 && copied.certificat_statut_paiement === 'verifie' && copied.certificat_preuve_url === before.certificat_preuve_url,'copy retains original price, payment verification and proof instead of destination price');
+    await q("UPDATE rasinayiti_inscriptions SET certificat_statut_paiement='en_attente' WHERE id=$1",[course2]);
+    assert(await scalar('SELECT certificat_statut_paiement FROM rasinayiti_inscriptions_evenements WHERE id=$1',[copied.id]) === 'en_attente','payment changes on original synchronize to the event copy');
+    await rejects(() => q("UPDATE rasinayiti_inscriptions_evenements SET certificat_statut_paiement='verifie' WHERE id=$1",[copied.id]),'copied payment cannot diverge from original');
+    await q("UPDATE rasinayiti_inscriptions SET certificat_statut_paiement='verifie' WHERE id=$1",[course2]);
+    const origin = await scalar('SELECT rasinayiti_original_registration($1)',[copied.id]);
+    assert(origin.kind === 'inscription' && origin.id === course2,'admin payment review resolves the original registration');
+    assert(await scalar('SELECT status FROM rasinayiti_formations WHERE id=$1',[formation]) === 'archive','source archived atomically');
+    await rejects(() => register('formation',formation,'late@example.test'),'archived source rejects new registration');
+    const repeat = await scalar('SELECT rasinayiti_consolidate($1,$2,$3)',['formation',formation,event]);
+    assert(repeat.copies === 0 && repeat.doublons_conserves === 0,'retry is idempotent');
+    await rejects(() => q("UPDATE rasinayiti_formations SET status='publie' WHERE id=$1",[formation]),'archived source cannot be reopened accidentally');
+    await rejects(() => q('DELETE FROM rasinayiti_inscriptions WHERE id=$1',[course]),'mapped original cannot be deleted');
+    await rejects(() => q('DELETE FROM rasinayiti_events WHERE id=$1',[event]),'destination cannot be cascade-deleted');
+    await rejects(() => q("INSERT INTO rasinayiti_inscriptions_evenements(event_id,prenom,nom,email,consolidation_source_id) VALUES ($1,'X','Y','forged@example.test',$2)",[event,course]),'forged imported row cannot bypass certificate validation');
+    await scalar('SELECT rasinayiti_consolidate($1,$2,$3)',['seminaire',seminar,event]);
+    await scalar('SELECT rasinayiti_consolidate($1,$2,$3)',['event',sourceEvent,event]);
+    const overview = (await q('SELECT * FROM rasinayiti_admin_registrations()')).rows;
+    assert(overview.length === 5 && overview.filter(r => r.transferred_at).length === 4,'global overview includes each original and transfer history without double counting copies');
+    assert(Number(await scalar('SELECT inscriptions FROM rasinayiti_leader_ranking()')) === 1,'leader ranking does not count original and imported copy twice');
+    assert(JSON.stringify(overview.find(r=>r.source_id===course2).transfer_snapshot.registration) === JSON.stringify(before),'transfer snapshot retains complete original data after later payment changes');
+    let candidates = (await q('SELECT * FROM rasinayiti_admin_certificates()')).rows;
+    assert(candidates.length === 4 && candidates.every(r => !r.eligible),'certificates unavailable before activity ends');
+    assert(candidates.find(r=>r.canonical_id===native).paiement==='verifie','verified source payment is visible even before destination activity ends');
+    const path = 'issued/20000000-0000-4000-8000-000000000001.pdf';
+    await q("INSERT INTO storage.objects(bucket_id,name,metadata) VALUES ('rasinayiti_certificats',$1,'{\"mimetype\":\"application/pdf\"}')",[path]);
+    await rejects(() => q('SELECT rasinayiti_publish_certificate($1,$2,$3)',['inscription',course,path]),'server blocks premature PDF issuance');
+    await q("UPDATE rasinayiti_events SET end_date = now() + interval '1 day' WHERE id=$1",[event]);
+    await rejects(() => q('SELECT rasinayiti_complete_activity($1,$2)',['event',event]),'future activity cannot be closed');
+    await q("UPDATE rasinayiti_events SET end_date = now() - interval '1 day' WHERE id=$1",[event]);
+    await q('SELECT rasinayiti_complete_activity($1,$2)',['event',event]);
+    candidates = (await q('SELECT * FROM rasinayiti_admin_certificates()')).rows;
+    assert(candidates.filter(r => r.eligible).length === 3,'paid source remains eligible after duplicate is linked to pending destination');
+    await rejects(() => q('SELECT rasinayiti_publish_certificate($1,$2,$3)',['event',source,path]),'unverified certificate payment cannot publish');
+    const cert = await scalar('SELECT rasinayiti_publish_certificate($1,$2,$3)',['inscription',course,path]);
+    assert(!!cert,'verified completed registration publishes PDF');
+    await rejects(() => q('SELECT rasinayiti_publish_certificate($1,$2,$3)',['inscription',course,path]),'duplicate publication does not overwrite original PDF');
+    await setUser('duplicate@example.test');
+    const requests = (await q('SELECT * FROM rasinayiti_my_certificate_requests()')).rows;
+    assert(requests.length === 1 && requests[0].certificate_id === cert,'student requests deduplicate the linked registrations');
+    assert((await q('SELECT * FROM rasinayiti_my_certificates()')).rows.length === 1,'recipient sees own issued certificate');
+    assert((await q('SELECT * FROM storage.objects')).rows.length === 1,'recipient can access own private PDF');
+    await rejects(() => q("INSERT INTO storage.objects(bucket_id,name) VALUES ('rasinayiti_certificats','forged.pdf')"),'student cannot upload certificate');
+    assert((await q("UPDATE storage.objects SET name='changed.pdf' RETURNING name")).rows.length === 0,'published PDF cannot be overwritten');
+    await setUser('other@example.test');
+    assert((await q('SELECT * FROM rasinayiti_my_certificates()')).rows.length === 0 && (await q('SELECT * FROM storage.objects')).rows.length === 0,'another account cannot access PDF or certificate metadata');
+    await setUser('admin@example.test');
+    await q("UPDATE rasinayiti_inscriptions SET certificat_statut_paiement='refuse' WHERE id=$1",[course]);
+    await setUser('duplicate@example.test');
+    assert((await q('SELECT * FROM rasinayiti_my_certificates()')).rows.length === 0 && (await q('SELECT * FROM storage.objects')).rows.length === 0,'revoked payment immediately blocks new PDF access');
+    await rejects(() => q('SELECT * FROM rasinayiti_registration_overview'),'private global view inaccessible directly to students');
+    await rejects(() => q('SELECT * FROM rasinayiti_consolidations'),'private transfer snapshots inaccessible to students');
+    await setUser('admin@example.test');
+    await q("UPDATE rasinayiti_inscriptions SET certificat_statut_paiement='verifie' WHERE id=$1",[course]);
+    await q("UPDATE rasinayiti_inscriptions_evenements SET statut='annule' WHERE id=$1",[native]);
+    await setUser('duplicate@example.test');
+    assert((await q('SELECT * FROM rasinayiti_my_certificates()')).rows.length===0,'cancelling destination registration blocks linked certificate');
+    await setUser('admin@example.test');
+    await q("UPDATE rasinayiti_inscriptions_evenements SET statut='confirme' WHERE id=$1",[native]);
+    await rejects(() => q('SELECT rasinayiti_consolidate($1,$2,$3)',['formation',formation,sourceEvent]),'transfer to an archived destination rejected');
+    const noCertEvent = await scalar("INSERT INTO rasinayiti_events(titre,avec_certificat,prix_certificat) VALUES ('Free',true,0) RETURNING id");
+    const free = await register('event',noCertEvent,'free@example.test');
+    await rejects(() => q('SELECT rasinayiti_consolidate($1,$2,$3)',['event',noCertEvent,noCertEvent]),'self-transfer rejected');
+    await rejects(() => q('SELECT rasinayiti_consolidate($1,$2,$3)',['event',event,noCertEvent]),'destination already receiving transfers cannot become a source');
+    await q('SELECT rasinayiti_complete_activity($1,$2)',['event',noCertEvent]);
+    const freeRow=(await q('SELECT * FROM rasinayiti_admin_certificates() WHERE source_id=$1',[free])).rows[0];
+    assert(freeRow.eligible && freeRow.paiement==='verifie','server-validated free certificates eligible after completion');
+    const futureFormation = await scalar("INSERT INTO rasinayiti_formations(titre,status,avec_certificat,prix_certificat,date_fin) VALUES ('Future','publie',true,0,current_date+2) RETURNING id");
+    const futureRegistration=await register('formation',futureFormation,'future@example.test');
+    await q("UPDATE rasinayiti_formations SET status='termine' WHERE id=$1",[futureFormation]);
+    assert(!(await q('SELECT * FROM rasinayiti_admin_certificates() WHERE source_id=$1',[futureRegistration])).rows[0].eligible,'future end date blocks certificates even when status manually changed');
+    await db.exec(`RESET ROLE; CREATE POLICY broad_legacy_storage ON storage.objects FOR ALL TO anon,authenticated USING(true) WITH CHECK(true); SET test.jwt = '{}'; SET ROLE anon;`);
+    assert((await q("SELECT * FROM storage.objects WHERE bucket_id='rasinayiti_certificats'")).rows.length===0,'restrictive policy prevents legacy broad policies exposing PDFs');
+    await rejects(() => q("INSERT INTO storage.objects(bucket_id,name) VALUES ('rasinayiti_certificats','forged.pdf')"),'restrictive policy prevents legacy broad upload grants');
+    await setUser('admin@example.test');
+    await db.exec('RESET ROLE');
+    await db.exec(await sql('10_consolidation.sql'));
+    await db.exec(await sql('11_certificats_pdf.sql'));
+    assert((await q('SELECT * FROM rasinayiti_admin_registrations()')).rows.length===7,'migrations rerun after transfer and publication preserve all registrations');
+    await db.close();
+    output.textContent = 'SUCCESS: ' + logs.length + ' checks\n' + logs.join('\n');
+} catch (error) {
+    output.textContent = 'FAIL: ' + error.message + '\n' + logs.join('\n') + '\n' + JSON.stringify({where:error.where,internalQuery:error.internalQuery}) + '\n' + error.stack;
+}
+</script></body></html>

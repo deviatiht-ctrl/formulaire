@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Certificats PDF | Administration Rasin Ayiti</title>
+    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260922">
+</head>
+<body>
+<header class="workflow-header">
+    <nav class="workflow-nav" aria-label="Administration"><a href="dashboard.html">Dashboard</a><a href="codes-leaders.html">Codes leaders</a><a href="consolidation.html">Consolidation</a><a href="certificats.html" aria-current="page">Certificats PDF</a><a href="events.html">Événements</a><a href="../espace-etudiant/login.html">Connexion sécurisée</a></nav>
+    <h1>Certificats PDF</h1><p>Vérifier les paiements, clôturer l’activité, puis publier les certificats dans l’espace étudiant.</p>
+</header>
+<main class="workflow-main">
+    <div id="message" class="workflow-message" role="status" aria-live="polite">Vérification de la session administrateur...</div>
+    <fieldset id="workspace" disabled>
+        <section class="workflow-card">
+            <h2>1. Activité & participants</h2>
+            <div class="workflow-controls">
+                <label>Activité à certifier<select id="activity"><option value="">Toutes les activités</option></select></label>
+                <button id="complete" type="button" disabled>Marquer l’activité terminée</button>
+                <button id="refresh" type="button" class="secondary">Actualiser</button>
+            </div>
+            <p>Seuls les certificats demandés avec un paiement <strong>vérifié par l’administration</strong> sont publiables, après la fin de l’activité. Les certificats gratuits validés par le serveur sont également acceptés. Un simple dépôt de preuve ne suffit pas.</p>
+            <p id="activityStatus" class="muted"></p>
+        </section>
+        <section class="workflow-card">
+            <h2>2. Modèle sans nom (PNG ou JPEG)</h2>
+            <p>Importez votre exemple de certificat avec la zone du nom vide. Le titre, la date, les signatures et le logo doivent déjà être dans l’image. Cliquez sur l’aperçu pour placer le nom. Le modèle reste local à cet onglet ; les PDF publiés sont conservés sur le serveur.</p>
+            <div class="workflow-grid">
+                <label>Image modèle<input type="file" id="template" accept="image/png,image/jpeg"></label>
+                <label>Nom pour l’aperçu<input id="previewName" value="Marie Élodie Jean" maxlength="220"></label>
+                <label>Centre horizontal (%)<input type="number" id="nameX" min="5" max="95" value="50" step="0.5"></label>
+                <label>Position verticale (%)<input type="number" id="nameY" min="5" max="95" value="52" step="0.5"></label>
+                <label>Taille du nom (% hauteur)<input type="number" id="fontSize" min="1" max="12" value="5" step="0.25"></label>
+                <label>Largeur maximale (% page)<input type="number" id="nameWidth" min="10" max="95" value="80" step="1"></label>
+                <label>Couleur du nom<input type="color" id="nameColor" value="#172337"></label>
+            </div>
+            <div class="preview-wrap"><canvas id="certificatePreview" width="1000" height="700" hidden aria-label="Aperçu du certificat, cliquez pour placer le nom"></canvas></div>
+            <div class="workflow-controls"><button id="previewPdf" type="button" class="secondary" disabled>Télécharger un PDF de test</button><button id="generateBatch" type="button" disabled>Générer et publier les certificats éligibles filtrés</button></div>
+        </section>
+        <section class="workflow-card">
+            <h2>3. Publication & suivi</h2>
+            <div class="workflow-controls">
+                <label>Rechercher<input type="search" id="search" placeholder="Nom ou email..."></label>
+                <label>Afficher<select id="state"><option value="">Tous</option><option value="eligible">Éligibles non publiés</option><option value="issued">Déjà publiés</option><option value="blocked">En attente / bloqués</option></select></label>
+            </div>
+            <p id="summary"></p>
+            <div class="workflow-table"><table><thead><tr><th>Participant / activité</th><th>Paiement / éligibilité</th><th>Certificat</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
+            <div class="workflow-controls"><button id="previous" type="button" class="secondary">Précédent</button><span id="page"></span><button id="next" type="button" class="secondary">Suivant</button></div>
+            <p class="muted">Les doublons transférés sont regroupés. Aucun PDF existant n’est écrasé. Un PDF téléversé manuellement doit déjà porter le bon nom. L’étudiant doit se connecter avec l’email de son inscription pour le télécharger.</p>
+        </section>
+    </fieldset>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase.js?v=20260922"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../assets/js/leader-tools.js?v=20260922"></script><script src="../assets/js/admin-workflows.js?v=20260922"></script>
+<script src="../assets/js/certificate-pdf.js?v=20260922"></script><script src="../assets/js/admin-certificates.js?v=20260922"></script>
+</body></html>

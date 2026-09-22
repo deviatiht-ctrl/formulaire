@@ -1,0 +1,89 @@
+<!doctype html><html><body><pre id="results">RUNNING</pre>
+<script>
+// Mock supabase AVANT chargement de supabase.js (le client se construit avec window.supabase)
+const SETTINGS_ROWS = [
+    { cle: 'whatsapp_group_link', valeur: 'https://chat.whatsapp.com/TEST_GROUP_LINK' },
+    { cle: 'whatsapp_group_name', valeur: 'Groupe Test Officiel' },
+    { cle: 'whatsapp_admin_number', valeur: '+509 11 22 3333' }
+];
+const ZOOM_ROW = { id: 1, link: 'https://zoom.us/j/999888', meeting_id: '999 888', password: 'zepass' };
+const UPSERTS = [];
+function qb(result) {
+    const q = {
+        select() { return q; }, update() { return q; }, insert() { return q; },
+        upsert(row) { UPSERTS.push(row); return q; },
+        in() { return q; }, eq() { return q; }, not() { return q; }, order() { return q; }, range() { return q; },
+        single: async () => ({ data: result.single ?? null, error: null }),
+        maybeSingle: async () => ({ data: result.single ?? null, error: null }),
+        then(res) { return res({ data: result.rows || [], error: null }); }
+    };
+    return q;
+}
+const TABLES = {
+    rasinayiti_parametres: qb({ rows: SETTINGS_ROWS }),
+    rasinayiti_zoom_config: qb({ single: ZOOM_ROW }),
+    rasinayiti_participants: qb({ rows: [{}] })
+};
+window.supabase = {
+    createClient: () => ({
+        from: t => TABLES[t] || qb({ rows: [] }),
+        rpc: async () => ({ data: null, error: null }),
+        auth: { getUser: async () => ({ data: { user: null }, error: null }) },
+        storage: { from: () => ({ upload: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) }
+    })
+};
+</script>
+<script src="../supabase.js"></script>
+<script type="module">
+const output = document.getElementById('results'), logs = [];
+const assert = (v, l) => { if (!v) throw new Error(l); logs.push('PASS ' + l); output.textContent = logs.join('\n'); };
+const rejects = async (fn, l) => { let f = false; try { await fn(); } catch (_) { f = true; } assert(f, l); };
+const realFetch = window.fetch.bind(window);
+const sent = [];
+window.fetch = async (url, opts) => {
+    if (String(url).includes('/api/send-email')) {
+        sent.push(JSON.parse(opts.body));
+        return { ok: true, json: async () => ({ success: true }) };
+    }
+    return realFetch(url, opts);
+};
+try {
+    const settings = await getSiteSettings();
+    assert(settings.waLink === 'https://chat.whatsapp.com/TEST_GROUP_LINK' && settings.waName === 'Groupe Test Officiel', 'site settings read from shared parametres table');
+    assert(settings.zoomLink === 'https://zoom.us/j/999888', 'zoom config read from shared table');
+
+    await sendRegistrationEmail({ prenom: 'Jean', nom: 'Test', email: 'jean@test.ht', whatsapp: '+509 1111' }, 'Formation Leadership');
+    assert(sent.length === 1 && sent[0].to === 'jean@test.ht', 'registration email sent through /api/send-email');
+    assert(sent[0].html.includes('https://chat.whatsapp.com/TEST_GROUP_LINK') && sent[0].html.includes('Groupe Test Officiel'), 'registration email carries configured group link and name');
+    assert(sent[0].html.includes('Formation Leadership') && sent[0].subject.includes('Formation Leadership'), 'registration email carries activity title');
+
+    await sendPaymentConfirmedEmail({ prenom: 'Jean', nom: 'Test', email: 'jean@test.ht' }, 'Séminaire CV');
+    assert(sent[1].html.includes('Paiement confirmé') && sent[1].html.includes('Séminaire CV'), 'payment confirmed email carries activity');
+    assert(sent[1].html.includes('TEST_GROUP_LINK') && sent[1].html.includes('Groupe Test Officiel'), 'payment confirmed email carries group name and link');
+    assert(sent[1].html.includes('https://zoom.us/j/999888') && sent[1].html.includes('999 888'), 'payment confirmed email carries zoom details from DB');
+
+    await sendConfirmationEmail({ prenom: 'Jean', nom: 'Test', email: 'jean@test.ht', access_code: 'RA1234' }, null);
+    assert(sent[2].html.includes('RA1234') && sent[2].html.includes('https://zoom.us/j/999888'), 'confirmation email falls back to shared zoom config');
+    assert(sent[2].html.includes('TEST_GROUP_LINK'), 'confirmation email carries group link');
+
+    await sendWAGroupInviteEmail({ prenom: 'Jean', nom: 'Test', email: 'jean@test.ht', whatsapp: '+509 1111' });
+    assert(sent[3].html.includes('TEST_GROUP_LINK') && sent[3].html.includes('Groupe Test Officiel'), 'WA invite defaults to configured group');
+
+    const before = sent.length;
+    await rejects(() => sendRegistrationEmail({ prenom: 'J', nom: 'T', email: 'pas-un-email' }), 'invalid email rejected');
+    assert(sent.length === before, 'invalid email never reaches Brevo API');
+
+    await setSiteSetting('whatsapp_group_name', 'Nouveau Nom');
+    assert(UPSERTS.some(u => u.cle === 'whatsapp_group_name' && u.valeur === 'Nouveau Nom'), 'admin group name saved to shared parametres table');
+
+    const files = ['../supabase.js', '../assets/js/leader-tools.js', '../assets/js/leader-report.js', '../admin/parametres.html', '../api/send-email.js'];
+    for (const f of files) {
+        const text = await realFetch(f).then(r => r.text());
+        assert(!/xkeysib-/i.test(text), 'no Brevo API key embedded in ' + f);
+    }
+    const api = await realFetch('../api/send-email.js').then(r => r.text());
+    assert(api.includes('process.env.BREVO_API_KEY'), 'Brevo key stays server-side via environment variable');
+
+    output.textContent = 'SUCCESS: ' + logs.length + ' checks\n' + logs.join('\n');
+} catch (error) { output.textContent = 'FAIL: ' + error.message + '\n' + logs.join('\n') + '\n' + error.stack; }
+</script></body></html>

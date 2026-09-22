@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="responsiveadmin.css">
+    <link rel="stylesheet" href="../style.css?v=20260922">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260922">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -759,7 +759,8 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js"></script>
+    <script src="../supabase.js?v=20260922"></script>
+    <script src="../assets/js/admin-workflows.js?v=20260922"></script>
     
     <script>
         let currentAdmin = null;
@@ -786,7 +787,7 @@
 
                 if (error) throw error;
                 
-                allEvents = data || [];
+                allEvents = (data || []).filter(event => event.status !== 'archive');
                 filterAndDisplayEvents();
                 // Load counts after display
                 setTimeout(() => loadRegistrationCounts(allEvents), 300);
@@ -864,8 +865,8 @@
                                 <button class="btn-action btn-edit" onclick="editEvent('${event.id}')">
                                     <i class="fas fa-edit"></i> Modifier
                                 </button>
-                                <button class="btn-action btn-delete" onclick="deleteEvent('${event.id}')">
-                                    <i class="fas fa-trash"></i> Supprimer
+                                <button class="btn-action btn-delete" title="Archiver sans supprimer les inscriptions" aria-label="Archiver l’événement" onclick="deleteEvent('${event.id}')">
+                                    <i class="fas fa-archive"></i> Archiver
                                 </button>
                             </div>
                         </div>
@@ -1187,21 +1188,7 @@
 
         // Delete event
         async function deleteEvent(eventId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return;
-
-            try {
-                const { error } = await window.supabaseClient
-                    .from('events')
-                    .delete()
-                    .eq('id', eventId);
-
-                if (error) throw error;
-                
-                await loadEvents();
-            } catch (err) {
-                console.error('Error deleting event:', err);
-                alert('Erreur lors de la suppression');
-            }
+            await AdminWorkflows.archive('event', eventId, loadEvents);
         }
 
         // Form submit

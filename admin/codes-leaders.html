@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestion des codes leaders | Rasin Ayiti</title>
+    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260922">
+</head>
+<body>
+<header class="workflow-header">
+    <nav class="workflow-nav" aria-label="Administration"><a href="dashboard.html">Dashboard</a><a href="codes-leaders.html" aria-current="page">Codes leaders</a><a href="parametres.html">Paramètres / modifier les leaders</a><a href="consolidation.html">Consolidation</a><a href="certificats.html">Certificats PDF</a><a href="../espace-etudiant/login.html">Connexion sécurisée</a></nav>
+    <h1>Gestion des codes leaders</h1>
+    <p>Chaque utilisation enregistrée compte. Retrouvez vos meilleurs leaders et les participants qu’ils ont apportés.</p>
+</header>
+<main class="workflow-main">
+    <div id="reportMessage" class="workflow-message" role="status" aria-live="polite">Vérification de la session administrateur...</div>
+    <button id="retryReport" type="button" class="secondary" hidden>Réessayer le chargement</button>
+    <fieldset id="workspace" disabled>
+        <section class="workflow-card">
+            <h2>Vue d’ensemble</h2>
+            <div class="workflow-grid">
+                <div><strong id="reportTotal">—</strong><br>Utilisations enregistrées</div>
+                <div><strong id="reportPeople">—</strong><br>Participants distincts (email)</div>
+                <div><strong id="reportLeaders">—</strong><br>Leaders / codes utilisés</div>
+                <div><strong id="reportBest">—</strong><br>En tête du classement global</div>
+            </div>
+            <p>Le classement compte toutes les inscriptions d’origine avec un code : paiement en attente, refusé, gratuit ou vérifié, y compris les inscriptions annulées. Les copies techniques créées lors d’un transfert ne sont pas recomptées. Une personne inscrite à plusieurs activités peut avoir plusieurs utilisations.</p>
+            <p class="muted">Aucun historique n’est effacé. Les leaders désactivés et les anciens codes restent visibles. Le classement public des certificats payés reste distinct de ce rapport administratif.</p>
+            <div class="workflow-controls"><button id="refreshReport" type="button">Actualiser les données</button><span id="reportUpdated"></span></div>
+        </section>
+        <section class="workflow-card">
+            <h2>Filtres d’analyse</h2>
+            <div class="workflow-controls">
+                <label>Rechercher<input id="reportSearch" type="search" placeholder="Nom, email, téléphone, code, activité..."></label>
+                <label>Leader / code<select id="reportLeader"><option value="">Tous les leaders</option></select></label>
+                <label>Type d’activité<select id="reportType"><option value="">Tous</option><option value="event">Événements</option><option value="formation">Formations</option><option value="seminaire">Séminaires</option></select></label>
+                <label>Paiement du certificat<select id="reportPayment"><option value="">Tous</option><option value="en_attente">En attente</option><option value="verifie">Vérifié</option><option value="refuse">Refusé</option><option value="non_requis">Non requis</option><option value="non_renseigne">Non renseigné</option></select></label>
+                <label>Statut d’inscription<select id="reportRegistration"><option value="">Tous</option><option value="en_attente">En attente</option><option value="confirme">Confirmée</option><option value="annule">Annulée</option><option value="termine">Terminée</option><option value="non_renseigne">Non renseigné</option></select></label>
+                <label>Du (date locale)<input id="reportFrom" type="date"></label><label>Au (inclus)<input id="reportTo" type="date"></label>
+                <button id="resetReport" type="button" class="secondary">Réinitialiser les filtres</button>
+            </div>
+            <p id="filterSummary" role="status"></p>
+        </section>
+        <section class="workflow-card">
+            <h2>Classement des utilisations</h2>
+            <p>Classement selon les filtres. Cliquez sur « Voir les participants » pour consulter un leader. Les contacts restent réservés aux administrateurs.</p>
+            <button id="exportRanking" type="button" class="secondary">Exporter le classement CSV</button>
+            <div class="workflow-table"><table><thead><tr><th>Rang</th><th>Leader / code</th><th>Utilisations</th><th>Emails distincts</th><th>Payants vérifiés, non annulés</th><th>En attente / refusés / annulés</th><th>Participants</th></tr></thead><tbody id="rankingRows"></tbody></table></div>
+        </section>
+        <section class="workflow-card" id="participantsSection">
+            <h2>Participants ayant utilisé un code</h2>
+            <button id="exportParticipants" type="button" class="secondary">Exporter les participants filtrés CSV</button>
+            <p id="participantsSummary"></p>
+            <div class="workflow-table"><table><thead><tr><th>Nom / email</th><th>Leader / code utilisé</th><th>Activité d’origine</th><th>Date / inscription</th><th>Certificat / rabais</th><th>Détails</th></tr></thead><tbody id="usageRows"></tbody></table></div>
+            <div class="workflow-controls"><button id="reportPrevious" type="button" class="secondary">Précédent</button><span id="reportPage"></span><button id="reportNext" type="button" class="secondary">Suivant</button></div>
+        </section>
+    </fieldset>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase.js?v=20260922"></script>
+<script src="../assets/js/leader-tools.js?v=20260922"></script><script src="../assets/js/admin-workflows.js?v=20260922"></script><script src="../assets/js/leader-report.js?v=20260922"></script>
+</body></html>

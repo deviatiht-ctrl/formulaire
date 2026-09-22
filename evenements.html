@@ -8,7 +8,7 @@
     <link rel="icon" href="assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260922">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* Navbar Styles */
@@ -1000,9 +1000,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=2026.1"></script>
-    <script src="assets/js/certificate-discount.js"></script>
-    <script src="assets/js/mobile-nav.js?v=2026.3"></script>
+    <script src="supabase.js?v=20260922"></script>
+    <script src="assets/js/certificate-discount.js?v=20260922"></script>
+    <script src="assets/js/mobile-nav.js?v=20260922"></script>
     <script>
         lucide.createIcons();
         let allEventsData = [];
@@ -1410,6 +1410,7 @@
 
         let currentEventQuiz = false;
         let currentEventWALink = '';
+        let currentEventTitle = '';
         let quizQuestionsData = [];
         let currentEventCertificat = { dispo: false, prix: 0 };
         const certificateDiscount = new CertificateDiscount({
@@ -1461,6 +1462,7 @@
             document.getElementById('regEventId').value = id;
             document.getElementById('regModalTitle').textContent = `S'inscrire : ${titre}`;
             currentEventWALink = waLink;
+            currentEventTitle = titre;
             currentEventQuiz = (hasQuiz === 'true' || hasQuiz === true);
 
             // Certificat setup
@@ -1614,6 +1616,17 @@
                 });
 
                 if (error) throw error;
+
+                // Email de bienvenue via Brevo — groupe WhatsApp de l'événement ou paramètres globaux
+                if (typeof sendRegistrationEmail === 'function') {
+                    sendRegistrationEmail({
+                        prenom: payload.prenom,
+                        nom: payload.nom,
+                        email: payload.email,
+                        whatsapp: payload.telephone
+                    }, currentEventTitle, { waLink: currentEventWALink || null })
+                        .catch(e => console.warn('Email inscription:', e.message));
+                }
 
                 closeRegModal();
                 alert('Inscription réussie ! Vous recevrez bientôt un e-mail de confirmation.');

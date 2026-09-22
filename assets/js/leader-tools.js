@@ -43,13 +43,34 @@ window.LeaderTools = {
             <br><button type="button" class="btn-action" onclick="LeaderTools.review('${type}', '${this.escape(row.id)}')">Détails / paiement</button></div>`;
     },
 
+    async registrationDetails(type, id) {
+        const client = window.supabaseClient;
+        const { data: row, error } = await client.from(type === 'event' ? 'inscriptions_evenements' : 'inscriptions').select('*').eq('id', id).single();
+        if (error) throw error;
+        const related = async (table, key, columns) => {
+            if (!key) return null;
+            const { data, error: relationError } = await client.from(table).select(columns).eq('id', key).maybeSingle();
+            if (relationError) throw relationError;
+            return data;
+        };
+        const [events, formations, seminaires, etudiants] = await Promise.all([
+            related('events', row.event_id, 'id,titre'), related('formations', row.formation_id, 'id,titre'),
+            related('seminaires', row.seminaire_id, 'id,titre'), related('etudiants', row.etudiant_id, 'id,prenom,nom,email,telephone')
+        ]);
+        return { ...row, events, formations, seminaires, etudiants };
+    },
+
     async review(type, id) {
         const event = type === 'event';
         const table = event ? 'inscriptions_evenements' : 'inscriptions';
         try {
-            const { data: row, error } = await window.supabaseClient.from(table)
-                .select(event ? '*, events(titre)' : '*, etudiants(prenom,nom,email,telephone), formations(titre), seminaires(titre)').eq('id', id).single();
-            if (error) throw error;
+            const row = await this.registrationDetails(type, id);
+            if (event && row.consolidation_source_id) {
+                const { data: original, error: sourceError } = await window.supabaseClient.rpc('rasinayiti_original_registration', { p_id: id });
+                if (sourceError) throw sourceError;
+                if (!original) throw new Error('Inscription d’origine introuvable. Consultez Consolidation.');
+                return this.review(original.kind === 'event' ? 'event' : 'formation', original.id);
+            }
             const contact = event ? row : {
                 prenom: row.etudiant_prenom || row.etudiants?.prenom, nom: row.etudiant_nom || row.etudiants?.nom,
                 email: row.etudiant_email || row.etudiants?.email, telephone: row.etudiant_telephone || row.etudiants?.telephone
@@ -87,6 +108,18 @@ window.LeaderTools = {
                     try {
                         const { error: updateError } = await window.supabaseClient.from(table).update({ certificat_statut_paiement: status }).eq('id', id).select('id').single();
                         if (updateError) throw updateError;
+                        if (status === 'verifie' && contact.email && typeof window.sendPaymentConfirmedEmail === 'function') {
+                            message.textContent = 'Paiement validé. Envoi de l’email de confirmation...';
+                            try {
+                                await window.sendPaymentConfirmedEmail(
+                                    { prenom: contact.prenom, nom: contact.nom, email: contact.email, whatsapp: contact.telephone, access_code: row.access_code },
+                                    row.events?.titre || row.formations?.titre || row.seminaires?.titre
+                                );
+                            } catch (emailError) {
+                                console.warn('Email confirmation:', emailError.message);
+                                alert('Paiement validé, mais l’email de confirmation n’a pas pu être envoyé : ' + emailError.message);
+                            }
+                        }
                         dialog.close();
                         if (typeof loadInscriptions === 'function') await loadInscriptions();
                         if (document.getElementById('leaderReport')) await this.loadReport();
@@ -131,60 +164,76 @@ window.LeaderTools = {
         } catch (error) { container.textContent = 'Classement indisponible pour le moment. Réessayez plus tard.'; }
     },
 
+    async loadUsage() {
+        const client = window.supabaseClient;
+        const { data: admin, error } = await client.rpc('rasinayiti_is_admin');
+        if (error || !admin) throw new Error('Connectez-vous avec un compte administrateur Supabase Auth autorisé. La migration 09 doit être installée.');
+        const [events, courses, leaders, activities, formations, seminaires] = await Promise.all([
+            this.all(() => client.from('inscriptions_evenements').select('*').not('code_leader', 'is', null).order('id')),
+            this.all(() => client.from('inscriptions').select('*').not('code_leader', 'is', null).order('id')),
+            this.all(() => client.from('leaders_v2').select('id,nom,commune,code_reduction,reduction_pourcentage,est_actif,code_actif').order('id')),
+            this.all(() => client.from('events').select('id,titre').order('id')),
+            this.all(() => client.from('formations').select('id,titre').order('id')),
+            this.all(() => client.from('seminaires').select('id,titre').order('id'))
+        ]);
+        const students = [];
+        const ids = [...new Set(courses.map(r => r.etudiant_id).filter(Boolean))];
+        for (let i = 0; i < ids.length; i += 100) {
+            students.push(...await this.all(() => client.from('etudiants').select('id,prenom,nom,email,telephone').in('id', ids.slice(i, i + 100)).order('id')));
+        }
+        const byId = list => new Map(list.map(r => [r.id, r]));
+        const studentMap = byId(students), eventMap = byId(activities), formationMap = byId(formations), seminarMap = byId(seminaires);
+        const leaderMap = byId(leaders), codeMap = new Map(leaders.filter(l => l.code_reduction).map(l => [l.code_reduction.trim().toUpperCase(), l]));
+        const rows = [...events.filter(r => !r.consolidation_source_id).map(r => ({ ...r, type: 'event', activity_id: r.event_id, activity: eventMap.get(r.event_id)?.titre })),
+            ...courses.map(r => ({ ...r, ...this.contact({ ...r, etudiants: studentMap.get(r.etudiant_id) }),
+                email: r.etudiant_email || r.inscription_email || studentMap.get(r.etudiant_id)?.email || '',
+                type: r.formation_id ? 'formation' : 'seminaire', activity_id: r.formation_id || r.seminaire_id,
+                activity: formationMap.get(r.formation_id)?.titre || seminarMap.get(r.seminaire_id)?.titre
+            }))].filter(r => String(r.code_leader || '').trim()).map(r => {
+                const code = r.code_leader.trim().toUpperCase();
+                const leader = r.leader_id ? leaderMap.get(r.leader_id) : codeMap.get(code);
+                return { ...r, email: r.email || r.inscription_email || '',
+                    activity: r.activity || `Activité non disponible (${r.activity_id || 'non renseignée'})`,
+                    leader_key: r.leader_id || leader?.id ? 'id:' + (r.leader_id || leader.id) : 'code:' + code,
+                    leader_display: leader?.nom || r.leader_nom || leader?.commune || `Code historique ${code}`,
+                    leader_nom: r.leader_nom || leader?.nom || leader?.commune || '',
+                    registration_status: r.statut || r.status_inscription || 'non_renseigne',
+                    registration_date: r.created_at || r.date_inscription || null
+                };
+            });
+        return { rows, leaders };
+    },
+
+    usageRanking(rows, leaders) {
+        const groups = new Map(leaders.map(l => ['id:' + l.id, { key: 'id:' + l.id, id: l.id, name: l.nom || l.commune || l.code_reduction,
+            code: l.code_reduction || '', commune: l.commune || '', active: !!l.est_actif && !!l.code_actif, total: 0, paid: 0, pending: 0, refused: 0, cancelled: 0, emails: new Set() }]));
+        for (const row of rows) {
+            const group = groups.get(row.leader_key) || { key: row.leader_key, id: row.leader_id || null, name: row.leader_display,
+                code: row.code_leader, commune: '', active: false, total: 0, paid: 0, pending: 0, refused: 0, cancelled: 0, emails: new Set() };
+            group.total++;
+            if (row.email?.trim()) group.emails.add(row.email.trim().toLowerCase());
+            if (row.certificat_statut_paiement === 'verifie' && Number(row.certificat_prix) > 0 && row.registration_status !== 'annule') group.paid++;
+            if (row.certificat_statut_paiement === 'en_attente') group.pending++;
+            if (row.certificat_statut_paiement === 'refuse') group.refused++;
+            if (row.registration_status === 'annule') group.cancelled++;
+            groups.set(group.key, group);
+        }
+        const ranking = [...groups.values()].map(({ emails, ...group }) => ({ ...group, people: emails.size }))
+            .sort((a, b) => b.total - a.total || String(a.name).localeCompare(String(b.name)) || a.key.localeCompare(b.key));
+        let rank = 0, previous = null;
+        return ranking.map((group, index) => {
+            if (group.total !== previous) rank = index + 1;
+            previous = group.total;
+            return { ...group, rank };
+        });
+    },
+
     async loadReport() {
         const container = document.getElementById('leaderReport');
         if (!container) return;
-        container.textContent = 'Chargement des utilisations...';
-        try {
-            const { data: admin, error: authError } = await window.supabaseClient.rpc('rasinayiti_is_admin');
-            if (authError || !admin) throw new Error('Connectez-vous avec un compte administrateur autorisé. Vérifiez aussi la migration 09.');
-            const [events, courses] = await Promise.all([
-                this.all(() => window.supabaseClient.from('inscriptions_evenements').select('*, events(titre)').not('code_leader', 'is', null).order('id')),
-                this.all(() => window.supabaseClient.from('inscriptions').select('*, etudiants(prenom,nom,email,telephone), formations(titre), seminaires(titre)').not('code_leader', 'is', null).order('id'))
-            ]);
-            const rows = [...events.map(r => ({ ...r, type: 'event', activity: r.events?.titre })), ...courses.map(r => ({
-                ...r, type: r.formation_id ? 'formation' : 'seminaire', activity: r.formations?.titre || r.seminaires?.titre,
-                prenom: r.etudiant_prenom || r.etudiants?.prenom, nom: r.etudiant_nom || r.etudiants?.nom,
-                email: r.etudiant_email || r.etudiants?.email, telephone: r.etudiant_telephone || r.etudiants?.telephone
-            }))];
-            container.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-                <select id="reportLeader" aria-label="Filtrer par leader"><option value="">Tous les leaders</option></select>
-                <select id="reportStatus" aria-label="Filtrer par paiement"><option value="">Tous les paiements</option><option value="en_attente">En attente</option><option value="verifie">Vérifiés</option><option value="refuse">Refusés</option></select>
-                <input id="reportSearch" type="search" placeholder="Nom, email, code..." aria-label="Rechercher une utilisation">
-                <button type="button" class="btn-secondary" id="exportLeaderReport">Exporter CSV</button>
-                <button type="button" class="btn-secondary" onclick="LeaderTools.loadReport()">Actualiser</button></div>
-                <div id="reportSummary"></div><div style="overflow-x:auto;"><table style="width:100%;text-align:left;"><thead><tr><th>Participant</th><th>Activité</th><th>Leader / code</th><th>Certificat</th></tr></thead><tbody id="reportRows"></tbody></table></div>`;
-            const leaders = new Map(rows.map(r => [r.leader_id, r.leader_nom || r.code_leader]));
-            const select = container.querySelector('#reportLeader');
-            for (const [id, name] of leaders) { const option = document.createElement('option'); option.value = id; option.textContent = name; select.append(option); }
-            const filtered = () => rows.filter(r => (!select.value || r.leader_id === select.value)
-                && (!container.querySelector('#reportStatus').value || r.certificat_statut_paiement === container.querySelector('#reportStatus').value)
-                && `${r.prenom} ${r.nom} ${r.email} ${r.code_leader} ${r.leader_nom}`.toLowerCase().includes(container.querySelector('#reportSearch').value.toLowerCase()));
-            const render = () => {
-                const selected = filtered();
-                const summary = new Map();
-                for (const row of selected) {
-                    const stats = summary.get(row.leader_id) || { name: row.leader_nom, total: 0, paid: 0, pending: 0, refused: 0 };
-                    stats.total++;
-                    if (row.certificat_statut_paiement === 'verifie' && Number(row.certificat_prix) > 0 && (row.statut || row.status_inscription) !== 'annule') stats.paid++;
-                    if (row.certificat_statut_paiement === 'en_attente') stats.pending++;
-                    if (row.certificat_statut_paiement === 'refuse') stats.refused++;
-                    summary.set(row.leader_id, stats);
-                }
-                container.querySelector('#reportSummary').innerHTML = [...summary.values()].sort((a, b) => b.paid - a.paid).map(s => `<p><strong>${this.escape(s.name)}</strong> : ${s.total} utilisation(s), ${s.paid} paiement(s) comptabilisé(s), ${s.pending} en attente, ${s.refused} refusé(s).</p>`).join('');
-                container.querySelector('#reportRows').innerHTML = selected.length ? selected.map(r => `<tr>
-                    <td>${this.escape(r.prenom)} ${this.escape(r.nom)}<br>${this.escape(r.email)}<br>${this.escape(r.telephone)}</td>
-                    <td>${this.escape(r.activity)}<br>${this.escape(r.type)}</td><td>${this.escape(r.leader_nom)}<br>${this.escape(r.code_leader)}</td>
-                    <td>${this.certificateCell(r, r.type)}</td></tr>`).join('') : '<tr><td colspan="4">Aucune utilisation trouvée.</td></tr>';
-            };
-            select.addEventListener('change', render);
-            container.querySelector('#reportStatus').addEventListener('change', render);
-            container.querySelector('#reportSearch').addEventListener('input', render);
-            container.querySelector('#exportLeaderReport').addEventListener('click', () => this.csv(
-                ['Prénom','Nom','Email','Téléphone','Activité','Type','Leader','Code','Prix initial','Rabais %','Réduction','Prix final','Paiement certificat','Statut inscription','Date'],
-                filtered().map(r => [r.prenom,r.nom,r.email,r.telephone,r.activity,r.type,r.leader_nom,r.code_leader,r.certificat_prix_initial,r.reduction_pourcentage,r.certificat_reduction,r.certificat_prix,r.certificat_statut_paiement,r.statut || r.status_inscription,r.created_at || r.date_inscription]), 'utilisations_codes_leaders.csv'));
-            render();
-        } catch (error) { container.textContent = error.message; }
+        container.textContent = 'Le rapport complet compte toutes les utilisations de codes, quel que soit le paiement. ';
+        const link = document.createElement('a'); link.href = 'codes-leaders.html'; link.className = 'btn-primary';
+        link.textContent = 'Ouvrir la gestion des codes leaders'; container.append(link);
     }
 };
 document.addEventListener('DOMContentLoaded', () => {

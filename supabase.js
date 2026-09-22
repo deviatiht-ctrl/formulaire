@@ -346,7 +346,65 @@ async function emailExists(email) {
 // FONCTIONS EMAIL (via /api/send-email — Brevo)
 // ============================================
 
-function _registrationHtml(prenom, nom, email) {
+// Paramètres partagés (table rasinayiti_parametres) — modifiables dans Admin → Paramètres.
+// Ils remplacent les valeurs codées en dur dans les modèles d'emails.
+const DEFAULT_WA_LINK = 'https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t';
+const DEFAULT_WA_NAME = 'Groupe WhatsApp Rasin Ayiti';
+const DEFAULT_WA_NUMBER = '+509 46807922';
+
+const _escHtml = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+async function setSiteSetting(cle, valeur) {
+    if (!supabaseClient) throw new Error('Supabase non connecté');
+    const { error } = await supabaseClient
+        .from('parametres')
+        .upsert({ cle, valeur: valeur ?? '' }, { onConflict: 'cle' });
+    if (error) throw error;
+}
+
+async function getSiteSettings() {
+    const settings = {
+        waLink: DEFAULT_WA_LINK,
+        waName: DEFAULT_WA_NAME,
+        waNumber: DEFAULT_WA_NUMBER,
+        zoomLink: '', zoomId: '', zoomPass: ''
+    };
+    if (!supabaseClient) return settings;
+    try {
+        const { data, error } = await supabaseClient
+            .from('parametres')
+            .select('cle,valeur')
+            .in('cle', ['whatsapp_group_link', 'whatsapp_group_name', 'whatsapp_admin_number']);
+        if (error) throw error;
+        for (const row of data || []) {
+            if (row.cle === 'whatsapp_group_link' && /^https?:\/\//i.test(row.valeur || '')) settings.waLink = row.valeur;
+            if (row.cle === 'whatsapp_group_name' && row.valeur) settings.waName = row.valeur;
+            if (row.cle === 'whatsapp_admin_number' && row.valeur) settings.waNumber = row.valeur;
+        }
+    } catch (e) {
+        console.warn('⚠️ Paramètres WhatsApp indisponibles, valeurs par défaut utilisées:', e.message);
+    }
+    try {
+        const zoom = await getZoomConfigFromDb();
+        if (zoom) { settings.zoomLink = zoom.link || ''; settings.zoomId = zoom.meetingNumber || ''; settings.zoomPass = zoom.password || ''; }
+    } catch (_) { /* zoom optionnel */ }
+    return settings;
+}
+
+// Bloc WhatsApp réutilisable — nom du groupe + lien configurés dans Admin → Paramètres
+function _waGroupBlock(wa) {
+    if (!wa || !wa.link) return '';
+    const name = _escHtml(wa.name || DEFAULT_WA_NAME);
+    const link = /^https?:\/\//i.test(wa.link) ? wa.link : DEFAULT_WA_LINK;
+    return `<div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:12px;padding:18px;margin:16px 0;text-align:center;">
+      <p style="margin:0 0 6px;font-size:0.9rem;font-weight:700;color:#166534;">📱 ${name}</p>
+      <p style="margin:0 0 14px;font-size:0.82rem;color:#15803d;line-height:1.6;">Rejoignez le groupe officiel pour recevoir toutes les informations importantes.<br><span style="color:#dc2626;font-weight:600;">⚠️ Utilisez le numéro WhatsApp enregistré lors de votre inscription.</span></p>
+      <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.88rem;">📱 Rejoindre ${name}</a>
+    </div>`;
+}
+
+function _registrationHtml(prenom, nom, email, activity, wa) {
+    const activityTitle = _escHtml(activity || 'Séminaire sur les Compétences de Vie');
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
   <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
@@ -354,31 +412,29 @@ function _registrationHtml(prenom, nom, email) {
       <span style="color:rgba(255,255,255,0.7);font-size:1.2rem;font-weight:700">×</span>
       <img src="${SITE_URL}/assets/logounitech.PNG" alt="UNITECH" style="height:42px;width:auto;" />
     </div>
-    <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">Séminaire sur les Compétences de Vie</p>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">${activityTitle}</p>
   </div>
   <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
-    <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${prenom} ${nom} 👋</h2>
-    <p style="color:#4b5563;line-height:1.7;font-size:0.92rem;">Nous avons bien reçu votre inscription au <strong>Séminaire sur les Compétences de Vie</strong>.</p>
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:20px 0;">
-      <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;"><strong>📅 Date :</strong> 30 Avril et 1er Mai 2026</p>
-      <p style="margin:0 0 6px;font-size:0.88rem;color:#166534;"><strong>🕘 Heure :</strong> 09:00 AM – 01:00 PM</p>
-      <p style="margin:0;font-size:0.88rem;color:#166534;"><strong>💻 Format :</strong> 100% en ligne sur Zoom</p>
-    </div>
+    <h2 style="color:#1f2937;font-size:1.1rem;margin:0 0 16px;">Bonjour ${_escHtml(prenom)} ${_escHtml(nom)} 👋</h2>
+    <p style="color:#4b5563;line-height:1.7;font-size:0.92rem;">Nous avons bien reçu votre inscription à <strong>${activityTitle}</strong>.</p>
     <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px;margin:16px 0;">
-      <p style="margin:0;font-size:0.88rem;color:#854d0e;">⏳ <strong>Prochaine étape :</strong> Complétez votre paiement (500 Gds) pour confirmer votre place. Vous recevrez votre <strong>code d'accès Zoom</strong> après confirmation.</p>
+      <p style="margin:0;font-size:0.88rem;color:#854d0e;">⏳ <strong>Prochaine étape :</strong> Si un paiement est requis, complétez-le pour confirmer votre place. Vous recevrez un email de confirmation dès qu'il sera validé.</p>
     </div>
-    <div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #22c55e;border-radius:12px;padding:18px;margin:16px 0;text-align:center;">
-      <p style="margin:0 0 6px;font-size:0.9rem;font-weight:700;color:#166534;">📱 Rejoignez notre Groupe WhatsApp !</p>
-      <p style="margin:0 0 14px;font-size:0.82rem;color:#15803d;line-height:1.6;">Utilisez le <strong>numéro WhatsApp enregistré</strong> lors de votre inscription.<br><span style="color:#dc2626;font-weight:600;">⚠️ Sans rejoindre le groupe, vous serez automatiquement exclu(e).</span></p>
-      <a href="https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t" style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:800;font-size:0.88rem;">📱 Rejoindre le Groupe</a>
-    </div>
-    <p style="color:#9ca3af;font-size:0.8rem;margin:0;">Email : ${email}</p>
+    ${_waGroupBlock(wa)}
+    <p style="color:#9ca3af;font-size:0.8rem;margin:0;">Email : ${_escHtml(email)}</p>
   </div>
   <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>
 </div>`;
 }
 
-function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoomPass) {
+function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoomPass, wa) {
+    const zoomBlock = zoomLink ? `
+    <div style="border-top:1px solid #e5e7eb;padding-top:14px;margin-top:14px;">
+      <p style="font-size:0.88rem;font-weight:700;color:#1f2937;margin:0 0 8px;">📹 Rejoindre sur Zoom</p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Lien :</strong> <a href="${zoomLink}" style="color:#4f46e5;">${zoomLink}</a></p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Meeting ID :</strong> ${_escHtml(zoomId)}</p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0;"><strong>Mot de passe :</strong> ${_escHtml(zoomPass)}</p>
+    </div>` : '';
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
   <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
@@ -392,25 +448,20 @@ function _confirmationHtml(prenom, nom, email, accessCode, zoomLink, zoomId, zoo
     <div style="text-align:center;margin-bottom:20px;">
       <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:56px;height:56px;line-height:56px;font-size:1.6rem;">✅</div>
       <h2 style="color:#1f2937;font-size:1.1rem;margin:10px 0 4px;">Paiement confirmé !</h2>
-      <p style="color:#6b7280;font-size:0.88rem;margin:0;">Bienvenue ${prenom} ${nom}</p>
+      <p style="color:#6b7280;font-size:0.88rem;margin:0;">Bienvenue ${_escHtml(prenom)} ${_escHtml(nom)}</p>
     </div>
-    <div style="background:#f0f7ff;border:2px solid #4f46e5;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
+    ${accessCode ? `<div style="background:#f0f7ff;border:2px solid #4f46e5;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
       <p style="font-size:0.75rem;color:#4f46e5;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">Votre Code d'Accès</p>
-      <div style="font-size:2rem;font-weight:900;color:#4f46e5;letter-spacing:0.2em;font-family:monospace;">${accessCode}</div>
+      <div style="font-size:2rem;font-weight:900;color:#4f46e5;letter-spacing:0.2em;font-family:monospace;">${_escHtml(accessCode)}</div>
       <p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">Entrez ce code sur la page d'accès participant</p>
     </div>
     <div style="text-align:center;margin:16px 0;">
-      <a href="https://formulaire-rho-rouge.vercel.app/access.html" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.92rem;">Accéder à ma formation →</a>
-    </div>
-    <div style="border-top:1px solid #e5e7eb;padding-top:14px;margin-top:14px;">
-      <p style="font-size:0.88rem;font-weight:700;color:#1f2937;margin:0 0 8px;">📹 Rejoindre sur Zoom</p>
-      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Lien :</strong> <a href="${zoomLink}" style="color:#4f46e5;">${zoomLink}</a></p>
-      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Meeting ID :</strong> ${zoomId}</p>
-      <p style="font-size:0.88rem;color:#4b5563;margin:0;"><strong>Mot de passe :</strong> ${zoomPass}</p>
-    </div>
+      <a href="${SITE_URL}/access.html" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:0.92rem;">Accéder à ma formation →</a>
+    </div>` : ''}
+    ${_waGroupBlock(wa)}
+    ${zoomBlock}
     <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-top:14px;font-size:0.82rem;color:#6b7280;">
-      <p style="margin:0 0 3px;"><strong>📅</strong> 30 Avril et 1er Mai 2026 — 09:00 AM – 01:00 PM</p>
-      <p style="margin:0;"><strong>📧</strong> ${email}</p>
+      <p style="margin:0;"><strong>�</strong> ${_escHtml(email)}</p>
     </div>
   </div>
   <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>
@@ -449,7 +500,8 @@ function _reminderHtml(prenom, nom, email) {
 </div>`;
 }
 
-function _waGroupInviteHtml(prenom, nom, email, waLink, waNumero) {
+function _waGroupInviteHtml(prenom, nom, email, waLink, waNumero, waName) {
+    const groupName = _escHtml(waName || 'Groupe WhatsApp officiel');
     return `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#f0f4ff;padding:32px 16px;">
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#4f46e5 0%,#16a34a 100%);border-radius:20px;padding:28px 32px;text-align:center;margin-bottom:24px;">
@@ -467,13 +519,13 @@ function _waGroupInviteHtml(prenom, nom, email, waLink, waNumero) {
     <p style="color:#4b5563;line-height:1.8;font-size:0.93rem;margin-bottom:20px;">
       Nous sommes ravis de vous compter parmi les participants au <strong>Séminaire sur les Compétences de Vie</strong>. 
       Pour faciliter la communication et vous tenir informé(e) de tous les détails importants, 
-      nous vous invitons à rejoindre notre <strong>groupe WhatsApp officiel</strong>.
+      nous vous invitons à rejoindre <strong>${groupName}</strong>.
     </p>
 
     <!-- WhatsApp CTA -->
     <div style="text-align:center;margin:28px 0;">
       <a href="${waLink}" style="display:inline-block;background:linear-gradient(135deg,#25D366,#128C7E);color:#ffffff;padding:16px 36px;border-radius:50px;text-decoration:none;font-weight:800;font-size:1rem;letter-spacing:0.02em;box-shadow:0 4px 20px rgba(37,211,102,0.4);">
-        <span style="margin-right:8px;">📱</span> Rejoindre le Groupe WhatsApp
+        <span style="margin-right:8px;">📱</span> Rejoindre ${groupName}
       </a>
     </div>
 
@@ -511,11 +563,58 @@ function _waGroupInviteHtml(prenom, nom, email, waLink, waNumero) {
 </div>`;
 }
 
-async function sendWAGroupInviteEmail(participant, waLink) {
-    const subject = '📱 Rejoignez le Groupe WhatsApp — Séminaire Rasin Ayiti';
+function _paymentConfirmedHtml(prenom, nom, email, activity, wa, zoom, accessCode) {
+    const activityTitle = _escHtml(activity || 'votre activité');
+    const zoomBlock = zoom && zoom.link ? `
+    <div style="border-top:1px solid #e5e7eb;padding-top:14px;margin-top:14px;">
+      <p style="font-size:0.88rem;font-weight:700;color:#1f2937;margin:0 0 8px;">📹 Rejoindre sur Zoom</p>
+      <p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Lien :</strong> <a href="${zoom.link}" style="color:#4f46e5;">${zoom.link}</a></p>
+      ${zoom.id ? `<p style="font-size:0.88rem;color:#4b5563;margin:0 0 5px;"><strong>Meeting ID :</strong> ${_escHtml(zoom.id)}</p>` : ''}
+      ${zoom.pass ? `<p style="font-size:0.88rem;color:#4b5563;margin:0;"><strong>Mot de passe :</strong> ${_escHtml(zoom.pass)}</p>` : ''}
+    </div>` : '';
+    const codeBlock = accessCode ? `
+    <div style="background:#f0f7ff;border:2px solid #4f46e5;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
+      <p style="font-size:0.75rem;color:#4f46e5;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">Votre Code d'Accès</p>
+      <div style="font-size:2rem;font-weight:900;color:#4f46e5;letter-spacing:0.2em;font-family:monospace;">${_escHtml(accessCode)}</div>
+      <p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">Entrez ce code sur la page d'accès participant</p>
+    </div>` : '';
+    return `<div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#f8fafc;padding:32px 16px;">
+  <div style="background:linear-gradient(135deg,#4f46e5,#16a34a);border-radius:16px;padding:24px 32px;text-align:center;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
+      <img src="${SITE_URL}/assets/logorasin.PNG" alt="Rasin Ayiti" style="height:42px;width:auto;" />
+      <span style="color:rgba(255,255,255,0.7);font-size:1.2rem;font-weight:700">×</span>
+      <img src="${SITE_URL}/assets/logounitech.PNG" alt="UNITECH" style="height:42px;width:auto;" />
+    </div>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.88rem;margin:0;">Confirmation de paiement</p>
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;border:1px solid #e5e7eb;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="display:inline-block;background:#dcfce7;border-radius:50%;width:56px;height:56px;line-height:56px;font-size:1.6rem;">✅</div>
+      <h2 style="color:#1f2937;font-size:1.1rem;margin:10px 0 4px;">Paiement confirmé !</h2>
+      <p style="color:#6b7280;font-size:0.88rem;margin:0;">Félicitations ${_escHtml(prenom)} ${_escHtml(nom)}</p>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:16px 0;">
+      <p style="margin:0;font-size:0.9rem;color:#166534;line-height:1.6;">Votre paiement pour <strong>${activityTitle}</strong> a été vérifié et confirmé. Votre place est réservée.</p>
+    </div>
+    ${codeBlock}
+    ${_waGroupBlock(wa)}
+    ${zoomBlock}
+    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-top:14px;font-size:0.82rem;color:#6b7280;">
+      <p style="margin:0;"><strong>📧</strong> ${_escHtml(email)}</p>
+    </div>
+  </div>
+  <p style="text-align:center;color:#9ca3af;font-size:0.75rem;margin-top:16px;">© 2026 Rasin Ayiti × UNITECH — +509 46807922</p>
+</div>`;
+}
+
+async function sendWAGroupInviteEmail(participant, waLink, waName) {
+    const settings = await getSiteSettings();
+    const link = waLink || settings.waLink;
+    const name = waName || settings.waName;
+    const subject = '📱 ' + name + ' — Rasin Ayiti';
     const html = _waGroupInviteHtml(
         participant.prenom, participant.nom, participant.email,
-        waLink, participant.whatsapp || participant.telephone
+        link, participant.whatsapp || participant.telephone, name
     );
     const cleanEmail = participant.email.trim().replace(/\.$/, '').replace(/\s/g, '');
     if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) throw new Error('Email invalide: ' + participant.email);
@@ -552,13 +651,18 @@ async function sendEmail(payload) {
     let subject, html;
 
     if (payload.type === 'registration') {
-        subject = '📋 Inscription reçue — Séminaire Compétences de Vie | Rasin Ayiti';
-        html = _registrationHtml(payload.prenom, payload.nom, payload.to);
+        const regActivity = payload.activity || 'Séminaire sur les Compétences de Vie';
+        subject = '📋 Inscription reçue — ' + regActivity + ' | Rasin Ayiti';
+        html = _registrationHtml(payload.prenom, payload.nom, payload.to, regActivity, payload.wa);
     } else if (payload.type === 'confirmation') {
-        subject = "✅ Paiement confirmé + Code d'accès Zoom — Séminaire Rasin Ayiti";
+        subject = '✅ Paiement confirmé — ' + (payload.activity || 'Rasin Ayiti');
         html = _confirmationHtml(payload.prenom, payload.nom, payload.to,
                                   payload.access_code, payload.zoom_link,
-                                  payload.zoom_id, payload.zoom_pass);
+                                  payload.zoom_id, payload.zoom_pass, payload.wa);
+    } else if (payload.type === 'payment_confirmed') {
+        const payActivity = payload.activity || 'votre activité';
+        subject = '✅ Paiement confirmé — ' + payActivity + ' | Rasin Ayiti';
+        html = _paymentConfirmedHtml(payload.prenom, payload.nom, payload.to, payActivity, payload.wa, payload.zoom, payload.access_code);
     } else {
         throw new Error('Type email inconnu: ' + payload.type);
     }
@@ -616,13 +720,22 @@ async function markEmailSent(participantId) {
     }
 }
 
-async function sendRegistrationEmail(participant) {
-    console.log('📧 sendRegistrationEmail pour:', participant.email, 'ID:', participant.id);
+async function sendRegistrationEmail(participant, activityTitle, overrides = {}) {
+    const settings = await getSiteSettings();
+    const wa = {
+        link: overrides.waLink || settings.waLink,
+        name: overrides.waName || settings.waName,
+        number: settings.waNumber
+    };
+    const activity = activityTitle || overrides.activity || 'Séminaire sur les Compétences de Vie';
+    console.log('📧 sendRegistrationEmail pour:', participant.email, '—', activity);
     const result = await sendEmail({
         type: 'registration',
         to: participant.email,
         prenom: participant.prenom,
         nom: participant.nom,
+        activity,
+        wa
     });
     // Marquer comme envoyé après succès
     console.log('✉️ Email envoyé, marquage pour ID:', participant.id);
@@ -631,6 +744,12 @@ async function sendRegistrationEmail(participant) {
 }
 
 async function sendConfirmationEmail(participant, zoomConfig) {
+    const settings = await getSiteSettings();
+    const zoom = (zoomConfig && zoomConfig.link && !/VOTRE|configurer/i.test(zoomConfig.link))
+        ? { link: zoomConfig.link, meetingId: zoomConfig.meetingId || '', password: zoomConfig.password || '' }
+        : { link: settings.zoomLink, meetingId: settings.zoomId, password: settings.zoomPass };
+    const wa = { link: settings.waLink, name: settings.waName, number: settings.waNumber };
+    const activity = participant.activity || 'Séminaire sur les Compétences de Vie';
     console.log('📧 sendConfirmationEmail pour:', participant.email, 'ID:', participant.id);
     const result = await sendEmail({
         type: 'confirmation',
@@ -638,14 +757,35 @@ async function sendConfirmationEmail(participant, zoomConfig) {
         prenom: participant.prenom,
         nom: participant.nom,
         access_code: participant.access_code,
-        zoom_link:   zoomConfig.link,
-        zoom_id:     zoomConfig.meetingId,
-        zoom_pass:   zoomConfig.password,
+        zoom_link:   zoom.link,
+        zoom_id:     zoom.meetingId,
+        zoom_pass:   zoom.password,
+        activity,
+        wa
     });
     // Marquer comme envoyé après succès
     console.log('✉️ Email confirmé envoyé, marquage pour ID:', participant.id);
     if (participant.id) await markEmailSent(participant.id);
     return result;
+}
+
+// Envoyé automatiquement quand un admin valide un paiement (certificat / activité)
+async function sendPaymentConfirmedEmail(participant, activityTitle) {
+    const settings = await getSiteSettings();
+    const wa = { link: settings.waLink, name: settings.waName, number: settings.waNumber };
+    const zoom = { link: settings.zoomLink, id: settings.zoomId, pass: settings.zoomPass };
+    const activity = activityTitle || 'votre activité';
+    console.log('📧 sendPaymentConfirmedEmail pour:', participant.email, '—', activity);
+    return sendEmail({
+        type: 'payment_confirmed',
+        to: participant.email,
+        prenom: participant.prenom,
+        nom: participant.nom,
+        activity,
+        wa,
+        zoom,
+        access_code: participant.access_code
+    });
 }
 
 // ============================================
@@ -963,6 +1103,13 @@ async function sendDonationReceiptEmail(donation) {
 
 // Expose globally
 window.sendDonationReceiptEmail = sendDonationReceiptEmail;
+window.sendRegistrationEmail = sendRegistrationEmail;
+window.sendConfirmationEmail = sendConfirmationEmail;
+window.sendPaymentConfirmedEmail = sendPaymentConfirmedEmail;
+window.sendWAGroupInviteEmail = sendWAGroupInviteEmail;
+window.sendReminderEmail = sendReminderEmail;
+window.getSiteSettings = getSiteSettings;
+window.setSiteSetting = setSiteSetting;
 
 // Expose globally for seminar pages
 window.validateAccessCode = validateAccessCode;

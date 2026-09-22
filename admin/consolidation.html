@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Consolidation des inscriptions | Rasin Ayiti</title>
+    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260922">
+</head>
+<body>
+<header class="workflow-header">
+    <nav class="workflow-nav" aria-label="Administration"><a href="dashboard.html">Dashboard</a><a href="codes-leaders.html">Codes leaders</a><a href="consolidation.html" aria-current="page">Consolidation</a><a href="certificats.html">Certificats PDF</a><a href="events.html">Événements</a><a href="../espace-etudiant/login.html">Connexion sécurisée</a></nav>
+    <h1>Inscriptions globales & consolidation</h1>
+    <p>Réunissez les inscriptions d’une même activité dans un seul événement, sans effacer les originaux.</p>
+</header>
+<main class="workflow-main">
+    <div id="message" class="workflow-message" role="status" aria-live="polite">Vérification de la session administrateur...</div>
+    <fieldset id="workspace" disabled>
+        <section class="workflow-card">
+            <h2>1. Vérifier la source et la destination</h2>
+            <p>Une activité à la fois. Les mêmes emails sont liés, jamais écrasés. Les montants, codes leaders, preuves de paiement et coordonnées d’origine restent conservés. La source sera archivée et ses inscriptions fermées.</p>
+            <div class="workflow-grid">
+                <label>Activité source<select id="source"><option value="">Choisir...</option></select></label>
+                <label>Événement à conserver<select id="target"><option value="">Choisir...</option></select></label>
+            </div>
+            <div id="preview" class="workflow-summary">Choisissez deux activités pour analyser les inscriptions avant de confirmer.</div>
+            <button id="transfer" type="button" disabled>Confirmer le transfert et archiver la source</button>
+        </section>
+        <section class="workflow-card">
+            <h2>2. Toutes les inscriptions</h2>
+            <div class="workflow-controls">
+                <label>Rechercher<input type="search" id="search" placeholder="Nom, email, téléphone, activité..."></label>
+                <label>Activité d’origine<select id="activityFilter"><option value="">Toutes</option></select></label>
+                <label>Paiement certificat<select id="paymentFilter"><option value="">Tous</option><option value="verifie">Vérifié</option><option value="en_attente">En attente</option><option value="refuse">Refusé</option><option value="non_requis">Non requis</option></select></label>
+                <label><input type="checkbox" id="duplicatesOnly"> Emails sur plusieurs inscriptions</label>
+                <button type="button" class="secondary" id="refresh">Actualiser</button>
+                <button type="button" class="secondary" id="export">Exporter les données filtrées (JSON)</button>
+            </div>
+            <p id="summary"></p>
+            <div class="workflow-table"><table><thead><tr><th>Participant</th><th>Origine → destination</th><th>Paiement certificat</th><th>Historique / actions</th></tr></thead><tbody id="rows"></tbody></table></div>
+            <div class="workflow-controls"><button type="button" class="secondary" id="previous">Précédent</button><span id="page"></span><button type="button" class="secondary" id="next">Suivant</button></div>
+        </section>
+    </fieldset>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js?v=20260922"></script><script src="../assets/js/leader-tools.js?v=20260922"></script><script src="../assets/js/admin-workflows.js?v=20260922"></script>
+<script src="../assets/js/consolidation.js?v=20260922"></script>
+</body></html>

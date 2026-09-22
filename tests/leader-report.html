@@ -1,0 +1,96 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Leader report tests</title></head><body>
+<pre id="results">RUNNING</pre>
+<script src="../assets/js/leader-tools.js?v=20260922"></script>
+<script type="module">
+const output = document.getElementById('results'), logs = [];
+const assert = (value,label) => { if (!value) throw new Error(label); logs.push('PASS '+label); output.textContent = logs.join('\n'); };
+const rejects = async (fn,label) => { let failed=false; try { await fn(); } catch (_) { failed=true; } assert(failed,label); };
+try {
+    const records = {
+        inscriptions_evenements: [
+            {id:'e1',event_id:'activity1',prenom:'Élodie',nom:'Jean',email:'same@example.test',code_leader:'ALPHA',leader_id:'a',leader_nom:'Ancien nom Alpha',certificat_prix:350,certificat_statut_paiement:'verifie',statut:'confirme',created_at:'2026-09-01T12:00:00Z'},
+            {id:'e2',event_id:'activity1',prenom:'En attente',nom:'Test',email:'pending@example.test',code_leader:'ALPHA',leader_id:'a',certificat_statut_paiement:'en_attente',created_at:'2026-09-02T12:00:00Z'},
+            {id:'e3',event_id:'activity1',prenom:'Annulé',nom:'Test',email:'cancelled@example.test',code_leader:'BETA',leader_id:'b',certificat_statut_paiement:'verifie',statut:'annule'},
+            {id:'e4',event_id:'missing',prenom:'Historique',nom:'Test',email:'history@example.test',code_leader:'OLD',leader_nom:'Leader historique'},
+            {id:'copy',event_id:'target',consolidation_source_id:'e1',email:'same@example.test',code_leader:'ALPHA',leader_id:'a'},
+            {id:'no-code',event_id:'activity1',email:'none@example.test',code_leader:null}
+        ],
+        inscriptions: [
+            {id:'f1',formation_id:'formation1',etudiant_id:'student1',etudiant_prenom:'Nom original',etudiant_nom:'Jean',etudiant_email:'same@example.test',code_leader:'ALPHA',leader_id:'a',certificat_statut_paiement:'refuse',date_inscription:'2026-09-03T12:00:00Z'},
+            {id:'s1',seminaire_id:'seminar1',etudiant_id:'student2',code_leader:'BETA',certificat_statut_paiement:'verifie',certificat_prix:0,date_inscription:'2026-09-04T12:00:00Z'}
+        ],
+        leaders_v2: [{id:'a',nom:'Alpha',commune:'Commune A',code_reduction:'ALPHA',est_actif:true,code_actif:true}, {id:'b',nom:'Beta',commune:'Commune B',code_reduction:'BETA',est_actif:true,code_actif:true}, {id:'inactive',nom:'Archivé',code_reduction:'ARCH',est_actif:false,code_actif:false}],
+        events: [{id:'activity1',titre:'Activité <img src=x onerror=alert(1)>'}],
+        formations: [{id:'formation1',titre:'Formation'}], seminaires: [{id:'seminar1',titre:'Séminaire'}],
+        etudiants: [{id:'student1',prenom:'Profil changé',nom:'Jean',email:'profile@example.test'}, {id:'student2',prenom:'Ancien',nom:'Étudiant',email:'legacy@example.test'}]
+    };
+    records.inscriptions_evenements.push(...Array.from({length:1001},(_,i)=>({id:'extra'+String(i).padStart(4,'0'),event_id:'activity1',prenom:'Participant',nom:String(i),email:`extra${i}@example.test`,code_leader:'BETA',leader_id:'b',certificat_statut_paiement:'en_attente',created_at:'2026-09-05T12:00:00Z'})));
+    const original = JSON.stringify(records), selects=[], calls=[];
+    let admin=true, brokenTable=null;
+    const client = {
+        auth:{getUser:async()=>({data:{user:{email:'admin@example.test'}}})},
+        rpc:async(name)=>({data:name==='rasinayiti_is_admin' && admin}),
+        from(table) {
+            let data=[...(records[table]||[])], error=null;
+            const query={
+                select(columns) { selects.push(columns); if(columns.includes('('))error={code:'PGRST200',message:"Could not find a relationship between 'rasinayiti_inscriptions_evenements' and 'events' in the schema cache"}; return this; },
+                not(key,op,value) { data=data.filter(row=>row[key]!==null && row[key]!==undefined);return this; },
+                in(key,values) { data=data.filter(row=>values.includes(row[key]));return this; },
+                eq(key,value) { data=data.filter(row=>row[key]===value);return this; },
+                order(key) {data.sort((a,b)=>String(a[key]).localeCompare(String(b[key])));return this;},
+                async range(start,end) {calls.push({table,start});return {data:error || brokenTable===table?null:data.slice(start,end+1),error:error || (brokenTable===table?{message:'Database unavailable'}:null)};},
+                async single(){return {data:data[0],error};}, async maybeSingle(){return {data:data[0]||null,error};}
+            };
+            return query;
+        }
+    };
+    const oldRequest=await client.from('inscriptions_evenements').select('*, events(titre)').range(0,499);
+    assert(oldRequest.error?.code==='PGRST200','reproduce schema relationship error on embedded events query');
+    selects.length=0;window.supabaseClient=client;
+    const data=await LeaderTools.loadUsage();
+    assert(selects.every(s=>!s.includes('(')),'report uses no embedded PostgREST relationships');
+    assert(data.rows.length===1007,'all code uses loaded beyond 1000 rows, excluding technical copies and absent codes');
+    assert(calls.some(c=>c.table==='inscriptions_evenements' && c.start===1000),'registration loading is paginated');
+    assert(JSON.stringify(records)===original,'loading preserves every original registration and leader record');
+    assert(data.rows.find(r=>r.id==='f1').prenom==='Nom original' && data.rows.find(r=>r.id==='f1').email==='same@example.test','registration snapshots take precedence over changed student profile');
+    assert(data.rows.find(r=>r.id==='s1').email==='legacy@example.test','legacy registrations use student profile when snapshots missing');
+    assert(data.rows.find(r=>r.id==='e4').code_leader==='OLD','unknown historic leader and missing activity do not discard registration');
+    const ranking=LeaderTools.usageRanking(data.rows,data.leaders);
+    assert(ranking[0].id==='b' && ranking[0].total===1003,'ranking sorted by all code uses, not paid certificates');
+    assert(ranking.find(r=>r.id==='a').total===3 && ranking.find(r=>r.id==='a').people===2,'inscription count distinguished from unique participant emails');
+    assert(ranking.find(r=>r.id==='inactive').total===0,'archived leaders remain visible even with zero uses');
+    assert(ranking.some(r=>r.code==='OLD' && r.total===1),'historical code without leader ID retains its own group');
+    assert(ranking.find(r=>r.id==='b').cancelled===1 && ranking.find(r=>r.id==='b').paid===0,'cancelled and free registrations counted as uses, but not paid non-cancelled certificates');
+    admin=false;calls.length=0;
+    await rejects(()=>LeaderTools.loadUsage(),'non-admin cannot load report');
+    assert(calls.length===0,'authorization checked before querying participant details');admin=true;
+    brokenTable='inscriptions';await rejects(()=>LeaderTools.loadUsage(),'partial database failure never presents incomplete counts as success');brokenTable=null;
+    const details=await LeaderTools.registrationDetails('formation','f1');
+    assert(details.formations.titre==='Formation' && details.etudiants.prenom==='Profil changé','payment details resolve related records without relationship cache');
+    const config=await (await fetch('../supabase.js')).text();
+    const rewrite=new Function(config.slice(config.indexOf('const RASINAYITI_PREFIX'),config.indexOf('try {'))+'; return rewriteRasinAyitiSelect;')();
+    assert(rewrite('*, events(titre)')==='*, events:rasinayiti_events(titre)','current shared wrapper rewrites event alias correctly');
+    const source=await (await fetch('../admin/codes-leaders.html')).text();
+    const doc=new DOMParser().parseFromString(source,'text/html');doc.querySelectorAll('script,link').forEach(n=>n.remove());
+    const style=doc.createElement('style');style.textContent=await (await fetch('../assets/css/admin-workflows.css')).text();doc.head.append(style);
+    const frame=document.createElement('iframe');frame.style.cssText='width:375px;height:800px;';frame.srcdoc=doc.documentElement.outerHTML;
+    await new Promise(resolve=>{frame.onload=resolve;document.body.append(frame);});
+    const w=frame.contentWindow,d=w.document;w.supabaseClient=client;
+    for(const file of ['leader-tools','admin-workflows','leader-report'])w.eval(await (await fetch('../assets/js/'+file+'.js')).text());
+    const waitFor=async fn=>{for(let i=0;i<100;i++){if(fn())return;await new Promise(r=>setTimeout(r,10));}throw new Error('UI did not settle');};
+    await waitFor(()=>!d.getElementById('workspace').disabled);
+    assert(d.getElementById('reportTotal').textContent==='1007','page displays total uses including pending and refused payments');
+    assert(d.getElementById('rankingRows').children[0].textContent.includes('Beta'),'top leader appears first');
+    assert(d.getElementById('usageRows').children.length===50,'participant table paginated at 50 rows');
+    d.getElementById('reportLeader').value='id:a';d.getElementById('reportLeader').dispatchEvent(new w.Event('change'));
+    assert(d.getElementById('usageRows').children.length===3,'selecting leader shows their exact participant list');
+    assert(!d.getElementById('usageRows').querySelector('img'),'activity titles and user text escaped');
+    d.getElementById('reportPayment').value='en_attente';d.getElementById('reportPayment').dispatchEvent(new w.Event('change'));
+    assert(d.getElementById('usageRows').children.length===1 && d.getElementById('usageRows').textContent.includes('pending@example.test'),'payment filter preserves pending registrations');
+    let exported;w.LeaderTools.csv=(headers,rows,filename)=>{exported={headers,rows,filename};};d.getElementById('exportParticipants').click();
+    assert(exported.rows.length===1 && exported.rows[0].includes('pending@example.test'),'CSV export contains exact filtered contacts');
+    assert(d.documentElement.scrollWidth<=377,'report remains inside mobile viewport');
+    frame.remove();
+    output.textContent='SUCCESS: '+logs.length+' checks\n'+logs.join('\n');
+} catch(error) {output.textContent='FAIL: '+error.message+'\n'+logs.join('\n')+'\n'+error.stack;}
+</script></body></html>

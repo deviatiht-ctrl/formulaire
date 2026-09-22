@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="responsiveadmin.css">
+    <link rel="stylesheet" href="../style.css?v=20260922">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260922">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -122,6 +122,10 @@
                 </div>
                 <div class="card-body">
                     <div class="form-group">
+                        <label><i class="fas fa-users"></i> Nom du groupe (affiché dans les emails)</label>
+                        <input type="text" id="waGroupName" placeholder="Groupe WhatsApp Rasin Ayiti">
+                    </div>
+                    <div class="form-group">
                         <label><i class="fas fa-link"></i> Lien d'invitation</label>
                         <input type="url" id="waLink" placeholder="https://chat.whatsapp.com/...">
                     </div>
@@ -129,6 +133,7 @@
                         <label><i class="fas fa-phone"></i> Numéro WhatsApp admin</label>
                         <input type="text" id="waNumber" placeholder="+509 46807922">
                     </div>
+                    <p style="font-size:0.82rem;color:#64748b;margin:0 0 10px;">Ces informations sont partagées avec tout le site : les emails d'inscription et de confirmation affichent ce nom et ce lien.</p>
                     <button class="btn-save" onclick="saveWhatsApp()">
                         <i class="fas fa-save"></i> Sauvegarder WhatsApp
                     </button>
@@ -199,8 +204,8 @@
             <div class="card">
                 <div class="card-header"><h2>Utilisation des codes leaders</h2></div>
                 <div class="card-body">
-                    <p>Classement : certificats payants avec paiement vérifié, hors inscriptions annulées.</p>
-                    <div id="leaderReport" style="margin-top:16px;">Chargement...</div>
+                    <p>Consultez le classement de toutes les utilisations, les quantités par leader et les noms / emails des participants, même si le paiement est en attente. Les anciens codes et inscriptions restent conservés.</p>
+                    <a href="codes-leaders.html" class="btn-primary" style="display:inline-flex;margin-top:16px;">Ouvrir la gestion des codes leaders</a>
                 </div>
             </div>
 
@@ -622,8 +627,9 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js"></script>
-    <script src="../assets/js/leader-tools.js"></script>
+    <script src="../supabase.js?v=20260922"></script>
+    <script src="../assets/js/leader-tools.js?v=20260922"></script>
+    <script src="../assets/js/admin-workflows.js?v=20260922"></script>
 
     <script>
         // ===== AUTH CHECK =====
@@ -646,17 +652,30 @@
         }
 
         // ===== LOAD SAVED CONFIG =====
-        function loadConfig() {
+        async function loadConfig() {
             // Zoom
             const zoom = JSON.parse(localStorage.getItem('rasin_zoom_config') || '{}');
             if (zoom.link) document.getElementById('zoomLink').value = zoom.link;
             if (zoom.meetingId) document.getElementById('zoomMeetingId').value = zoom.meetingId;
             if (zoom.password) document.getElementById('zoomPassword').value = zoom.password;
 
-            // WhatsApp
+            // WhatsApp — localStorage puis base de données (partagé avec les emails)
             const wa = JSON.parse(localStorage.getItem('rasin_wa_config') || '{}');
             if (wa.link) document.getElementById('waLink').value = wa.link;
             if (wa.number) document.getElementById('waNumber').value = wa.number;
+            if (wa.name) document.getElementById('waGroupName').value = wa.name;
+
+            try {
+                if (typeof getSiteSettings === 'function') {
+                    const settings = await getSiteSettings();
+                    if (settings.waLink) document.getElementById('waLink').value = settings.waLink;
+                    if (settings.waName) document.getElementById('waGroupName').value = settings.waName;
+                    if (settings.waNumber) document.getElementById('waNumber').value = settings.waNumber;
+                    if (settings.zoomLink) document.getElementById('zoomLink').value = settings.zoomLink;
+                    if (settings.zoomId) document.getElementById('zoomMeetingId').value = settings.zoomId;
+                    if (settings.zoomPass) document.getElementById('zoomPassword').value = settings.zoomPass;
+                }
+            } catch (e) { console.warn('Paramètres DB indisponibles:', e.message); }
         }
 
         // ===== SAVE ZOOM =====
@@ -688,8 +707,9 @@
         }
 
         // ===== SAVE WHATSAPP =====
-        function saveWhatsApp() {
+        async function saveWhatsApp() {
             const config = {
+                name: document.getElementById('waGroupName').value.trim(),
                 link: document.getElementById('waLink').value.trim(),
                 number: document.getElementById('waNumber').value.trim(),
             };
@@ -698,9 +718,23 @@
                 showToast('Le lien WhatsApp est requis', 'error');
                 return;
             }
+            if (!/^https?:\/\//i.test(config.link)) {
+                showToast('Le lien doit commencer par http:// ou https://', 'error');
+                return;
+            }
 
             localStorage.setItem('rasin_wa_config', JSON.stringify(config));
-            showToast('Configuration WhatsApp sauvegardée !');
+
+            try {
+                if (typeof setSiteSetting !== 'function') throw new Error('setSiteSetting indisponible');
+                await setSiteSetting('whatsapp_group_link', config.link);
+                await setSiteSetting('whatsapp_group_name', config.name || 'Groupe WhatsApp Rasin Ayiti');
+                await setSiteSetting('whatsapp_admin_number', config.number || '+509 46807922');
+                showToast('Groupe WhatsApp sauvegardé et partagé avec tous les emails !');
+            } catch (err) {
+                console.warn('DB save failed:', err);
+                showToast('Sauvegardé localement seulement — reconnectez-vous en admin pour partager : ' + (err.message || ''), 'error');
+            }
         }
 
         // ===== CHANGE PASSWORD =====

@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="responsiveadmin.css">
+    <link rel="stylesheet" href="../style.css?v=20260922">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260922">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -592,7 +592,8 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js"></script>
+    <script src="../supabase.js?v=20260922"></script>
+    <script src="../assets/js/admin-workflows.js?v=20260922"></script>
     
     <script>
         // Load formations
@@ -619,6 +620,7 @@
                 const { data, error } = await window.supabaseClient
                     .from('seminaires')
                     .select('*, formations(titre)')
+                    .neq('status', 'archive')
                     .order('date_seminaire', { ascending: false });
 
                 if (error) throw error;
@@ -641,7 +643,7 @@
                             <td><span class="status-badge ${s.status}">${s.status || 'planifie'}</span></td>
                             <td>
                                 <button class="action-btn edit" onclick="editSeminaire('${s.id}')"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn delete" onclick="deleteSeminaire('${s.id}')"><i class="fas fa-trash"></i></button>
+                                <button class="action-btn delete" title="Archiver sans supprimer les inscriptions" aria-label="Archiver le séminaire" onclick="deleteSeminaire('${s.id}')"><i class="fas fa-archive"></i></button>
                             </td>
                         </tr>
                     `).join('');
@@ -725,17 +727,7 @@
         }
 
         async function deleteSeminaire(id) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce séminaire ?')) return;
-            
-            try {
-                const { error } = await window.supabaseClient.from('seminaires').delete().eq('id', id);
-                if (error) throw error;
-                
-                loadSeminaires();
-            } catch (err) {
-                console.error('Error deleting seminaire:', err);
-                alert('Erreur lors de la suppression');
-            }
+            await AdminWorkflows.archive('seminaire', id, loadSeminaires);
         }
 
         // Handle Multiple Images Preview

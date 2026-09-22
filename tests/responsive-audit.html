@@ -1,0 +1,36 @@
+<!doctype html><html><body><pre id="results">RUNNING</pre><script type="module">
+const output = document.getElementById('results'), logs = [];
+const pages = [
+    '../admin.html', '../admin/dashboard.html', '../admin/formations.html', '../admin/seminaires.html',
+    '../admin/events.html', '../admin/inscriptions.html', '../admin/inscriptions-evenements.html',
+    '../admin/etudiants.html', '../admin/parametres.html', '../admin/donations.html', '../admin/emails.html',
+    '../admin/galerie.html', '../admin/maillots.html', '../admin/commandes-maillots.html', '../admin/quiz-manager.html',
+    '../admin/consolidation.html', '../admin/certificats.html', '../admin/codes-leaders.html',
+    '../espace-etudiant/dashboard.html', '../espace-etudiant/login.html', '../espace-etudiant/profil.html',
+    '../espace-etudiant/mes-formations.html', '../espace-etudiant/mes-seminaires.html',
+    '../espace-etudiant/mes-evenements.html', '../espace-etudiant/certificats.html',
+    '../index.html', '../evenements.html', '../leaders.html', '../pages/formations.html',
+    '../pages/seminaires.html', '../pages/inscription.html', '../payment.html', '../donation.html', '../access.html'
+];
+for (const page of pages) {
+    try {
+        const source = await (await fetch(page)).text();
+        const doc = new DOMParser().parseFromString(source, 'text/html');
+        doc.querySelectorAll('script').forEach(n => n.remove());
+        const base = doc.createElement('base'); base.href = new URL(page, location.href).href; doc.head.prepend(base);
+        const frame = document.createElement('iframe');
+        frame.style.cssText = 'width:375px;height:700px;';
+        frame.srcdoc = doc.documentElement.outerHTML;
+        await new Promise(r => { frame.onload = r; document.body.append(frame); });
+        await new Promise(r => setTimeout(r, 60));
+        const d = frame.contentDocument;
+        const overflow = d.documentElement.scrollWidth;
+        const viewport = d.documentElement.clientWidth;
+        const hasViewport = !!d.querySelector('meta[name="viewport"]');
+        const status = overflow <= viewport + 2 && hasViewport ? 'PASS' : 'FAIL';
+        logs.push(`${status} ${page} scrollWidth=${overflow} clientWidth=${viewport} viewportMeta=${hasViewport}`);
+        frame.remove();
+    } catch (e) { logs.push('FAIL ' + page + ' -> ' + e.message); }
+}
+output.textContent = (logs.some(l => l.startsWith('FAIL')) ? 'FAIL' : 'SUCCESS') + ':\n' + logs.join('\n');
+</script></body></html>
