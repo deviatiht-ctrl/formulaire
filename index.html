@@ -2312,8 +2312,10 @@
                 
                 document.getElementById('eventRegForm').reset();
             } catch (err) {
-                console.error(err);
-                alert('Erreur lors de l\'inscription. Veuillez réessayer.');
+                console.error('Erreur inscription événement:', err);
+                console.error('Message erreur:', err.message);
+                console.error('Détails erreur:', err);
+                alert('Erreur lors de l\'inscription: ' + (err.message || 'Veuillez réessayer.'));
             } finally {
                 unlockForm();
                 btn.disabled = false;

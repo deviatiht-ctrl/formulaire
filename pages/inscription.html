@@ -837,8 +837,10 @@
                     `Votre inscription a été enregistrée. Un email de confirmation sera envoyé à ${formData.email}.`;
 
             } catch (error) {
-                console.error('Error submitting form:', error);
-                alert(error.message || 'Une erreur est survenue. Veuillez réessayer.');
+                console.error('Erreur inscription formation/séminaire:', error);
+                console.error('Message erreur:', error.message);
+                console.error('Détails erreur:', error);
+                alert('Erreur lors de l\'inscription: ' + (error.message || 'Une erreur est survenue. Veuillez réessayer.'));
             } finally {
                 unlockForm();
                 btn.classList.remove('loading');

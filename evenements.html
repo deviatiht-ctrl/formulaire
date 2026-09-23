@@ -1633,8 +1633,10 @@
                 alert('Inscription réussie ! Vous recevrez bientôt un e-mail de confirmation.');
                 document.getElementById('eventRegForm').reset();
             } catch (err) {
-                console.error('Registration error:', err);
-                alert('Erreur lors de l\'inscription: ' + err.message);
+                console.error('Erreur inscription événement:', err);
+                console.error('Message erreur:', err.message);
+                console.error('Détails erreur:', err);
+                alert('Erreur lors de l\'inscription: ' + (err.message || 'Veuillez réessayer.'));
             } finally {
                 unlockForm();
                 btn.disabled = false;

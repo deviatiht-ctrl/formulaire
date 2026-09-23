@@ -728,19 +728,26 @@ async function sendRegistrationEmail(participant, activityTitle, overrides = {})
         number: settings.waNumber
     };
     const activity = activityTitle || overrides.activity || 'Séminaire sur les Compétences de Vie';
-    console.log('📧 sendRegistrationEmail pour:', participant.email, '—', activity);
-    const result = await sendEmail({
-        type: 'registration',
-        to: participant.email,
-        prenom: participant.prenom,
-        nom: participant.nom,
-        activity,
-        wa
-    });
-    // Marquer comme envoyé après succès
-    console.log('✉️ Email envoyé, marquage pour ID:', participant.id);
-    if (participant.id) await markEmailSent(participant.id);
-    return result;
+    console.log('📧 sendRegistrationEmail pour:', participant.email, '—', activity, 'ID:', participant.id);
+    try {
+        const result = await sendEmail({
+            type: 'registration',
+            to: participant.email,
+            prenom: participant.prenom,
+            nom: participant.nom,
+            activity,
+            wa
+        });
+        // Marquer comme envoyé après succès
+        console.log('✉️ Email envoyé, marquage pour ID:', participant.id);
+        if (participant.id) await markEmailSent(participant.id);
+        return result;
+    } catch (emailError) {
+        console.error('❌ Erreur envoi email:', emailError);
+        console.error('❌ Détails email error:', emailError.message);
+        // Ne pas bloquer l'inscription si l'email échoue
+        return { success: false, error: emailError.message };
+    }
 }
 
 async function sendConfirmationEmail(participant, zoomConfig) {
