@@ -1909,6 +1909,7 @@
         }
 
         // Registration Modal Logic
+        let currentEventTitle = "";
         let currentEventWALink = "";
         let currentEventQuiz = false;
         let quizQuestionsData = [];
@@ -1961,6 +1962,7 @@
             if (document.getElementById('eventRegForm').dataset.submitting) return;
             document.getElementById('regEventId').value = id;
             document.getElementById('regModalTitle').textContent = `S'inscrire : ${titre}`;
+            currentEventTitle = titre;
             currentEventWALink = waLink;
             currentEventQuiz = (hasQuiz === 'true' || hasQuiz === true);
 
