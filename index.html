@@ -2276,11 +2276,23 @@
                 const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
                 if (signUpError && !/already|registered|existe/i.test(signUpError.message)) throw signUpError;
 
-                const { error } = await window.supabaseClient.rpc('rasinayiti_register', {
+                const { data: registrationId, error } = await window.supabaseClient.rpc('rasinayiti_register', {
                     p_type: 'event', p_id: payload.event_id, p_data: payload
                 });
 
                 if (error) throw error;
+
+                // Email de bienvenue via Brevo — groupe WhatsApp de l'événement ou paramètres globaux
+                if (typeof sendRegistrationEmail === 'function') {
+                    sendRegistrationEmail({
+                        id: registrationId,
+                        prenom: payload.prenom,
+                        nom: payload.nom,
+                        email: payload.email,
+                        whatsapp: payload.telephone
+                    }, currentEventTitle, { waLink: currentEventWALink || null })
+                        .catch(e => console.warn('Email inscription:', e.message));
+                }
 
                 // Close registration modal
                 closeRegModal();

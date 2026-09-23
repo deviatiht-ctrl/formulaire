@@ -10,6 +10,7 @@ function brevoRequest(body) {
         if (!BREVO_KEY) return reject(new Error('BREVO_API_KEY manquant'));
 
         const data = JSON.stringify(body);
+        console.log('📤 Envoi email vers Brevo API:', body.to[0].email, '—', body.subject);
         const options = {
             hostname: 'api.brevo.com',
             path: '/v3/smtp/email',
@@ -25,15 +26,21 @@ function brevoRequest(body) {
             let responseData = '';
             res.on('data', chunk => responseData += chunk);
             res.on('end', () => {
+                console.log('📨 Brevo response status:', res.statusCode);
                 if (res.statusCode >= 200 && res.statusCode < 300) {
+                    console.log('✅ Email envoyé avec succès');
                     resolve({ success: true, status: res.statusCode });
                 } else {
+                    console.error('❌ Brevo error:', res.statusCode, responseData);
                     reject(new Error('Brevo error ' + res.statusCode + ': ' + responseData));
                 }
             });
         });
 
-        req.on('error', (e) => reject(new Error('Request error: ' + e.message)));
+        req.on('error', (e) => {
+            console.error('❌ Request error:', e.message);
+            reject(new Error('Request error: ' + e.message));
+        });
         req.write(data);
         req.end();
     });

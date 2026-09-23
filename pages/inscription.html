@@ -815,7 +815,7 @@
                 } else if (itemType === 'seminaire') {
                     inscriptionData.seminaire_id = itemId;
                 }
-                const { error: registrationError } = await window.supabaseClient.rpc('rasinayiti_register', {
+                const { data: registrationId, error: registrationError } = await window.supabaseClient.rpc('rasinayiti_register', {
                     p_type: itemType, p_id: itemId, p_data: inscriptionData
                 });
                 if (registrationError) throw registrationError;
@@ -823,6 +823,7 @@
                 // Email de bienvenue via Brevo (lien + nom du groupe configurés dans Admin → Paramètres)
                 if (typeof sendRegistrationEmail === 'function') {
                     sendRegistrationEmail({
+                        id: registrationId,
                         prenom: formData.prenom,
                         nom: formData.nom,
                         email: formData.email,
