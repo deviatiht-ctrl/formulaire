@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260922">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260922">
+    <link rel="stylesheet" href="../style.css?v=20260924">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260924">
     <style>
         /* Modern Admin Styles */
         :root {
@@ -293,9 +293,14 @@
                     <p>Gérez les participants et confirmez leurs présences</p>
                 </div>
             </div>
-            <button onclick="exportToExcel()" class="nav-item active" style="border:none; cursor:pointer;">
-                <i class="fas fa-file-export"></i> Exporter
-            </button>
+            <div style="display:flex;gap:0.5rem;">
+                <button id="bulkEmailBtn" onclick="sendRegEmailsBulk()" class="nav-item active" style="border:none; cursor:pointer;" title="Renvoyer l'email d'inscription à tous les inscrits affichés (filtres appliqués)">
+                    <i class="fas fa-paper-plane"></i> Emails à tous
+                </button>
+                <button onclick="exportToExcel()" class="nav-item active" style="border:none; cursor:pointer;">
+                    <i class="fas fa-file-export"></i> Exporter
+                </button>
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -372,8 +377,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260922"></script>
-    <script src="../assets/js/leader-tools.js?v=20260922"></script>
+    <script src="../supabase.js?v=20260924"></script>
+    <script src="../assets/js/leader-tools.js?v=20260924"></script>
     <script>
         let allInscriptions = [];
         let allEvents = [];
@@ -409,7 +414,7 @@
             let data;
             try {
                 data = await LeaderTools.all(() => window.supabaseClient
-                    .from('inscriptions_evenements').select('*, events(titre)')
+                    .from('inscriptions_evenements').select('*, events(titre, whatsapp_link)')
                     .order('created_at', { ascending: false }).order('id'));
             } catch (error) {
                 document.getElementById('inscriptionsBody').innerHTML = '<tr><td colspan="7">Impossible de charger les inscriptions. Reconnectez-vous et réessayez.</td></tr>';
@@ -461,19 +466,57 @@
             `).join('');
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('inscriptionsBody');
+        function getFilteredInscriptions() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const eventId = document.getElementById('eventFilter').value;
             const status = document.getElementById('statusFilter').value;
-
-            const filtered = allInscriptions.filter(ins => {
+            return allInscriptions.filter(ins => {
                 if (!LeaderTools.matches(ins)) return false;
                 const matchesSearch = `${ins.nom} ${ins.prenom} ${ins.email} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase().includes(search);
                 const matchesEvent = !eventId || ins.event_id === eventId;
                 const matchesStatus = !status || ins.statut === status;
                 return matchesSearch && matchesEvent && matchesStatus;
             });
+        }
+
+        // Renvoi manuel de l'email d'inscription (même email que l'envoi automatique)
+        function _regEmailArgs(ins) {
+            return [
+                { prenom: ins.prenom, nom: ins.nom, email: ins.email, whatsapp: ins.telephone },
+                ins.events?.titre,
+                { waLink: ins.events?.whatsapp_link || null }
+            ];
+        }
+
+        async function resendRegEmail(id) {
+            const ins = allInscriptions.find(i => String(i.id) === String(id));
+            if (!ins || !ins.email) { alert('Email introuvable pour cet inscrit'); return; }
+            const res = await sendRegistrationEmail(..._regEmailArgs(ins));
+            alert(res && res.success === false ? '❌ Échec : ' + res.error : '✅ Email envoyé à ' + ins.email);
+        }
+
+        async function sendRegEmailsBulk() {
+            const targets = getFilteredInscriptions().filter(i => i.email);
+            if (!targets.length) { alert('Aucun inscrit avec email dans la sélection'); return; }
+            if (!confirm(`Envoyer l'email d'inscription à ${targets.length} personne(s) ?\n(les filtres actifs sont appliqués)`)) return;
+            const btn = document.getElementById('bulkEmailBtn');
+            btn.disabled = true;
+            let sent = 0, failed = 0;
+            for (let i = 0; i < targets.length; i++) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i + 1}/${targets.length}`;
+                try {
+                    const res = await sendRegistrationEmail(..._regEmailArgs(targets[i]));
+                    (res && res.success === false) ? failed++ : sent++;
+                } catch (e) { failed++; console.warn('Email erreur:', targets[i].email, e.message); }
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Emails à tous';
+            alert(`Terminé ! ✅ ${sent} envoyé(s)${failed ? ` · ❌ ${failed} échoué(s)` : ''}`);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('inscriptionsBody');
+            const filtered = getFilteredInscriptions();
 
             if (filtered.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" class="loading-state">Aucun inscrit trouvé</td></tr>';
@@ -508,6 +551,9 @@
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
+                            <button class="btn-action" style="background:#2563eb" title="Renvoyer l'email d'inscription" onclick="resendRegEmail('${ins.id}')">
+                                <i class="fas fa-envelope"></i>
+                            </button>
                             <button class="btn-action btn-delete" title="Supprimer" onclick="deleteInscription('${ins.id}')">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -545,11 +591,7 @@
         function exportToExcel() {
             // Simple CSV export
             const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Ville', 'Événement', 'Statut', 'Date', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat'];
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const eventId = document.getElementById('eventFilter').value;
-            const status = document.getElementById('statusFilter').value;
-            const rows = allInscriptions.filter(i => LeaderTools.matches(i) && (!eventId || i.event_id === eventId) && (!status || i.statut === status)
-                && `${i.nom} ${i.prenom} ${i.email} ${i.leader_nom || ''} ${i.code_leader || ''}`.toLowerCase().includes(search)).map(i => [
+            const rows = getFilteredInscriptions().map(i => [
                 i.nom, i.prenom, i.email, i.telephone, i.ville, i.events?.titre, i.statut, i.created_at,
                 i.leader_nom, i.code_leader, i.certificat_prix_initial, i.reduction_pourcentage, i.certificat_reduction, i.certificat_prix, i.certificat_statut_paiement
             ]);

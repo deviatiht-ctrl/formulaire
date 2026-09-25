@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260922">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260922">
+    <link rel="stylesheet" href="../style.css?v=20260924">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260924">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -80,7 +80,11 @@
                         <p>Gérer les inscriptions aux formations et séminaires</p>
                     </div>
                 </div>
-                <div class="header-right">
+                <div class="header-right" style="display:flex;gap:0.75rem;">
+                    <button id="bulkEmailBtn" class="btn-primary" onclick="sendRegEmailsBulk()" title="Renvoyer l'email d'inscription à tous les inscrits affichés (filtres appliqués)">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Emails à tous</span>
+                    </button>
                     <button id="exportBtn" class="btn-primary">
                         <i class="fas fa-file-excel"></i>
                         <span>Exporter Excel</span>
@@ -507,8 +511,8 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260922"></script>
-    <script src="../assets/js/leader-tools.js?v=20260922"></script>
+    <script src="../supabase.js?v=20260924"></script>
+    <script src="../assets/js/leader-tools.js?v=20260924"></script>
     
     <script>
         let currentAdmin = null;
@@ -577,29 +581,29 @@
             }
         }
 
-        // Filter and display
-        function filterAndDisplayInscriptions() {
+        // Filter (shared by table, export and bulk email)
+        function getFilteredInscriptions() {
             const eventType = document.getElementById('eventTypeFilter').value;
             const eventFilter = document.getElementById('eventFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
             const searchInput = document.getElementById('searchInput').value.toLowerCase();
 
-            let filtered = allInscriptions.filter(ins => {
+            return allInscriptions.filter(ins => {
                 if (!LeaderTools.matches(ins)) return false;
                 // Event type filter
                 if (eventType === 'formation' && !ins.formation_id) return false;
                 if (eventType === 'seminaire' && !ins.seminaire_id) return false;
-                
+
                 // Event filter
                 if (eventFilter) {
                     const [type, id] = eventFilter.split(':');
                     if (type === 'formation' && ins.formation_id !== id) return false;
                     if (type === 'seminaire' && ins.seminaire_id !== id) return false;
                 }
-                
+
                 // Status filter
                 if (statusFilter !== 'all' && ins.status_inscription !== statusFilter) return false;
-                
+
                 // Search
                 if (searchInput) {
                     const student = LeaderTools.contact(ins);
@@ -607,11 +611,51 @@
                     const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase();
                     if (!searchStr.includes(searchInput)) return false;
                 }
-                
+
                 return true;
             });
+        }
 
-            displayInscriptions(filtered);
+        // Filter and display
+        function filterAndDisplayInscriptions() {
+            displayInscriptions(getFilteredInscriptions());
+        }
+
+        // Renvoi manuel de l'email d'inscription (même email que l'envoi automatique)
+        function _regEmailArgs(ins) {
+            const student = LeaderTools.contact(ins);
+            const event = ins.formations || ins.seminaires || {};
+            return [
+                { prenom: student.prenom, nom: student.nom, email: student.email, whatsapp: student.telephone },
+                event.titre
+            ];
+        }
+
+        async function resendRegEmail(id) {
+            const ins = allInscriptions.find(i => String(i.id) === String(id));
+            const student = ins ? LeaderTools.contact(ins) : {};
+            if (!student.email) { alert('Email introuvable pour cet inscrit'); return; }
+            const res = await sendRegistrationEmail(..._regEmailArgs(ins));
+            alert(res && res.success === false ? '❌ Échec : ' + res.error : '✅ Email envoyé à ' + student.email);
+        }
+
+        async function sendRegEmailsBulk() {
+            const targets = getFilteredInscriptions().filter(i => LeaderTools.contact(i).email);
+            if (!targets.length) { alert('Aucun inscrit avec email dans la sélection'); return; }
+            if (!confirm(`Envoyer l'email d'inscription à ${targets.length} personne(s) ?\n(les filtres actifs sont appliqués)`)) return;
+            const btn = document.getElementById('bulkEmailBtn');
+            btn.disabled = true;
+            let sent = 0, failed = 0;
+            for (let i = 0; i < targets.length; i++) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i + 1}/${targets.length}`;
+                try {
+                    const res = await sendRegistrationEmail(..._regEmailArgs(targets[i]));
+                    (res && res.success === false) ? failed++ : sent++;
+                } catch (e) { failed++; console.warn('Email erreur:', LeaderTools.contact(targets[i]).email, e.message); }
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Emails à tous</span>';
+            alert(`Terminé ! ✅ ${sent} envoyé(s)${failed ? ` · ❌ ${failed} échoué(s)` : ''}`);
         }
 
         // Display inscriptions
@@ -645,6 +689,9 @@
                         <td>
                             <button class="btn-action btn-view" onclick="viewDetails('${ins.id}')">
                                 <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action" style="background:#2563eb" title="Renvoyer l'email d'inscription" onclick="resendRegEmail('${ins.id}')">
+                                <i class="fas fa-envelope"></i>
                             </button>
                             ${ins.status_inscription === 'en_attente' ? `
                                 <button class="btn-action btn-confirm" onclick="confirmInscription('${ins.id}')">
@@ -701,29 +748,7 @@
             }
 
             // Get current filtered data
-            const eventType = document.getElementById('eventTypeFilter').value;
-            const eventFilter = document.getElementById('eventFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-
-            let filtered = allInscriptions.filter(ins => {
-                if (!LeaderTools.matches(ins)) return false;
-                if (eventType === 'formation' && !ins.formation_id) return false;
-                if (eventType === 'seminaire' && !ins.seminaire_id) return false;
-                if (eventFilter) {
-                    const [type, id] = eventFilter.split(':');
-                    if (type === 'formation' && ins.formation_id !== id) return false;
-                    if (type === 'seminaire' && ins.seminaire_id !== id) return false;
-                }
-                if (statusFilter !== 'all' && ins.status_inscription !== statusFilter) return false;
-                if (searchInput) {
-                    const student = LeaderTools.contact(ins);
-                    const event = ins.formations || ins.seminaires || {};
-                    const searchStr = `${student.prenom} ${student.nom} ${student.email} ${event.titre} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase();
-                    if (!searchStr.includes(searchInput)) return false;
-                }
-                return true;
-            });
+            const filtered = getFilteredInscriptions();
 
             // Create CSV header
             const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Événement', 'Type', 'Date Inscription', 'Statut', 'Statut Paiement', 'Montant Payé', 'Date Confirmation', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat'];

@@ -348,7 +348,7 @@ async function emailExists(email) {
 
 // Paramètres partagés (table rasinayiti_parametres) — modifiables dans Admin → Paramètres.
 // Ils remplacent les valeurs codées en dur dans les modèles d'emails.
-const DEFAULT_WA_LINK = 'https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t';
+const DEFAULT_WA_LINK = 'https://chat.whatsapp.com/GRPY24ocrb9Hxtv7ximIaU';
 const DEFAULT_WA_NAME = 'Groupe WhatsApp Rasin Ayiti';
 const DEFAULT_WA_NUMBER = '+509 46807922';
 

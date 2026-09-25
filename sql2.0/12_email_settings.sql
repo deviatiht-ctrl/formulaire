@@ -7,7 +7,7 @@
 
 INSERT INTO public.rasinayiti_parametres (cle, valeur, description)
 VALUES
-('whatsapp_group_link', 'https://chat.whatsapp.com/Hf6T9GaKptAEs5EaOrOMLS?mode=gi_t', 'Lien d''invitation au groupe WhatsApp affiché dans les emails'),
+('whatsapp_group_link', 'https://chat.whatsapp.com/GRPY24ocrb9Hxtv7ximIaU', 'Lien d''invitation au groupe WhatsApp affiché dans les emails'),
 ('whatsapp_group_name', 'Groupe WhatsApp Rasin Ayiti', 'Nom du groupe affiché dans les emails'),
 ('whatsapp_admin_number', '+509 46807922', 'Numéro WhatsApp de contact affiché dans les emails')
 ON CONFLICT (cle) DO NOTHING;

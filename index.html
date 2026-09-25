@@ -19,8 +19,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=20260922">
-    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260922">
+    <link rel="stylesheet" href="style.css?v=20260924">
+    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260924">
     <style>
         /* Events Section Styles */
         .section-events {
@@ -1496,10 +1496,10 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=20260922"></script>
-    <script src="assets/js/certificate-discount.js?v=20260922"></script>
-    <script src="assets/js/mobile-nav.js?v=20260922"></script>
-    <script src="assets/js/scroll-reveal.js?v=20260922"></script>
+    <script src="supabase.js?v=20260924"></script>
+    <script src="assets/js/certificate-discount.js?v=20260924"></script>
+    <script src="assets/js/mobile-nav.js?v=20260924"></script>
+    <script src="assets/js/scroll-reveal.js?v=20260924"></script>
     
     <script>
         // Initialize Lucide Icons
@@ -2303,11 +2303,15 @@
                 const waBtn = document.getElementById('waGroupBtn');
                 if (currentEventWALink) {
                     waBtn.href = currentEventWALink;
-                    waBtn.style.display = 'flex';
                 } else {
-                    // Default to global admin WhatsApp if event specific is not set
-                    waBtn.href = "https://wa.me/50946807922";
+                    // Lien du groupe global (Admin → Paramètres) si l'événement n'en a pas
+                    try {
+                        waBtn.href = (await getSiteSettings()).waLink;
+                    } catch (_) {
+                        waBtn.href = 'https://chat.whatsapp.com/GRPY24ocrb9Hxtv7ximIaU';
+                    }
                 }
+                waBtn.style.display = 'flex';
 
                 // Show success modal
                 document.getElementById('successModal').classList.remove('hidden');
