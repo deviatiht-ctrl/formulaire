@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="../style.css?v=20260924">
-    <link rel="stylesheet" href="../assets/css/landing-2026.css?v=20260924">
+    <link rel="stylesheet" href="../style.css?v=20260927">
+    <link rel="stylesheet" href="../assets/css/landing-2026.css?v=20260927">
 </head>
 <body>
     <!-- NAVIGATION -->
@@ -567,9 +567,9 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260924"></script>
-    <script src="../assets/js/mobile-nav.js?v=20260924"></script>
-    <script src="../assets/js/certificate-discount.js?v=20260924"></script>
+    <script src="../supabase.js?v=20260927"></script>
+    <script src="../assets/js/mobile-nav.js?v=20260927"></script>
+    <script src="../assets/js/certificate-discount.js?v=20260927"></script>
     
     <script>
         // Get URL parameters
@@ -820,21 +820,10 @@
                 });
                 if (registrationError) throw registrationError;
 
-                // Email de bienvenue via Brevo (lien + nom du groupe configurés dans Admin → Paramètres)
-                if (typeof sendRegistrationEmail === 'function') {
-                    sendRegistrationEmail({
-                        id: registrationId,
-                        prenom: formData.prenom,
-                        nom: formData.nom,
-                        email: formData.email,
-                        whatsapp: formData.whatsapp || formData.telephone
-                    }, currentItem?.titre).catch(e => console.warn('Email inscription:', e.message));
-                }
-
                 // Show success
                 document.getElementById('successModal').classList.remove('hidden');
-                document.getElementById('successMessage').textContent = 
-                    `Votre inscription a été enregistrée. Un email de confirmation sera envoyé à ${formData.email}.`;
+                document.getElementById('successMessage').textContent =
+                    `Votre inscription a été enregistrée. L'équipe Rasin Ayiti vous contactera à ${formData.email}.`;
 
             } catch (error) {
                 console.error('Erreur inscription formation/séminaire:', error);

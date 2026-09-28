@@ -1,7 +1,58 @@
 (() => {
     const el = id => document.getElementById(id), tools = window.AdminWorkflows, pdf = window.CertificatePDF;
     const escape = value => LeaderTools.escape(value);
-    let rows = [], activities = [], filtered = [], page = 0, busy = false;
+    let rows = [], activities = [], filtered = [], page = 0, busy = false, details = new Map(), detailsError = '';
+    const selected = new Set();
+    const key = r => `${r.source_kind}:${r.source_id}`;
+    const info = r => details.get(key(r)) || {};
+    const num = v => Number(v) || 0;
+    const htg = n => `${n.toLocaleString('fr-FR')} HTG`;
+    function renderStats(list, activity) {
+        el('statsScope').textContent = activity ? `— ${activity.titre}` : '— toutes les activités';
+        const verified = list.filter(r => r.paiement === 'verifie'), pending = list.filter(r => r.paiement === 'en_attente');
+        const net = r => num(info(r).certificat_prix);
+        const gross = r => { const d = info(r); return d.certificat_prix_initial != null ? num(d.certificat_prix_initial) : num(d.certificat_prix) + num(d.certificat_reduction); };
+        const sum = (arr, fn) => arr.reduce((total, r) => total + fn(r), 0);
+        const withCode = verified.filter(r => info(r).code_leader), withoutCode = verified.filter(r => !info(r).code_leader);
+        const cards = [
+            ['Demandes de certificat', list.length, `${pending.length} en attente de paiement`, '#64748b'],
+            ['Confirmés (paiement vérifié)', verified.length, `${list.length ? Math.round(verified.length / list.length * 100) : 0} % des demandes`, '#16a34a'],
+            ['Montant encaissé', htg(sum(verified, net)), 'payé par les confirmés', '#16a34a'],
+            ['Montant brut', htg(sum(verified, gross)), 'avant rabais des codes leaders', '#245bd7'],
+            ['Rabais codes leaders', htg(sum(verified, gross) - sum(verified, net)), 'accordés aux confirmés', '#ea580c'],
+            ['Confirmés sans code leader', withoutCode.length, `${htg(sum(withoutCode, net))} encaissés`, '#0891b2'],
+            ['Confirmés avec code leader', withCode.length, `${htg(sum(withCode, net))} encaissés`, '#7c3aed'],
+            ['Paiements en attente', htg(sum(pending, net)), `${pending.length} participant(s) à vérifier`, '#d97706']
+        ];
+        el('certStats').innerHTML = cards.map(([label, value, hint, color]) => `<div class="cert-stat" style="--c:${color}"><span>${escape(label)}</span><strong>${escape(value)}</strong><small>${escape(hint)}</small></div>`).join('');
+        if (detailsError) el('statsNote').textContent = 'Montants indisponibles : ' + detailsError;
+    }
+    async function loadDetails() {
+        const cols = 'id,certificat_prix,certificat_prix_initial,certificat_reduction,code_leader,leader_nom';
+        try {
+            const [events, courses] = await Promise.all([
+                tools.all(() => window.supabaseClient.from('inscriptions_evenements').select(cols + ',prenom,nom').eq('veut_certificat', true).order('id')),
+                tools.all(() => window.supabaseClient.from('inscriptions').select(cols).eq('veut_certificat', true).order('id'))
+            ]);
+            details = new Map([...events.map(d => ['event:' + d.id, d]), ...courses.map(d => ['inscription:' + d.id, d])]);
+            detailsError = '';
+        } catch (error) { detailsError = tools.error(error); }
+    }
+    function updateSelection() {
+        el('emailSelected').textContent = `✉️ Email aux sélectionnés (${selected.size})`;
+        el('emailSelected').disabled = !selected.size;
+        el('emailFiltered').textContent = `✉️ Email à tous les participants filtrés (${filtered.length})`;
+        el('emailFiltered').disabled = !filtered.length;
+        el('selectFiltered').checked = filtered.length > 0 && filtered.every(r => selected.has(key(r)));
+    }
+    function emailTo(list) {
+        const recipients = list.map(r => {
+            const d = info(r), parts = String(r.nom_complet || '').trim().split(/\s+/);
+            return { email: r.email, prenom: d.prenom || parts[0] || '', nom: d.nom || parts.slice(1).join(' '), activite: r.titre };
+        });
+        const preset = list.every(r => r.certificate_id || r.eligible) ? 'certificat' : list.every(r => r.paiement === 'en_attente') ? 'paiement' : 'libre';
+        EmailComposer.open({ recipients, preset });
+    }
     const message = (text, error = false) => { el('message').textContent = text; el('message').classList.toggle('error', error); };
     const settings = () => ({ x: el('nameX').value, y: el('nameY').value, size: el('fontSize').value, width: el('nameWidth').value, color: el('nameColor').value });
     const selectedActivity = () => activities.find(a => a.key === el('activity').value);
@@ -16,26 +67,30 @@
         el('activityStatus').textContent = activity ? `${activity.titre} · ${activity.type} · ${activity.status}` : 'Choisissez une activité pour clôturer ou générer un lot de certificats.';
         el('complete').disabled = !activity || !!activity.archived_at || ['termine','annule','archive'].includes(activity.status);
         const search = el('search').value.toLowerCase().trim();
-        filtered = rows.filter(r => (!activity || (r.effective_type === activity.type && r.effective_id === activity.id))
-            && `${r.nom_complet} ${r.email}`.toLowerCase().includes(search)
+        const inActivity = rows.filter(r => !activity || (r.effective_type === activity.type && r.effective_id === activity.id));
+        renderStats(inActivity, activity);
+        filtered = inActivity.filter(r => `${r.nom_complet} ${r.email}`.toLowerCase().includes(search)
             && (!el('state').value || (el('state').value === 'eligible' ? r.eligible && !r.certificate_id : el('state').value === 'issued' ? r.certificate_id : !r.eligible)));
         page = Math.min(page, Math.max(0, Math.ceil(filtered.length / 50) - 1));
         el('summary').textContent = `${filtered.length} participant(s) · ${filtered.filter(r => r.eligible && !r.certificate_id).length} prêt(s) à publier · ${filtered.filter(r => r.certificate_id).length} publié(s).`;
         el('rows').innerHTML = filtered.slice(page * 50, page * 50 + 50).map((r, i) => `<tr>
+            <td class="select-cell"><input type="checkbox" data-select="${escape(key(r))}" ${selected.has(key(r)) ? 'checked' : ''} aria-label="Sélectionner ${escape(r.nom_complet)}"></td>
             <td>${escape(r.nom_complet)}<br>${escape(r.email)}<br><small>${escape(r.titre)} · ${escape(r.effective_type)}</small></td>
             <td>${escape(r.paiement)}<br>${r.eligible ? '<strong>Éligible</strong>' : 'Bloqué : vérifier paiement, annulation et fin de l’activité'}<br><button type="button" class="secondary" data-action="payment" data-index="${i}">Détails / paiement</button></td>
             <td>${r.certificate_id ? `Publié${r.eligible ? '' : ' — accès étudiant suspendu'}<br><button type="button" class="secondary" data-action="download" data-index="${i}">Télécharger PDF</button>` : 'Non publié'}</td>
             <td><button type="button" class="secondary" data-action="preview" data-index="${i}">Aperçu du nom</button><br><button type="button" data-action="generate" data-index="${i}" ${!r.eligible || r.certificate_id ? 'disabled' : ''}>Générer et publier</button><button type="button" class="secondary" data-action="upload" data-index="${i}" ${!r.eligible || r.certificate_id ? 'disabled' : ''}>Téléverser un PDF fini</button></td>
-        </tr>`).join('') || '<tr><td colspan="4">Aucun certificat demandé pour ces filtres.</td></tr>';
+        </tr>`).join('') || '<tr><td colspan="5">Aucun certificat demandé pour ces filtres.</td></tr>';
         el('page').textContent = `Page ${page + 1} / ${Math.max(1, Math.ceil(filtered.length / 50))}`;
-        el('previous').disabled = page === 0; el('next').disabled = (page + 1) * 50 >= filtered.length; preview();
+        el('previous').disabled = page === 0; el('next').disabled = (page + 1) * 50 >= filtered.length; updateSelection(); preview();
     }
     async function load() {
         busy = true; el('workspace').disabled = true;
         try {
             await tools.requireAdmin();
             const selected = el('activity').value;
-            [rows, activities] = await Promise.all([tools.all(() => window.supabaseClient.rpc('rasinayiti_admin_certificates').order('effective_type').order('canonical_id')), tools.activities()]);
+            [rows, activities] = await Promise.all([tools.all(() => window.supabaseClient.rpc('rasinayiti_admin_certificates').order('effective_type').order('canonical_id')), tools.activities(), loadDetails()]);
+            const known = new Set(rows.map(key));
+            [...selected].forEach(k => { if (!known.has(k)) selected.delete(k); });
             tools.options(el('activity'), activities, 'Toutes les activités'); el('activity').value = selected;
             el('workspace').disabled = false; render(); message('Données actualisées. Les droits de publication et de téléchargement sont vérifiés par SQL.');
         } catch (error) { message(tools.error(error), true); }
@@ -110,6 +165,15 @@
         } catch (error) { message(tools.error(error), true); }
         finally { button.disabled = false; }
     };
+    el('rows').addEventListener('change', event => {
+        const box = event.target.closest('input[data-select]'); if (!box) return;
+        box.checked ? selected.add(box.dataset.select) : selected.delete(box.dataset.select);
+        updateSelection();
+    });
+    el('selectFiltered').onchange = () => { filtered.forEach(r => el('selectFiltered').checked ? selected.add(key(r)) : selected.delete(key(r))); render(); };
+    el('clearSelection').onclick = () => { selected.clear(); render(); };
+    el('emailSelected').onclick = () => emailTo(rows.filter(r => selected.has(key(r))));
+    el('emailFiltered').onclick = () => emailTo(filtered);
     window.loadInscriptions = load;
     load();
 })();

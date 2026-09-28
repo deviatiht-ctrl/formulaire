@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Certificats PDF | Administration Rasin Ayiti</title>
-    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260924">
+    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260927">
 </head>
 <body>
 <header class="workflow-header">
@@ -22,6 +22,11 @@
             </div>
             <p>Seuls les certificats demandés avec un paiement <strong>vérifié par l’administration</strong> sont publiables, après la fin de l’activité. Les certificats gratuits validés par le serveur sont également acceptés. Un simple dépôt de preuve ne suffit pas.</p>
             <p id="activityStatus" class="muted"></p>
+        </section>
+        <section class="workflow-card">
+            <h2>Statistiques des certificats <small id="statsScope" class="muted"></small></h2>
+            <div id="certStats" class="cert-stats"></div>
+            <p id="statsNote" class="muted">Montant brut = prix du certificat avant les rabais des codes leaders. Montant encaissé = ce que les participants confirmés ont réellement payé.</p>
         </section>
         <section class="workflow-card">
             <h2>2. Modèle sans nom (PNG ou JPEG)</h2>
@@ -45,14 +50,19 @@
                 <label>Afficher<select id="state"><option value="">Tous</option><option value="eligible">Éligibles non publiés</option><option value="issued">Déjà publiés</option><option value="blocked">En attente / bloqués</option></select></label>
             </div>
             <p id="summary"></p>
-            <div class="workflow-table"><table><thead><tr><th>Participant / activité</th><th>Paiement / éligibilité</th><th>Certificat</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
+            <div class="workflow-controls">
+                <button id="emailSelected" type="button" disabled>✉️ Email aux sélectionnés (0)</button>
+                <button id="emailFiltered" type="button" class="secondary">✉️ Email à tous les participants filtrés</button>
+                <button id="clearSelection" type="button" class="secondary">Désélectionner</button>
+            </div>
+            <div class="workflow-table"><table><thead><tr><th class="select-cell"><input type="checkbox" id="selectFiltered" aria-label="Sélectionner tous les participants filtrés"></th><th>Participant / activité</th><th>Paiement / éligibilité</th><th>Certificat</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
             <div class="workflow-controls"><button id="previous" type="button" class="secondary">Précédent</button><span id="page"></span><button id="next" type="button" class="secondary">Suivant</button></div>
             <p class="muted">Les doublons transférés sont regroupés. Aucun PDF existant n’est écrasé. Un PDF téléversé manuellement doit déjà porter le bon nom. L’étudiant doit se connecter avec l’email de son inscription pour le télécharger.</p>
         </section>
     </fieldset>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase.js?v=20260924"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase.js?v=20260927"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../assets/js/leader-tools.js?v=20260924"></script><script src="../assets/js/admin-workflows.js?v=20260924"></script>
-<script src="../assets/js/certificate-pdf.js?v=20260924"></script><script src="../assets/js/admin-certificates.js?v=20260924"></script>
+<script src="../assets/js/leader-tools.js?v=20260927"></script><script src="../assets/js/admin-workflows.js?v=20260927"></script>
+<script src="../assets/js/certificate-pdf.js?v=20260927"></script><script src="../assets/js/email-composer.js?v=20260927"></script><script src="../assets/js/admin-certificates.js?v=20260927"></script>
 </body></html>

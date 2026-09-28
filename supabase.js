@@ -343,8 +343,29 @@ async function emailExists(email) {
 }
 
 // ============================================
-// FONCTIONS EMAIL (via /api/send-email — Brevo)
+// FONCTIONS EMAIL (Supabase Edge Function "send-email" → Brevo, admin uniquement)
 // ============================================
+
+// messages: [{ to, subject, html }] (50 max par appel). Retourne { sent, failed, results }.
+async function deliverEmails(messages) {
+    if (!supabaseClient || !supabaseClient.functions) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient.functions.invoke('send-email', { body: { messages } });
+    if (error) {
+        let detail = error.message;
+        try { const body = await error.context.json(); detail = body.error || detail; } catch (_) { /* réponse non JSON */ }
+        throw new Error(detail);
+    }
+    return data;
+}
+
+async function _deliverEmail(to, subject, html) {
+    const cleanEmail = String(to || '').trim().replace(/\.$/, '').replace(/\s/g, '');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('Email invalide: ' + to);
+    const data = await deliverEmails([{ to: cleanEmail, subject, html }]);
+    const result = data && data.results && data.results[0];
+    if (!result || !result.ok) throw new Error((result && result.error) || (data && data.error) || 'Envoi impossible');
+    return data;
+}
 
 // Paramètres partagés (table rasinayiti_parametres) — modifiables dans Admin → Paramètres.
 // Ils remplacent les valeurs codées en dur dans les modèles d'emails.
@@ -616,35 +637,13 @@ async function sendWAGroupInviteEmail(participant, waLink, waName) {
         participant.prenom, participant.nom, participant.email,
         link, participant.whatsapp || participant.telephone, name
     );
-    const cleanEmail = participant.email.trim().replace(/\.$/, '').replace(/\s/g, '');
-    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) throw new Error('Email invalide: ' + participant.email);
-    const res = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: cleanEmail, subject, html }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || data.message || ('HTTP ' + res.status));
-    return data;
+    return _deliverEmail(participant.email, subject, html);
 }
 
 async function sendReminderEmail(participant) {
     const subject = '⏰ Rappel — Votre preuve de paiement | Séminaire Rasin Ayiti';
     const html = _reminderHtml(participant.prenom, participant.nom, participant.email);
-    const cleanEmail = participant.email.trim().replace(/\.$/, '').replace(/\s/g, '');
-    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-        throw new Error('Email invalide: ' + participant.email);
-    }
-    const res = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: cleanEmail, subject, html }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        throw new Error(data.error || data.message || ('HTTP ' + res.status));
-    }
-    return data;
+    return _deliverEmail(participant.email, subject, html);
 }
 
 async function sendEmail(payload) {
@@ -667,23 +666,7 @@ async function sendEmail(payload) {
         throw new Error('Type email inconnu: ' + payload.type);
     }
 
-    const cleanEmail = payload.to.trim().replace(/\.$/, '').replace(/\s/g, '');
-    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-        throw new Error('Email invalide: ' + payload.to);
-    }
-
-    const res = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: cleanEmail, subject, html }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        const errMsg = data.error || data.message || JSON.stringify(data) || ('HTTP ' + res.status);
-        throw new Error(errMsg);
-    }
-    return data;
+    return _deliverEmail(payload.to, subject, html);
 }
 
 /**
@@ -1092,23 +1075,11 @@ async function sendDonationReceiptEmail(donation) {
     if (!donation.email) throw new Error('Pas d\'email pour ce don');
     const subject = '🎉 Reçu de votre don — RASIN AYITI';
     const html = _donationReceiptHtml(donation);
-
-    const cleanEmail = donation.email.trim().replace(/\.$/, '').replace(/\s/g, '');
-    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-        throw new Error('Email invalide: ' + donation.email);
-    }
-
-    const res = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: cleanEmail, subject, html }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || data.message || 'HTTP ' + res.status);
-    return data;
+    return _deliverEmail(donation.email, subject, html);
 }
 
 // Expose globally
+window.deliverEmails = deliverEmails;
 window.sendDonationReceiptEmail = sendDonationReceiptEmail;
 window.sendRegistrationEmail = sendRegistrationEmail;
 window.sendConfirmationEmail = sendConfirmationEmail;

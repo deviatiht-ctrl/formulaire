@@ -208,11 +208,6 @@ form.addEventListener('submit', async (e) => {
         sessionStorage.setItem('pendingParticipantEmail', email);
         sessionStorage.setItem('pendingParticipantName', `${participant.prenom} ${participant.nom}`);
 
-        // Envoyer email de bienvenue automatiquement (fire & forget)
-        if (typeof sendRegistrationEmail === 'function' && result) {
-            sendRegistrationEmail(result).catch(e => console.warn('Email inscription:', e.message));
-        }
-
         // Inscription gratuite - afficher modal certificat
         showSuccess();
         

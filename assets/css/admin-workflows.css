@@ -38,4 +38,10 @@ small, .muted { color: #52647a; }
 .preview-wrap { overflow: auto; margin-top: 20px; }
 #certificatePreview { max-width: 100%; height: auto; border: 1px solid #cbd5e1; cursor: crosshair; }
 #previewImage { max-width: 100%; }
+.cert-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.cert-stat { background: #f8fafc; border: 1px solid #dce3ed; border-left: 4px solid var(--c, #245bd7); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.cert-stat span { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #52647a; }
+.cert-stat strong { display: block; font-size: 1.55rem; margin-top: 4px; overflow-wrap: anywhere; }
+.cert-stat small { display: block; margin-top: 2px; }
+.select-cell { min-width: 0; width: 42px; }
 @media (max-width: 600px) { .workflow-main { padding: 16px 10px; } .workflow-card { padding: 16px; } .workflow-controls > * { width: 100%; } }

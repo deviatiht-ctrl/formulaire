@@ -19,8 +19,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=20260924">
-    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260924">
+    <link rel="stylesheet" href="style.css?v=20260927">
+    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260927">
     <style>
         /* Events Section Styles */
         .section-events {
@@ -1434,7 +1434,7 @@
                 </div>
                 <h2>Inscription Reçue ! 🎉</h2>
                 <p>
-                    Merci pour votre inscription ! Vous recevrez bientôt un <strong>e-mail de confirmation</strong> avec tous les détails.<br><br>
+                    Merci pour votre inscription ! L'équipe Rasin Ayiti vous contactera par <strong>e-mail</strong> avec tous les détails.<br><br>
                     En attendant, rejoignez le groupe officiel de l'événement pour ne rien rater :
                 </p>
                 <div class="success-actions">
@@ -1496,10 +1496,10 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=20260924"></script>
-    <script src="assets/js/certificate-discount.js?v=20260924"></script>
-    <script src="assets/js/mobile-nav.js?v=20260924"></script>
-    <script src="assets/js/scroll-reveal.js?v=20260924"></script>
+    <script src="supabase.js?v=20260927"></script>
+    <script src="assets/js/certificate-discount.js?v=20260927"></script>
+    <script src="assets/js/mobile-nav.js?v=20260927"></script>
+    <script src="assets/js/scroll-reveal.js?v=20260927"></script>
     
     <script>
         // Initialize Lucide Icons
@@ -2284,18 +2284,6 @@
 
                 if (error) throw error;
 
-                // Email de bienvenue via Brevo — groupe WhatsApp de l'événement ou paramètres globaux
-                if (typeof sendRegistrationEmail === 'function') {
-                    sendRegistrationEmail({
-                        id: registrationId,
-                        prenom: payload.prenom,
-                        nom: payload.nom,
-                        email: payload.email,
-                        whatsapp: payload.telephone
-                    }, currentEventTitle, { waLink: currentEventWALink || null })
-                        .catch(e => console.warn('Email inscription:', e.message));
-                }
-
                 // Close registration modal
                 closeRegModal();
 
@@ -2566,17 +2554,8 @@
 
                 if (error) throw error;
 
-                // Auto-send receipt email
-                try {
-                    donationData.created_at = new Date().toISOString();
-                    await window.sendDonationReceiptEmail(donationData);
-                    console.log('✅ Reçu de don envoyé par email');
-                } catch (emailErr) {
-                    console.warn('⚠️ Email reçu non envoyé:', emailErr.message);
-                }
-
                 // Show success message
-                alert('Merci pour votre don ! Un reçu a été envoyé à votre email.');
+                alert('Merci pour votre don ! Votre reçu vous sera envoyé par email après vérification.');
                 e.target.reset();
                 document.querySelectorAll('.donation-amount-btn').forEach(btn => btn.classList.remove('active'));
                 toggleDonatorFields();

@@ -8,6 +8,7 @@ const SETTINGS_ROWS = [
 ];
 const ZOOM_ROW = { id: 1, link: 'https://zoom.us/j/999888', meeting_id: '999 888', password: 'zepass' };
 const UPSERTS = [];
+const sent = [], INVOKES = [];
 function qb(result) {
     const q = {
         select() { return q; }, update() { return q; }, insert() { return q; },
@@ -29,31 +30,31 @@ window.supabase = {
         from: t => TABLES[t] || qb({ rows: [] }),
         rpc: async () => ({ data: null, error: null }),
         auth: { getUser: async () => ({ data: { user: null }, error: null }) },
-        storage: { from: () => ({ upload: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) }
+        storage: { from: () => ({ upload: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) },
+        functions: {
+            invoke: async (name, { body }) => {
+                INVOKES.push(name);
+                sent.push(...body.messages);
+                return { data: { sent: body.messages.length, failed: 0, results: body.messages.map(m => ({ to: m.to, ok: true })) }, error: null };
+            }
+        }
     })
 };
 </script>
 <script src="../supabase.js"></script>
+<script src="../assets/js/email-composer.js"></script>
 <script type="module">
 const output = document.getElementById('results'), logs = [];
 const assert = (v, l) => { if (!v) throw new Error(l); logs.push('PASS ' + l); output.textContent = logs.join('\n'); };
 const rejects = async (fn, l) => { let f = false; try { await fn(); } catch (_) { f = true; } assert(f, l); };
 const realFetch = window.fetch.bind(window);
-const sent = [];
-window.fetch = async (url, opts) => {
-    if (String(url).includes('/api/send-email')) {
-        sent.push(JSON.parse(opts.body));
-        return { ok: true, json: async () => ({ success: true }) };
-    }
-    return realFetch(url, opts);
-};
 try {
     const settings = await getSiteSettings();
     assert(settings.waLink === 'https://chat.whatsapp.com/TEST_GROUP_LINK' && settings.waName === 'Groupe Test Officiel', 'site settings read from shared parametres table');
     assert(settings.zoomLink === 'https://zoom.us/j/999888', 'zoom config read from shared table');
 
     await sendRegistrationEmail({ prenom: 'Jean', nom: 'Test', email: 'jean@test.ht', whatsapp: '+509 1111' }, 'Formation Leadership');
-    assert(sent.length === 1 && sent[0].to === 'jean@test.ht', 'registration email sent through /api/send-email');
+    assert(sent.length === 1 && sent[0].to === 'jean@test.ht' && INVOKES[0] === 'send-email', 'registration email sent through Supabase Edge Function send-email');
     assert(sent[0].html.includes('https://chat.whatsapp.com/TEST_GROUP_LINK') && sent[0].html.includes('Groupe Test Officiel'), 'registration email carries configured group link and name');
     assert(sent[0].html.includes('Formation Leadership') && sent[0].subject.includes('Formation Leadership'), 'registration email carries activity title');
 
@@ -70,19 +71,34 @@ try {
     assert(sent[3].html.includes('TEST_GROUP_LINK') && sent[3].html.includes('Groupe Test Officiel'), 'WA invite defaults to configured group');
 
     const before = sent.length;
-    await rejects(() => sendRegistrationEmail({ prenom: 'J', nom: 'T', email: 'pas-un-email' }), 'invalid email rejected');
+    const invalid = await sendRegistrationEmail({ prenom: 'J', nom: 'T', email: 'pas-un-email' });
+    assert(invalid && invalid.success === false && /invalide/i.test(invalid.error), 'invalid email reported as failure');
+    await rejects(() => sendReminderEmail({ prenom: 'J', nom: 'T', email: 'pas-un-email' }), 'invalid email rejected by direct senders');
     assert(sent.length === before, 'invalid email never reaches Brevo API');
 
     await setSiteSetting('whatsapp_group_name', 'Nouveau Nom');
     assert(UPSERTS.some(u => u.cle === 'whatsapp_group_name' && u.valeur === 'Nouveau Nom'), 'admin group name saved to shared parametres table');
 
-    const files = ['../supabase.js', '../assets/js/leader-tools.js', '../assets/js/leader-report.js', '../admin/parametres.html', '../api/send-email.js'];
+    const r = { prenom: 'Jean <b>', nom: 'Test', activite: 'Formation "Leadership"' };
+    const html = EmailComposer.buildHtml({ subject: 'S', title: 'Bonjour {{prenom}}', body: 'Pour {{activite}}\n\n**Important** <scr' + 'ipt>x<\/scr' + 'ipt>', button: 'Ouvrir', url: 'javascript:alert(1)', image: 'https://img.test/a.png', color: '#123456' }, r);
+    assert(html.includes('Bonjour Jean &lt;b&gt;') && html.includes('Formation &quot;Leadership&quot;'), 'composer fills placeholders with escaped values');
+    assert(html.includes('<strong>Important</strong>') && !html.includes('<scr' + 'ipt>'), 'composer formats bold and escapes HTML');
+    assert(!html.includes('javascript:') && !html.includes('>Ouvrir<'), 'composer drops unsafe button links');
+    assert(html.includes('src="https://img.test/a.png"') && html.includes('#123456'), 'composer embeds image and colour');
+
+    const before2 = sent.length;
+    const bulk = await deliverEmails([{ to: 'a@test.ht', subject: 's', html: 'h' }, { to: 'b@test.ht', subject: 's', html: 'h' }]);
+    assert(bulk.sent === 2 && sent.length === before2 + 2, 'deliverEmails sends batches through the edge function');
+
+    const files = ['../supabase.js', '../assets/js/leader-tools.js', '../assets/js/leader-report.js', '../assets/js/email-composer.js', '../admin/parametres.html', '../api/send-email.js', '../supabase/functions/send-email/index.ts'];
     for (const f of files) {
         const text = await realFetch(f).then(r => r.text());
         assert(!/xkeysib-/i.test(text), 'no Brevo API key embedded in ' + f);
     }
+    const fn = await realFetch('../supabase/functions/send-email/index.ts').then(r => r.text());
+    assert(fn.includes("Deno.env.get('BREVO_API_KEY')") && fn.includes("rpc('rasinayiti_is_admin')"), 'edge function reads Brevo key from Supabase secrets and requires an admin');
     const api = await realFetch('../api/send-email.js').then(r => r.text());
-    assert(api.includes('process.env.BREVO_API_KEY'), 'Brevo key stays server-side via environment variable');
+    assert(api.includes('410') && !api.includes('api.brevo.com'), 'legacy unauthenticated Vercel relay is disabled');
 
     output.textContent = 'SUCCESS: ' + logs.length + ' checks\n' + logs.join('\n');
 } catch (error) { output.textContent = 'FAIL: ' + error.message + '\n' + logs.join('\n') + '\n' + error.stack; }

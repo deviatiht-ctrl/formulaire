@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260924">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260924">
+    <link rel="stylesheet" href="../style.css?v=20260927">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260927">
     <style>
         /* Modern Admin Styles */
         :root {
@@ -293,9 +293,12 @@
                     <p>Gérez les participants et confirmez leurs présences</p>
                 </div>
             </div>
-            <div style="display:flex;gap:0.5rem;">
-                <button id="bulkEmailBtn" onclick="sendRegEmailsBulk()" class="nav-item active" style="border:none; cursor:pointer;" title="Renvoyer l'email d'inscription à tous les inscrits affichés (filtres appliqués)">
-                    <i class="fas fa-paper-plane"></i> Emails à tous
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button id="emailSelectedBtn" onclick="emailSelected()" class="nav-item active" style="border:none; cursor:pointer;" disabled>
+                    <i class="fas fa-envelope"></i> Email aux sélectionnés (0)
+                </button>
+                <button id="emailAllBtn" onclick="emailAllFiltered()" class="nav-item active" style="border:none; cursor:pointer;" title="Écrire à tous les inscrits affichés (filtres appliqués)">
+                    <i class="fas fa-paper-plane"></i> Email à tous
                 </button>
                 <button onclick="exportToExcel()" class="nav-item active" style="border:none; cursor:pointer;">
                     <i class="fas fa-file-export"></i> Exporter
@@ -357,6 +360,7 @@
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)" aria-label="Sélectionner tous les inscrits affichés"></th>
                             <th>Participant</th>
                             <th>Événement</th>
                             <th>Contact</th>
@@ -368,7 +372,7 @@
                     </thead>
                     <tbody id="inscriptionsBody">
                         <tr>
-                            <td colspan="7" class="loading-state">Chargement des données...</td>
+                            <td colspan="8" class="loading-state">Chargement des données...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -377,8 +381,9 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260924"></script>
-    <script src="../assets/js/leader-tools.js?v=20260924"></script>
+    <script src="../supabase.js?v=20260927"></script>
+    <script src="../assets/js/leader-tools.js?v=20260927"></script>
+    <script src="../assets/js/email-composer.js?v=20260927"></script>
     <script>
         let allInscriptions = [];
         let allEvents = [];
@@ -479,52 +484,52 @@
             });
         }
 
-        // Renvoi manuel de l'email d'inscription (même email que l'envoi automatique)
-        function _regEmailArgs(ins) {
-            return [
-                { prenom: ins.prenom, nom: ins.nom, email: ins.email, whatsapp: ins.telephone },
-                ins.events?.titre,
-                { waLink: ins.events?.whatsapp_link || null }
-            ];
+        // Emails manuels (composeur partagé → Edge Function Brevo)
+        const selectedIds = new Set();
+
+        function openComposer(list) {
+            EmailComposer.open({
+                preset: 'libre',
+                recipients: list.map(ins => ({ email: ins.email, prenom: ins.prenom, nom: ins.nom, activite: ins.events?.titre || '' }))
+            });
         }
 
-        async function resendRegEmail(id) {
-            const ins = allInscriptions.find(i => String(i.id) === String(id));
-            if (!ins || !ins.email) { alert('Email introuvable pour cet inscrit'); return; }
-            const res = await sendRegistrationEmail(..._regEmailArgs(ins));
-            alert(res && res.success === false ? '❌ Échec : ' + res.error : '✅ Email envoyé à ' + ins.email);
+        function updateSelectionUi() {
+            const filtered = getFilteredInscriptions();
+            const btn = document.getElementById('emailSelectedBtn');
+            btn.disabled = selectedIds.size === 0;
+            btn.innerHTML = `<i class="fas fa-envelope"></i> Email aux sélectionnés (${selectedIds.size})`;
+            document.getElementById('emailAllBtn').innerHTML = `<i class="fas fa-paper-plane"></i> Email à tous (${filtered.length})`;
+            document.getElementById('selectAll').checked = filtered.length > 0 && filtered.every(i => selectedIds.has(String(i.id)));
         }
 
-        async function sendRegEmailsBulk() {
-            const targets = getFilteredInscriptions().filter(i => i.email);
-            if (!targets.length) { alert('Aucun inscrit avec email dans la sélection'); return; }
-            if (!confirm(`Envoyer l'email d'inscription à ${targets.length} personne(s) ?\n(les filtres actifs sont appliqués)`)) return;
-            const btn = document.getElementById('bulkEmailBtn');
-            btn.disabled = true;
-            let sent = 0, failed = 0;
-            for (let i = 0; i < targets.length; i++) {
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i + 1}/${targets.length}`;
-                try {
-                    const res = await sendRegistrationEmail(..._regEmailArgs(targets[i]));
-                    (res && res.success === false) ? failed++ : sent++;
-                } catch (e) { failed++; console.warn('Email erreur:', targets[i].email, e.message); }
-            }
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Emails à tous';
-            alert(`Terminé ! ✅ ${sent} envoyé(s)${failed ? ` · ❌ ${failed} échoué(s)` : ''}`);
+        function toggleSelect(id, checked) {
+            checked ? selectedIds.add(String(id)) : selectedIds.delete(String(id));
+            updateSelectionUi();
         }
+
+        function toggleSelectAll(checked) {
+            getFilteredInscriptions().forEach(i => checked ? selectedIds.add(String(i.id)) : selectedIds.delete(String(i.id)));
+            renderTable();
+        }
+
+        function emailSelected() { openComposer(allInscriptions.filter(i => selectedIds.has(String(i.id)))); }
+        function emailAllFiltered() { openComposer(getFilteredInscriptions()); }
+        function emailOne(id) { openComposer(allInscriptions.filter(i => String(i.id) === String(id))); }
 
         function renderTable() {
             const tbody = document.getElementById('inscriptionsBody');
             const filtered = getFilteredInscriptions();
+            updateSelectionUi();
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="loading-state">Aucun inscrit trouvé</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="loading-state">Aucun inscrit trouvé</td></tr>';
                 return;
             }
 
             tbody.innerHTML = filtered.map(ins => `
                 <tr>
+                    <td><input type="checkbox" ${selectedIds.has(String(ins.id)) ? 'checked' : ''} onchange="toggleSelect('${LeaderTools.escape(ins.id)}', this.checked)" aria-label="Sélectionner"></td>
                     <td>
                         <div class="user-info">
                             <span class="user-name">${LeaderTools.escape(ins.prenom)} ${LeaderTools.escape(ins.nom)}</span>
@@ -551,7 +556,7 @@
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
-                            <button class="btn-action" style="background:#2563eb" title="Renvoyer l'email d'inscription" onclick="resendRegEmail('${ins.id}')">
+                            <button class="btn-action" style="background:#2563eb" title="Écrire un email à cet inscrit" onclick="emailOne('${ins.id}')">
                                 <i class="fas fa-envelope"></i>
                             </button>
                             <button class="btn-action btn-delete" title="Supprimer" onclick="deleteInscription('${ins.id}')">
