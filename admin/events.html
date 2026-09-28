@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260927">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260927">
+    <link rel="stylesheet" href="../style.css?v=20260928">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260928">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -92,7 +92,11 @@
                         <p>Gérer les événements publics avec flyers</p>
                     </div>
                 </div>
-                <div class="header-right">
+                <div class="header-right" style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <button class="btn-primary" id="exportEventsBtn" onclick="exportEvents()" style="background:#0f766e;">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Exporter Excel</span>
+                    </button>
                     <button class="btn-primary" onclick="openModal()">
                         <i class="fas fa-plus"></i>
                         <span>Nouvel Événement</span>
@@ -759,8 +763,9 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260927"></script>
-    <script src="../assets/js/admin-workflows.js?v=20260927"></script>
+    <script src="../supabase.js?v=20260928"></script>
+    <script src="../assets/js/admin-workflows.js?v=20260928"></script>
+    <script src="../assets/js/leader-tools.js?v=20260928"></script>
     
     <script>
         let currentAdmin = null;
@@ -795,6 +800,33 @@
                 console.error('Error loading events:', err);
                 document.getElementById('eventsList').innerHTML = '<div class="no-data">Erreur de chargement</div>';
             }
+        }
+
+        // Export Excel : un résumé par événement (inscriptions + certificats + montants)
+        async function exportEvents() {
+            if (!allEvents.length) { alert('Aucun événement à exporter.'); return; }
+            const btn = document.getElementById('exportEventsBtn');
+            btn.disabled = true;
+            try {
+                const regs = await LeaderTools.all(() => window.supabaseClient.from('inscriptions_evenements')
+                    .select('id,event_id,statut,veut_certificat,certificat_statut_paiement,certificat_prix').order('id'));
+                const byEvent = new Map();
+                regs.forEach(r => { if (!byEvent.has(r.event_id)) byEvent.set(r.event_id, []); byEvent.get(r.event_id).push(r); });
+                const rows = allEvents.map(e => {
+                    const list = byEvent.get(e.id) || [];
+                    const cert = list.filter(r => r.veut_certificat), ok = cert.filter(r => r.certificat_statut_paiement === 'verifie');
+                    return [e.titre, e.type_evenement || '', LeaderTools.date(e.start_date || e.date_evenement), LeaderTools.date(e.end_date), e.lieu || '',
+                        e.status || '', e.inscription_ouverte === false ? 'Fermées' : 'Ouvertes', e.places_max || '', list.length,
+                        list.filter(r => r.statut === 'confirme').length, list.filter(r => r.statut === 'en_attente').length, list.filter(r => r.statut === 'annule').length,
+                        cert.length, ok.length, cert.filter(r => r.certificat_statut_paiement === 'en_attente').length,
+                        ok.reduce((s, r) => s + (Number(r.certificat_prix) || 0), 0)];
+                });
+                const total = i => rows.reduce((s, r) => s + (Number(r[i]) || 0), 0);
+                rows.push([], ['TOTAL', `${allEvents.length} événement(s)`, '', '', '', '', '', '', total(8), total(9), total(10), total(11), total(12), total(13), total(14), total(15)]);
+                LeaderTools.csv(['Événement', 'Type', 'Début', 'Fin', 'Lieu', 'Statut', 'Inscriptions', 'Places max', 'Inscrits', 'Confirmés', 'En attente', 'Annulés',
+                    'Demandes certificat', 'Certificats confirmés', 'Certificats à vérifier', 'Encaissé certificats (HTG)'], rows, `evenements_${LeaderTools.today()}.csv`);
+            } catch (err) { alert('Export impossible : ' + (err.message || err)); }
+            finally { btn.disabled = false; }
         }
 
         // Filter and display events

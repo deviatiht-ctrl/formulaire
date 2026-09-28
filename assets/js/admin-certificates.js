@@ -7,28 +7,37 @@
     const info = r => details.get(key(r)) || {};
     const num = v => Number(v) || 0;
     const htg = n => `${n.toLocaleString('fr-FR')} HTG`;
+    const net = r => num(info(r).certificat_prix);
+    const gross = r => { const d = info(r); return d.certificat_prix_initial != null ? num(d.certificat_prix_initial) : num(d.certificat_prix) + num(d.certificat_reduction); };
+    const sum = (arr, fn) => arr.reduce((total, r) => total + fn(r), 0);
+    function computeStats(list) {
+        const verified = list.filter(r => r.paiement === 'verifie'), pending = list.filter(r => r.paiement === 'en_attente');
+        const withCode = verified.filter(r => info(r).code_leader), withoutCode = verified.filter(r => !info(r).code_leader);
+        return {
+            demandes: list.length, confirmes: verified.length, attente: pending.length, refuses: list.filter(r => r.paiement === 'refuse').length,
+            publies: list.filter(r => r.certificate_id).length, encaisse: sum(verified, net), brut: sum(verified, gross),
+            rabais: sum(verified, gross) - sum(verified, net), sansCode: withoutCode.length, sansCodeMontant: sum(withoutCode, net),
+            avecCode: withCode.length, avecCodeMontant: sum(withCode, net), attenteMontant: sum(pending, net)
+        };
+    }
     function renderStats(list, activity) {
         el('statsScope').textContent = activity ? `— ${activity.titre}` : '— toutes les activités';
-        const verified = list.filter(r => r.paiement === 'verifie'), pending = list.filter(r => r.paiement === 'en_attente');
-        const net = r => num(info(r).certificat_prix);
-        const gross = r => { const d = info(r); return d.certificat_prix_initial != null ? num(d.certificat_prix_initial) : num(d.certificat_prix) + num(d.certificat_reduction); };
-        const sum = (arr, fn) => arr.reduce((total, r) => total + fn(r), 0);
-        const withCode = verified.filter(r => info(r).code_leader), withoutCode = verified.filter(r => !info(r).code_leader);
+        const s = computeStats(list);
         const cards = [
-            ['Demandes de certificat', list.length, `${pending.length} en attente de paiement`, '#64748b'],
-            ['Confirmés (paiement vérifié)', verified.length, `${list.length ? Math.round(verified.length / list.length * 100) : 0} % des demandes`, '#16a34a'],
-            ['Montant encaissé', htg(sum(verified, net)), 'payé par les confirmés', '#16a34a'],
-            ['Montant brut', htg(sum(verified, gross)), 'avant rabais des codes leaders', '#245bd7'],
-            ['Rabais codes leaders', htg(sum(verified, gross) - sum(verified, net)), 'accordés aux confirmés', '#ea580c'],
-            ['Confirmés sans code leader', withoutCode.length, `${htg(sum(withoutCode, net))} encaissés`, '#0891b2'],
-            ['Confirmés avec code leader', withCode.length, `${htg(sum(withCode, net))} encaissés`, '#7c3aed'],
-            ['Paiements en attente', htg(sum(pending, net)), `${pending.length} participant(s) à vérifier`, '#d97706']
+            ['Demandes de certificat', s.demandes, `${s.attente} en attente de paiement`, '#64748b'],
+            ['Confirmés (paiement vérifié)', s.confirmes, `${s.demandes ? Math.round(s.confirmes / s.demandes * 100) : 0} % des demandes`, '#16a34a'],
+            ['Montant encaissé', htg(s.encaisse), 'payé par les confirmés', '#16a34a'],
+            ['Montant brut', htg(s.brut), 'avant rabais des codes leaders', '#245bd7'],
+            ['Rabais codes leaders', htg(s.rabais), 'accordés aux confirmés', '#ea580c'],
+            ['Confirmés sans code leader', s.sansCode, `${htg(s.sansCodeMontant)} encaissés`, '#0891b2'],
+            ['Confirmés avec code leader', s.avecCode, `${htg(s.avecCodeMontant)} encaissés`, '#7c3aed'],
+            ['Paiements en attente', htg(s.attenteMontant), `${s.attente} participant(s) à vérifier`, '#d97706']
         ];
         el('certStats').innerHTML = cards.map(([label, value, hint, color]) => `<div class="cert-stat" style="--c:${color}"><span>${escape(label)}</span><strong>${escape(value)}</strong><small>${escape(hint)}</small></div>`).join('');
         if (detailsError) el('statsNote').textContent = 'Montants indisponibles : ' + detailsError;
     }
     async function loadDetails() {
-        const cols = 'id,certificat_prix,certificat_prix_initial,certificat_reduction,code_leader,leader_nom';
+        const cols = 'id,certificat_prix,certificat_prix_initial,certificat_reduction,reduction_pourcentage,code_leader,leader_nom';
         try {
             const [events, courses] = await Promise.all([
                 tools.all(() => window.supabaseClient.from('inscriptions_evenements').select(cols + ',prenom,nom').eq('veut_certificat', true).order('id')),
@@ -174,6 +183,36 @@
     el('clearSelection').onclick = () => { selected.clear(); render(); };
     el('emailSelected').onclick = () => emailTo(rows.filter(r => selected.has(key(r))));
     el('emailFiltered').onclick = () => emailTo(filtered);
+    const paymentLabel = { verifie: 'Confirmé', en_attente: 'À vérifier', refuse: 'Refusé', non_requis: 'Non requis' };
+    el('exportList').onclick = () => {
+        if (!filtered.length) { message('Aucun participant à exporter pour ces filtres.', true); return; }
+        const rows = filtered.map(r => {
+            const d = info(r);
+            return [r.nom_complet, r.email, r.titre, r.effective_type, paymentLabel[r.paiement] || r.paiement || '', r.eligible ? 'Oui' : 'Non',
+                r.certificate_id ? 'Oui' : 'Non', gross(r), num(d.reduction_pourcentage), num(d.certificat_reduction), net(r),
+                r.paiement === 'verifie' ? net(r) : 0, d.code_leader || '', d.leader_nom || ''];
+        });
+        rows.push([], ['TOTAL', `${filtered.length} participant(s)`, '', '', `${filtered.filter(r => r.paiement === 'verifie').length} confirmé(s)`, '', '', '', '', '', '', rows.reduce((t, r) => t + r[11], 0)]);
+        LeaderTools.csv(['Participant', 'Email', 'Activité', 'Type', 'Paiement certificat', 'Éligible', 'Certificat publié', 'Prix initial (HTG)',
+            'Rabais (%)', 'Réduction (HTG)', 'Prix à payer (HTG)', 'Montant encaissé (HTG)', 'Code leader', 'Leader'], rows, `certificats_participants_${LeaderTools.today()}.csv`);
+    };
+    el('exportStats').onclick = () => {
+        const groups = new Map();
+        for (const r of rows) {
+            const k = `${r.effective_type}:${r.effective_id}`;
+            if (!groups.has(k)) groups.set(k, { titre: r.titre, type: r.effective_type, list: [] });
+            groups.get(k).list.push(r);
+        }
+        if (!groups.size) { message('Aucune donnée de certificat à exporter.', true); return; }
+        const line = (titre, type, s) => [titre, type, s.demandes, s.confirmes, s.attente, s.refuses, s.publies, s.encaisse, s.brut, s.rabais,
+            s.sansCode, s.sansCodeMontant, s.avecCode, s.avecCodeMontant, s.attenteMontant];
+        const out = [...groups.values()].sort((a, b) => a.titre.localeCompare(b.titre)).map(g => line(g.titre, g.type, computeStats(g.list)));
+        out.push([], line('TOTAL', '', computeStats(rows)));
+        if (detailsError) out.push([], ['Attention : montants indisponibles — ' + detailsError]);
+        LeaderTools.csv(['Activité', 'Type', 'Demandes', 'Confirmés', 'En attente', 'Refusés', 'Certificats publiés', 'Montant encaissé (HTG)',
+            'Montant brut (HTG)', 'Rabais leaders (HTG)', 'Confirmés sans code', 'Encaissé sans code (HTG)', 'Confirmés avec code',
+            'Encaissé avec code (HTG)', 'En attente (HTG)'], out, `certificats_statistiques_${LeaderTools.today()}.csv`);
+    };
     window.loadInscriptions = load;
     load();
 })();

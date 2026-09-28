@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260927">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260927">
+    <link rel="stylesheet" href="../style.css?v=20260928">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260928">
     <style>
         :root { --primary: #2563eb; --bg-main: #f8fafc; --sidebar-bg: #0f172a; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); margin: 0; display: flex; }
@@ -106,6 +106,9 @@
                     <p style="color:#64748b; margin:0;">Gérez les ventes et paiements</p>
                 </div>
             </div>
+            <button onclick="exportOrders()" style="padding:0.75rem 1.25rem; border:none; border-radius:10px; background:#2563eb; color:#fff; font-weight:700; cursor:pointer;">
+                <i class="fas fa-file-excel"></i> Exporter Excel
+            </button>
         </div>
 
         <div class="table-card">
@@ -129,8 +132,22 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260927"></script>
+    <script src="../supabase.js?v=20260928"></script>
+    <script src="../assets/js/leader-tools.js?v=20260928"></script>
     <script>
+        let allOrders = [];
+
+        function exportOrders() {
+            if (!allOrders.length) { alert('Aucune commande à exporter.'); return; }
+            const rows = allOrders.map(o => [LeaderTools.date(o.created_at), o.prenom, o.nom, o.email, o.telephone || '', o.maillots?.nom || '',
+                o.taille, Number(o.quantite) || 0, Number(o.montant_total) || 0, o.statut, o.preuve_paiement_url || '']);
+            const paid = allOrders.filter(o => ['confirme', 'livre'].includes(o.statut));
+            rows.push([], ['TOTAL', `${allOrders.length} commande(s)`, '', '', '', '', '', rows.reduce((s, r) => s + r[7], 0), rows.reduce((s, r) => s + r[8], 0)],
+                ['TOTAL CONFIRMÉ/LIVRÉ', `${paid.length} commande(s)`, '', '', '', '', '', paid.reduce((s, o) => s + (Number(o.quantite) || 0), 0), paid.reduce((s, o) => s + (Number(o.montant_total) || 0), 0)]);
+            LeaderTools.csv(['Date', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Maillot', 'Taille', 'Quantité', 'Total (HTG)', 'Statut', 'Preuve'],
+                rows, `commandes_maillots_${LeaderTools.today()}.csv`);
+        }
+
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('active');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
@@ -144,6 +161,7 @@
                 .order('created_at', { ascending: false });
 
             if (error) return;
+            allOrders = data || [];
             const tbody = document.getElementById('ordersBody');
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3rem;">Aucune commande pour le moment.</td></tr>';

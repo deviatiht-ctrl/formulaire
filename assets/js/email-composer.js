@@ -125,6 +125,7 @@ RASIN AYITI — Développement Juvénile<br>📞 +509 46807922 · ✉️ rasinay
   </div>
 </div>
 <div class="ec-foot"><div class="ec-status" data-status>Vérifiez l’aperçu, puis envoyez-vous un test avant l’envoi groupé.<div class="ec-bar" hidden><div></div></div></div>
+  <button type="button" class="ec-btn ec-secondary" data-diag title="Vérifier dans Brevo si l’email a été livré, bloqué ou rejeté">🔍 Diagnostic livraison</button>
   <button type="button" class="ec-btn ec-secondary" data-test>Envoyer un test à moi</button>
   <button type="button" class="ec-btn ec-primary" data-send>Envoyer à ${list.length} destinataire(s)</button></div>`;
         document.body.append(d);
@@ -182,8 +183,29 @@ RASIN AYITI — Développement Juvénile<br>📞 +509 46807922 · ✉️ rasinay
             try {
                 const res = await window.deliverEmails([{ to: me, subject: '[TEST] ' + fill(o.subject, r), html: buildHtml(o, r) }]);
                 const one = res && res.results && res.results[0];
-                status(one && one.ok ? `✅ Test envoyé à ${me}. Vérifiez votre boîte (et les spams).` : '❌ ' + ((one && one.error) || 'Échec du test'));
+                status(one && one.ok ? `✅ Brevo a accepté le test pour ${me}${one.messageId ? ' (id ' + one.messageId + ')' : ''}.\nS’il n’arrive pas dans 2 minutes (vérifiez les spams), cliquez « Diagnostic livraison ».` : '❌ ' + ((one && one.error) || 'Échec du test'));
             } catch (err) { status('❌ ' + err.message); }
+            finally { setBusy(false); }
+        };
+        const EVENTS = { requests: '📨 Reçu par Brevo', request: '📨 Reçu par Brevo', delivered: '✅ Livré', opened: '👁 Ouvert', uniqueOpened: '👁 Ouvert', clicks: '🖱 Cliqué',
+            deferred: '⏳ Différé (réessai)', softBounces: '⚠️ Rejet temporaire', hardBounces: '❌ Rejeté (adresse)', blocked: '⛔ Bloqué par Brevo',
+            invalid: '❌ Adresse invalide', error: '❌ Erreur', spam: '🚫 Signalé comme spam', unsubscribed: '🔕 Désabonné' };
+        q('[data-diag]').onclick = async () => {
+            if (typeof window.emailDiagnostic !== 'function') { alert('Diagnostic indisponible : supabase.js non à jour.'); return; }
+            const { data } = await window.supabaseClient.auth.getUser();
+            const who = prompt('Email à vérifier dans Brevo :', (data && data.user && data.user.email) || list[0].email);
+            if (!who) return;
+            setBusy(true); status('Interrogation de Brevo…');
+            try {
+                const d = await window.emailDiagnostic(who.trim().toLowerCase());
+                const lines = [];
+                if (d.sender) lines.push(d.sender.active ? `✅ Expéditeur ${d.sender.email} validé dans Brevo.` : `❌ Expéditeur ${d.sender.email} ${d.sender.missing ? 'ABSENT' : 'NON VALIDÉ'} dans Brevo → Senders : ajoutez-le et cliquez le lien de confirmation reçu. Sans cela Brevo accepte l’envoi mais ne livre rien.`);
+                if (d.account) lines.push(`Compte Brevo : ${d.account.email || ''}${d.account.plan && d.account.plan.length ? ' · ' + d.account.plan.join(', ') : ''}`);
+                lines.push(d.events && d.events.length ? `Derniers événements pour ${who} :` : `Aucun événement Brevo sur 7 jours pour ${who} : l’email n’a pas été traité (expéditeur non validé ou compte en cours de validation).`);
+                (d.events || []).slice(0, 8).forEach(e => lines.push(`• ${new Date(e.date).toLocaleString('fr-FR')} — ${EVENTS[e.event] || e.event}${e.reason ? ' : ' + e.reason : ''}`));
+                (d.errors || []).forEach(e => lines.push('⚠️ ' + e));
+                status(lines.join('\n'));
+            } catch (err) { status('❌ Diagnostic impossible : ' + err.message); }
             finally { setBusy(false); }
         };
         q('[data-send]').onclick = async () => {

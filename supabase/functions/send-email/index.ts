@@ -27,11 +27,38 @@ async function sendOne({ to, subject, html }) {
     headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
     body: JSON.stringify({ sender: { email: FROM_EMAIL, name: FROM_NAME }, to: [{ email: to }], subject, htmlContent: html }),
   });
-  if (res.ok) return { to, ok: true };
+  if (res.ok) return { to, ok: true, messageId: (await res.json().catch(() => ({}))).messageId ?? null };
   const text = await res.text();
   let detail = text;
   try { detail = JSON.parse(text).message || text; } catch (_) { /* texte brut */ }
   return { to, ok: false, error: `Brevo ${res.status}: ${detail}` };
+}
+
+// Diagnostic de livraison : expéditeur validé ? compte actif ? que s'est-il passé pour cet email ?
+async function brevoGet(path) {
+  const res = await fetch('https://api.brevo.com/v3' + path, { headers: { 'api-key': BREVO_API_KEY, accept: 'application/json' } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`Brevo ${res.status}: ${data.message || 'erreur'}`);
+  return data;
+}
+async function diagnostic(email) {
+  const out = { from: FROM_EMAIL, sender: null, account: null, events: [], errors: [] };
+  try {
+    const { senders = [] } = await brevoGet('/senders');
+    const s = senders.find(x => String(x.email).toLowerCase() === FROM_EMAIL.toLowerCase());
+    out.sender = s ? { email: s.email, active: !!s.active } : { email: FROM_EMAIL, active: false, missing: true };
+  } catch (e) { out.errors.push('Expéditeurs : ' + e.message); }
+  try {
+    const a = await brevoGet('/account');
+    out.account = { email: a.email, company: a.companyName, plan: (a.plan || []).map(p => `${p.type}${p.credits != null ? ' (' + p.credits + ' crédits)' : ''}`) };
+  } catch (e) { out.errors.push('Compte : ' + e.message); }
+  if (EMAIL_RE.test(email)) {
+    try {
+      const { events = [] } = await brevoGet(`/smtp/statistics/events?email=${encodeURIComponent(email)}&days=7&limit=30&sort=desc`);
+      out.events = events.map(e => ({ date: e.date, event: e.event, reason: e.reason || '', subject: e.subject || '' }));
+    } catch (e) { out.errors.push('Événements : ' + e.message); }
+  }
+  return out;
 }
 
 Deno.serve(async (req) => {
@@ -48,6 +75,7 @@ Deno.serve(async (req) => {
 
   let body;
   try { body = await req.json(); } catch (_) { return json({ error: 'JSON invalide' }, 400); }
+  if (body?.action === 'diagnostic') return json(await diagnostic(String(body.email ?? '').trim().toLowerCase()));
   const messages = Array.isArray(body?.messages) ? body.messages : [body];
   if (!messages.length || messages.length > MAX_MESSAGES) return json({ error: `Entre 1 et ${MAX_MESSAGES} emails par requête.` }, 400);
 

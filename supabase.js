@@ -358,6 +358,18 @@ async function deliverEmails(messages) {
     return data;
 }
 
+// Diagnostic Brevo (admin) : expéditeur validé, compte, événements de livraison récents pour un email.
+async function emailDiagnostic(email) {
+    if (!supabaseClient || !supabaseClient.functions) throw new Error('Supabase non connecté');
+    const { data, error } = await supabaseClient.functions.invoke('send-email', { body: { action: 'diagnostic', email } });
+    if (error) {
+        let detail = error.message;
+        try { const body = await error.context.json(); detail = body.error || detail; } catch (_) { /* réponse non JSON */ }
+        throw new Error(detail);
+    }
+    return data;
+}
+
 async function _deliverEmail(to, subject, html) {
     const cleanEmail = String(to || '').trim().replace(/\.$/, '').replace(/\s/g, '');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('Email invalide: ' + to);
@@ -1080,6 +1092,7 @@ async function sendDonationReceiptEmail(donation) {
 
 // Expose globally
 window.deliverEmails = deliverEmails;
+window.emailDiagnostic = emailDiagnostic;
 window.sendDonationReceiptEmail = sendDonationReceiptEmail;
 window.sendRegistrationEmail = sendRegistrationEmail;
 window.sendConfirmationEmail = sendConfirmationEmail;

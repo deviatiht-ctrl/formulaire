@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260927">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260927">
+    <link rel="stylesheet" href="../style.css?v=20260928">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260928">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -80,7 +80,11 @@
                         <p>Campagnes d'emails bulk et notifications</p>
                     </div>
                 </div>
-                <div class="header-right">
+                <div class="header-right" style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <button class="btn-primary" onclick="exportContacts()" style="background:#0f766e;">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Exporter Excel</span>
+                    </button>
                     <button class="btn-primary" onclick="selectAllVisible(); openBulkEmailModal();">
                         <i class="fas fa-paper-plane"></i>
                         <span>Email à tous</span>
@@ -740,9 +744,17 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260927"></script>
+    <script src="../supabase.js?v=20260928"></script>
+    <script src="../assets/js/leader-tools.js?v=20260928"></script>
     
     <script>
+        function exportContacts() {
+            if (!filteredContacts.length) { alert('Aucun contact à exporter pour ces filtres.'); return; }
+            LeaderTools.csv(['Nom', 'Email', 'Téléphone', 'Source', 'Statut', 'Date'],
+                filteredContacts.map(c => [c.nom, c.email, c.telephone, SOURCE_LABELS[c.source] || c.source, c.statut, LeaderTools.date(c.date)]),
+                `contacts_${LeaderTools.today()}.csv`);
+        }
+
         // ===== STATE =====
         let allContacts = [];
         let filteredContacts = [];

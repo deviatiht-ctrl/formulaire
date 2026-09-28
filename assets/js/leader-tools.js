@@ -134,6 +134,13 @@ window.LeaderTools = {
         } catch (error) { alert(error.message || 'Impossible de charger cette inscription.'); }
     },
 
+    date(value) {
+        const d = value ? new Date(value) : null;
+        return d && !isNaN(d) ? d.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+    },
+
+    today() { return new Date().toISOString().slice(0, 10); },
+
     csv(headers, rows, filename) {
         const cell = value => {
             const text = String(value ?? '');

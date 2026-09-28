@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Certificats PDF | Administration Rasin Ayiti</title>
-    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260927">
+    <link rel="icon" href="../assets/logorasin.PNG"><link rel="stylesheet" href="../assets/css/admin-workflows.css?v=20260928">
 </head>
 <body>
 <header class="workflow-header">
@@ -26,6 +26,7 @@
         <section class="workflow-card">
             <h2>Statistiques des certificats <small id="statsScope" class="muted"></small></h2>
             <div id="certStats" class="cert-stats"></div>
+            <div class="workflow-controls" style="margin-top:14px"><button id="exportStats" type="button" class="secondary">📊 Exporter les statistiques par activité (Excel)</button></div>
             <p id="statsNote" class="muted">Montant brut = prix du certificat avant les rabais des codes leaders. Montant encaissé = ce que les participants confirmés ont réellement payé.</p>
         </section>
         <section class="workflow-card">
@@ -54,6 +55,7 @@
                 <button id="emailSelected" type="button" disabled>✉️ Email aux sélectionnés (0)</button>
                 <button id="emailFiltered" type="button" class="secondary">✉️ Email à tous les participants filtrés</button>
                 <button id="clearSelection" type="button" class="secondary">Désélectionner</button>
+                <button id="exportList" type="button" class="secondary">📥 Exporter la liste filtrée (Excel)</button>
             </div>
             <div class="workflow-table"><table><thead><tr><th class="select-cell"><input type="checkbox" id="selectFiltered" aria-label="Sélectionner tous les participants filtrés"></th><th>Participant / activité</th><th>Paiement / éligibilité</th><th>Certificat</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
             <div class="workflow-controls"><button id="previous" type="button" class="secondary">Précédent</button><span id="page"></span><button id="next" type="button" class="secondary">Suivant</button></div>
@@ -61,8 +63,8 @@
         </section>
     </fieldset>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase.js?v=20260927"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase.js?v=20260928"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../assets/js/leader-tools.js?v=20260927"></script><script src="../assets/js/admin-workflows.js?v=20260927"></script>
-<script src="../assets/js/certificate-pdf.js?v=20260927"></script><script src="../assets/js/email-composer.js?v=20260927"></script><script src="../assets/js/admin-certificates.js?v=20260927"></script>
+<script src="../assets/js/leader-tools.js?v=20260928"></script><script src="../assets/js/admin-workflows.js?v=20260928"></script>
+<script src="../assets/js/certificate-pdf.js?v=20260928"></script><script src="../assets/js/email-composer.js?v=20260928"></script><script src="../assets/js/admin-certificates.js?v=20260928"></script>
 </body></html>
