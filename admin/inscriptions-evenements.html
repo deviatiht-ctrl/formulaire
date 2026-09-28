@@ -197,6 +197,11 @@
         .badge-annule { background: #fee2e2; color: #991b1b; }
 
         .actions { display: flex; gap: 0.5rem; }
+        .stat-link { cursor: pointer; transition: 0.2s; }
+        .stat-link:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -4px rgba(0,0,0,0.12); }
+        .cert-cell { display: flex; flex-direction: column; gap: 0.35rem; min-width: 170px; }
+        .proof-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; display: block; }
+        .proof-link { color: var(--primary); font-size: 0.8rem; font-weight: 600; text-decoration: none; text-align: left; }
         .btn-action {
             width: 32px;
             height: 32px;
@@ -328,6 +333,20 @@
                     <p>En attente</p>
                 </div>
             </div>
+            <div class="stat-card stat-link" onclick="setCertFilter('confirme')" title="Afficher la liste des confirmés pour le certificat">
+                <div class="stat-icon" style="background:#ede9fe; color:#6d28d9;"><i class="fas fa-certificate"></i></div>
+                <div class="stat-info">
+                    <h3 id="statCertConfirme">0</h3>
+                    <p>Confirmés certificat <small id="statCertMontant"></small></p>
+                </div>
+            </div>
+            <div class="stat-card stat-link" onclick="setCertFilter('preuve_attente')" title="Afficher les preuves de paiement à vérifier">
+                <div class="stat-icon" style="background:#ffedd5; color:#c2410c;"><i class="fas fa-receipt"></i></div>
+                <div class="stat-info">
+                    <h3 id="statPreuves">0</h3>
+                    <p>Preuves à vérifier</p>
+                </div>
+            </div>
         </div>
 
         <!-- Leaderboard Section -->
@@ -354,6 +373,15 @@
                     <option value="confirme">Confirmé</option>
                     <option value="annule">Annulé</option>
                 </select>
+                <select id="certFilter" class="filter-select" aria-label="Certificat">
+                    <option value="">Certificat : tous</option>
+                    <option value="demande">Ont demandé un certificat</option>
+                    <option value="confirme">✅ Confirmés pour le certificat</option>
+                    <option value="attente">⏳ Paiement certificat à vérifier</option>
+                    <option value="preuve_attente">📎 Preuve reçue, à vérifier</option>
+                    <option value="preuve">📎 Avec preuve de paiement</option>
+                    <option value="refuse">❌ Paiement refusé</option>
+                </select>
             </div>
 
             <div id="tableContainer">
@@ -367,12 +395,13 @@
                             <th>Ville</th>
                             <th>Quiz Score</th>
                             <th>Statut</th>
+                            <th>Certificat &amp; preuve</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="inscriptionsBody">
                         <tr>
-                            <td colspan="8" class="loading-state">Chargement des données...</td>
+                            <td colspan="9" class="loading-state">Chargement des données...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -471,16 +500,71 @@
             `).join('');
         }
 
+        // Certificat : état du paiement + preuve
+        function certState(ins) {
+            if (!ins.veut_certificat) return 'none';
+            if (ins.certificat_statut_paiement === 'verifie') return 'confirme';
+            if (ins.certificat_statut_paiement === 'refuse') return 'refuse';
+            return 'attente';
+        }
+
+        function proofUrl(ins) {
+            try {
+                const url = new URL(ins.certificat_preuve_url || '', location.href);
+                return ins.certificat_preuve_url && url.protocol === 'https:' ? url.href : '';
+            } catch (_) { return ''; }
+        }
+
+        function matchesCert(ins, filter) {
+            const state = certState(ins), proof = !!proofUrl(ins);
+            switch (filter) {
+                case 'demande': return state !== 'none';
+                case 'preuve': return proof;
+                case 'preuve_attente': return state === 'attente' && proof;
+                case '': return true;
+                default: return state === filter;
+            }
+        }
+
+        function setCertFilter(value) {
+            document.getElementById('certFilter').value = value;
+            renderTable();
+            document.getElementById('tableContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function certCell(ins) {
+            const state = certState(ins), esc = LeaderTools.escape;
+            if (state === 'none') return '<small style="color:#94a3b8;">Sans certificat</small>';
+            const badge = {
+                confirme: '<span class="badge badge-confirme">✅ Confirmé</span>',
+                attente: '<span class="badge badge-en_attente">⏳ À vérifier</span>',
+                refuse: '<span class="badge badge-annule">❌ Refusé</span>'
+            }[state];
+            const url = proofUrl(ins);
+            const proof = url
+                ? (/\.(png|jpe?g|webp|gif)(\?|$)/i.test(url)
+                    ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Ouvrir la preuve en grand"><img src="${esc(url)}" alt="Preuve de paiement" loading="lazy" class="proof-thumb"></a>`
+                    : `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="proof-link">📎 Voir la preuve</a>`)
+                : (Number(ins.certificat_prix) > 0 ? '<small style="color:#b45309;">Aucune preuve</small>' : '<small style="color:#64748b;">Gratuit</small>');
+            return `<div class="cert-cell">
+                <div>${badge} <strong style="font-size:0.85rem;">${esc(ins.certificat_prix ?? 0)} HTG</strong></div>
+                ${ins.code_leader ? `<small style="color:#6d28d9;">Code ${esc(ins.code_leader)}${ins.reduction_pourcentage ? ` (−${esc(ins.reduction_pourcentage)} %)` : ''}</small>` : ''}
+                <div>${proof}</div>
+                <button type="button" class="proof-link" style="border:0;background:none;padding:0;cursor:pointer;" onclick="LeaderTools.review('event', '${esc(ins.id)}')">Détails / valider le paiement →</button>
+            </div>`;
+        }
+
         function getFilteredInscriptions() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const eventId = document.getElementById('eventFilter').value;
             const status = document.getElementById('statusFilter').value;
+            const cert = document.getElementById('certFilter').value;
             return allInscriptions.filter(ins => {
                 if (!LeaderTools.matches(ins)) return false;
                 const matchesSearch = `${ins.nom} ${ins.prenom} ${ins.email} ${ins.leader_nom || ''} ${ins.code_leader || ''}`.toLowerCase().includes(search);
                 const matchesEvent = !eventId || ins.event_id === eventId;
                 const matchesStatus = !status || ins.statut === status;
-                return matchesSearch && matchesEvent && matchesStatus;
+                return matchesSearch && matchesEvent && matchesStatus && matchesCert(ins, cert);
             });
         }
 
@@ -523,7 +607,7 @@
             updateSelectionUi();
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="loading-state">Aucun inscrit trouvé</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="loading-state">Aucun inscrit trouvé</td></tr>';
                 return;
             }
 
@@ -548,7 +632,8 @@
                             ${ins.quiz_score || 0} <small style="font-size: 0.65rem; font-weight: 500;">pts</small>
                         </div>
                     </td>
-                    <td><span class="badge badge-${ins.statut}">${ins.statut.replace('_', ' ')}</span>${LeaderTools.certificateCell(ins, 'event')}</td>
+                    <td><span class="badge badge-${ins.statut}">${ins.statut.replace('_', ' ')}</span></td>
+                    <td>${certCell(ins)}</td>
                     <td>
                         <div class="actions">
                             ${ins.statut !== 'confirme' ? `
@@ -591,14 +676,18 @@
             document.getElementById('statTotal').textContent = allInscriptions.length;
             document.getElementById('statConfirme').textContent = allInscriptions.filter(i => i.statut === 'confirme').length;
             document.getElementById('statAttente').textContent = allInscriptions.filter(i => i.statut === 'en_attente').length;
+            const certOk = allInscriptions.filter(i => certState(i) === 'confirme');
+            document.getElementById('statCertConfirme').textContent = certOk.length;
+            document.getElementById('statCertMontant').textContent = `· ${certOk.reduce((s, i) => s + (Number(i.certificat_prix) || 0), 0).toLocaleString('fr-FR')} HTG`;
+            document.getElementById('statPreuves').textContent = allInscriptions.filter(i => matchesCert(i, 'preuve_attente')).length;
         }
 
         function exportToExcel() {
             // Simple CSV export
-            const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Ville', 'Événement', 'Statut', 'Date', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat'];
+            const headers = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Ville', 'Événement', 'Statut', 'Date', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat', 'Preuve paiement'];
             const rows = getFilteredInscriptions().map(i => [
                 i.nom, i.prenom, i.email, i.telephone, i.ville, i.events?.titre, i.statut, i.created_at,
-                i.leader_nom, i.code_leader, i.certificat_prix_initial, i.reduction_pourcentage, i.certificat_reduction, i.certificat_prix, i.certificat_statut_paiement
+                i.leader_nom, i.code_leader, i.certificat_prix_initial, i.reduction_pourcentage, i.certificat_reduction, i.certificat_prix, i.certificat_statut_paiement, proofUrl(i)
             ]);
             LeaderTools.csv(headers, rows, 'inscriptions_evenements.csv');
         }
@@ -607,6 +696,7 @@
         document.getElementById('leaderFilter').addEventListener('change', renderTable);
         document.getElementById('eventFilter').addEventListener('change', renderTable);
         document.getElementById('statusFilter').addEventListener('change', renderTable);
+        document.getElementById('certFilter').addEventListener('change', renderTable);
 
         init();
     </script>
