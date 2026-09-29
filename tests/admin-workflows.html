@@ -2,7 +2,7 @@
 <html lang="fr"><head><meta charset="utf-8"><title>Admin workflow tests</title></head><body>
 <pre id="results">RUNNING</pre>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../assets/js/certificate-pdf.js?v=20260928"></script>
+<script src="../assets/js/certificate-pdf.js?v=20260929"></script>
 <script type="module">
 const output = document.getElementById('results');
 const logs = [];
@@ -236,6 +236,15 @@ try {
     await db.exec(await sql('10_consolidation.sql'));
     await db.exec(await sql('11_certificats_pdf.sql'));
     assert((await q('SELECT * FROM rasinayiti_admin_registrations()')).rows.length===7,'migrations rerun after transfer and publication preserve all registrations');
+    for (let i = 0; i < 2; i++) await db.exec(await sql('13_date_limite_inscription.sql'));
+    assert(true,'13_date_limite_inscription.sql executes and is rerunnable');
+    const deadlineEvent = await scalar("INSERT INTO rasinayiti_events(titre,avec_certificat,prix_certificat,inscription_date_limite) VALUES ('Limite',true,0,now() + interval '1 hour') RETURNING id");
+    assert(!!await register('event',deadlineEvent,'early@example.test'),'registration accepted before the deadline');
+    await q("UPDATE rasinayiti_events SET inscription_date_limite = now() - interval '1 minute' WHERE id=$1",[deadlineEvent]);
+    const late = await rejects(() => register('event',deadlineEvent,'late-deadline@example.test'),'registration rejected after the deadline');
+    assert(late.message.includes('clôturées'),'deadline rejection explains that registrations are closed');
+    await q('UPDATE rasinayiti_events SET inscription_date_limite = NULL WHERE id=$1',[deadlineEvent]);
+    assert(!!await register('event',deadlineEvent,'nolimit@example.test'),'clearing the deadline reopens registrations');
     await db.close();
     output.textContent = 'SUCCESS: ' + logs.length + ' checks\n' + logs.join('\n');
 } catch (error) {

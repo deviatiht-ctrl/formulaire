@@ -8,8 +8,8 @@
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260928">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260928">
+    <link rel="stylesheet" href="../style.css?v=20260929">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20260929">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -237,6 +237,11 @@
                             <option value="true">Oui - Accepter inscriptions</option>
                             <option value="false">Non - Inscriptions fermées</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date limite d'inscription (compte à rebours)</label>
+                        <input type="datetime-local" id="inscriptionDateLimite" class="search-input">
+                        <small style="color:#64748b;display:block;margin-top:4px;">Vide = pas de limite. Après cette date, plus aucune inscription n'est acceptée et le public voit « Inscriptions clôturées ».</small>
                     </div>
                     <div class="form-group">
                         <label>Places max (vide = illimité)</label>
@@ -763,13 +768,22 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260928"></script>
-    <script src="../assets/js/admin-workflows.js?v=20260928"></script>
-    <script src="../assets/js/leader-tools.js?v=20260928"></script>
+    <script src="../supabase.js?v=20260929"></script>
+    <script src="../assets/js/admin-workflows.js?v=20260929"></script>
+    <script src="../assets/js/leader-tools.js?v=20260929"></script>
+    <script src="../assets/js/event-countdown.js?v=20260929"></script>
     
     <script>
         let currentAdmin = null;
         let allEvents = [];
+        let deadlineColumn = false; // true quand la migration 13 (inscription_date_limite) est installée
+
+        // ISO (UTC) → valeur locale pour <input type="datetime-local">
+        function toLocalInput(iso) {
+            const d = iso ? new Date(iso) : null;
+            if (!d || isNaN(d)) return '';
+            return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        }
 
         // Check admin authentication
         function checkAuth() {
@@ -793,6 +807,7 @@
                 if (error) throw error;
                 
                 allEvents = (data || []).filter(event => event.status !== 'archive');
+                deadlineColumn = (data || []).some(event => 'inscription_date_limite' in event);
                 filterAndDisplayEvents();
                 // Load counts after display
                 setTimeout(() => loadRegistrationCounts(allEvents), 300);
@@ -816,14 +831,14 @@
                     const list = byEvent.get(e.id) || [];
                     const cert = list.filter(r => r.veut_certificat), ok = cert.filter(r => r.certificat_statut_paiement === 'verifie');
                     return [e.titre, e.type_evenement || '', LeaderTools.date(e.start_date || e.date_evenement), LeaderTools.date(e.end_date), e.lieu || '',
-                        e.status || '', e.inscription_ouverte === false ? 'Fermées' : 'Ouvertes', e.places_max || '', list.length,
+                        e.status || '', EventCountdown.isClosed(e) ? 'Fermées' : 'Ouvertes', LeaderTools.date(e.inscription_date_limite), e.places_max || '', list.length,
                         list.filter(r => r.statut === 'confirme').length, list.filter(r => r.statut === 'en_attente').length, list.filter(r => r.statut === 'annule').length,
                         cert.length, ok.length, cert.filter(r => r.certificat_statut_paiement === 'en_attente').length,
                         ok.reduce((s, r) => s + (Number(r.certificat_prix) || 0), 0)];
                 });
                 const total = i => rows.reduce((s, r) => s + (Number(r[i]) || 0), 0);
-                rows.push([], ['TOTAL', `${allEvents.length} événement(s)`, '', '', '', '', '', '', total(8), total(9), total(10), total(11), total(12), total(13), total(14), total(15)]);
-                LeaderTools.csv(['Événement', 'Type', 'Début', 'Fin', 'Lieu', 'Statut', 'Inscriptions', 'Places max', 'Inscrits', 'Confirmés', 'En attente', 'Annulés',
+                rows.push([], ['TOTAL', `${allEvents.length} événement(s)`, '', '', '', '', '', '', '', total(9), total(10), total(11), total(12), total(13), total(14), total(15), total(16)]);
+                LeaderTools.csv(['Événement', 'Type', 'Début', 'Fin', 'Lieu', 'Statut', 'Inscriptions', 'Date limite', 'Places max', 'Inscrits', 'Confirmés', 'En attente', 'Annulés',
                     'Demandes certificat', 'Certificats confirmés', 'Certificats à vérifier', 'Encaissé certificats (HTG)'], rows, `evenements_${LeaderTools.today()}.csv`);
             } catch (err) { alert('Export impossible : ' + (err.message || err)); }
             finally { btn.disabled = false; }
@@ -884,11 +899,12 @@
                                 ${event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne'}
                             </div>
                             <div class="event-price ${priceClass}">${price}</div>
+                            ${EventCountdown.badge(event)}
                             <div class="event-registrations">
                                 <span class="reg-count" id="reg-${event.id}">⏳ chargement...</span>
                             </div>
                             <div class="event-actions">
-                                <button class="btn-action btn-inscriptions" onclick="location.href='inscriptions-evenements.html?event='+event.id">
+                                <button class="btn-action btn-inscriptions" onclick="location.href='inscriptions-evenements.html?event=${event.id}'">
                                     <i class="fas fa-users"></i> Inscrits
                                 </button>
                                 <button class="btn-action btn-share" onclick="copyEventLink('${event.id}', this)">
@@ -905,6 +921,7 @@
                     </div>
                 `;
             }).join('');
+            EventCountdown.register(events);
         }
 
         // View flyer
@@ -973,6 +990,7 @@
                     document.getElementById('afficherSurSite').value = String(event.afficher_sur_site);
                     document.getElementById('inscriptionOuverte').value = String(event.inscription_ouverte !== false);
                     document.getElementById('placesMax').value = event.places_max || '';
+                    document.getElementById('inscriptionDateLimite').value = toLocalInput(event.inscription_date_limite);
                     document.getElementById('whatsappLink').value = event.whatsapp_link || '';
                     document.getElementById('hasQuiz').value = String(event.has_quiz === true);
                     document.getElementById('avecCertificat').value = String(event.avec_certificat === true);
@@ -996,6 +1014,7 @@
                 document.getElementById('whatsappLink').value = '';
                 document.getElementById('hasQuiz').value = 'false';
                 document.getElementById('inscriptionOuverte').value = 'true';
+                document.getElementById('inscriptionDateLimite').value = '';
                 document.getElementById('startDate').value = '';
                 document.getElementById('endDate').value = '';
                 document.getElementById('imagesData').value = '[]';
@@ -1255,6 +1274,8 @@
                     images: imagesArr,
                     flyer_url: imagesArr[0] || null // First image as flyer for backward compatibility
                 };
+                const deadlineValue = document.getElementById('inscriptionDateLimite').value;
+                if (deadlineValue || deadlineColumn) eventData.inscription_date_limite = deadlineValue ? new Date(deadlineValue).toISOString() : null;
 
                 let error;
                 if (eventId) {
@@ -1277,7 +1298,7 @@
                 alert('Événement enregistré avec succès !');
             } catch (err) {
                 console.error('Error saving event:', err);
-                alert('Erreur: ' + err.message);
+                alert('Erreur: ' + err.message + (/inscription_date_limite/.test(err.message || '') ? '\n\nLa colonne « date limite » n’existe pas encore : exécutez sql2.0/13_date_limite_inscription.sql dans Supabase.' : ''));
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'Enregistrer';
