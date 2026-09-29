@@ -245,6 +245,10 @@ try {
     assert(late.message.includes('clôturées'),'deadline rejection explains that registrations are closed');
     await q('UPDATE rasinayiti_events SET inscription_date_limite = NULL WHERE id=$1',[deadlineEvent]);
     assert(!!await register('event',deadlineEvent,'nolimit@example.test'),'clearing the deadline reopens registrations');
+    for (let i = 0; i < 2; i++) await db.exec(await sql('14_event_zoom_link.sql'));
+    assert(true,'14_event_zoom_link.sql executes and is rerunnable');
+    const zoomEvent = await scalar("INSERT INTO rasinayiti_events(titre,zoom_link) VALUES ('Zoom','https://zoom.us/j/123') RETURNING zoom_link");
+    assert(zoomEvent === 'https://zoom.us/j/123','zoom_link column stores and returns the link');
     await db.close();
     output.textContent = 'SUCCESS: ' + logs.length + ' checks\n' + logs.join('\n');
 } catch (error) {

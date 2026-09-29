@@ -207,9 +207,16 @@
                     <textarea id="sponsors" rows="3" class="search-input" placeholder="Sponsor 1&#10;Sponsor 2&#10;Sponsor 3"></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label>Lien Groupe WhatsApp (Invitation)</label>
-                    <input type="url" id="whatsappLink" class="search-input" placeholder="https://chat.whatsapp.com/...">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lien Groupe WhatsApp (Invitation)</label>
+                        <input type="url" id="whatsappLink" class="search-input" placeholder="https://chat.whatsapp.com/...">
+                    </div>
+                    <div class="form-group">
+                        <label>Lien Zoom / Live</label>
+                        <input type="url" id="zoomLink" class="search-input" placeholder="https://zoom.us/j/...">
+                        <small style="color:#64748b;display:block;margin-top:4px;">Visible dans l'espace étudiant une fois l'inscription confirmée.</small>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -777,6 +784,7 @@
         let currentAdmin = null;
         let allEvents = [];
         let deadlineColumn = false; // true quand la migration 13 (inscription_date_limite) est installée
+        let zoomColumn = false; // true quand la migration 14 (zoom_link) est installée
 
         // ISO (UTC) → valeur locale pour <input type="datetime-local">
         function toLocalInput(iso) {
@@ -808,6 +816,7 @@
                 
                 allEvents = (data || []).filter(event => event.status !== 'archive');
                 deadlineColumn = (data || []).some(event => 'inscription_date_limite' in event);
+                zoomColumn = (data || []).some(event => 'zoom_link' in event);
                 filterAndDisplayEvents();
                 // Load counts after display
                 setTimeout(() => loadRegistrationCounts(allEvents), 300);
@@ -899,6 +908,8 @@
                                 ${event.type_evenement === 'online' ? 'En ligne' : event.type_evenement === 'hybrid' ? 'Hybride' : 'En personne'}
                             </div>
                             <div class="event-price ${priceClass}">${price}</div>
+                            ${event.whatsapp_link ? '<div class="event-meta" style="color:#128c4b;"><i class="fab fa-whatsapp"></i> WhatsApp configuré</div>' : ''}
+                            ${event.zoom_link ? '<div class="event-meta" style="color:#2d8cff;"><i class="fas fa-video"></i> Zoom configuré</div>' : ''}
                             ${EventCountdown.badge(event)}
                             <div class="event-registrations">
                                 <span class="reg-count" id="reg-${event.id}">⏳ chargement...</span>
@@ -992,6 +1003,7 @@
                     document.getElementById('placesMax').value = event.places_max || '';
                     document.getElementById('inscriptionDateLimite').value = toLocalInput(event.inscription_date_limite);
                     document.getElementById('whatsappLink').value = event.whatsapp_link || '';
+                    document.getElementById('zoomLink').value = event.zoom_link || '';
                     document.getElementById('hasQuiz').value = String(event.has_quiz === true);
                     document.getElementById('avecCertificat').value = String(event.avec_certificat === true);
                     document.getElementById('prixCertificat').value = event.prix_certificat || 0;
@@ -1012,6 +1024,7 @@
                 document.getElementById('flyerUrl').value = '';
                 document.getElementById('flyerPublicId').value = '';
                 document.getElementById('whatsappLink').value = '';
+                document.getElementById('zoomLink').value = '';
                 document.getElementById('hasQuiz').value = 'false';
                 document.getElementById('inscriptionOuverte').value = 'true';
                 document.getElementById('inscriptionDateLimite').value = '';
@@ -1276,6 +1289,8 @@
                 };
                 const deadlineValue = document.getElementById('inscriptionDateLimite').value;
                 if (deadlineValue || deadlineColumn) eventData.inscription_date_limite = deadlineValue ? new Date(deadlineValue).toISOString() : null;
+                const zoomValue = document.getElementById('zoomLink').value.trim();
+                if (zoomValue || zoomColumn) eventData.zoom_link = zoomValue || null;
 
                 let error;
                 if (eventId) {
@@ -1298,7 +1313,7 @@
                 alert('Événement enregistré avec succès !');
             } catch (err) {
                 console.error('Error saving event:', err);
-                alert('Erreur: ' + err.message + (/inscription_date_limite/.test(err.message || '') ? '\n\nLa colonne « date limite » n’existe pas encore : exécutez sql2.0/13_date_limite_inscription.sql dans Supabase.' : ''));
+                alert('Erreur: ' + err.message + (/inscription_date_limite/.test(err.message || '') ? '\n\nLa colonne « date limite » n’existe pas encore : exécutez sql2.0/13_date_limite_inscription.sql dans Supabase.' : '') + (/zoom_link/.test(err.message || '') ? '\n\nLa colonne « zoom_link » n’existe pas encore : exécutez sql2.0/14_event_zoom_link.sql dans Supabase.' : ''));
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'Enregistrer';

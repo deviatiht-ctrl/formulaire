@@ -84,6 +84,17 @@
         .badge-en_attente { background:#fef3c7; color:#92400e; }
         .badge-confirme { background:#d1fae5; color:#065f46; }
         .badge-annule { background:#fee2e2; color:#991b1b; }
+        .evt-meta { display:flex; flex-wrap:wrap; gap:0.35rem 1rem; margin:0.4rem 0; }
+        .evt-meta span { color:#64748b; font-size:0.85rem; display:inline-flex; align-items:center; gap:0.35rem; }
+        .evt-meta i { width:14px; text-align:center; color:#94a3b8; }
+        .evt-desc { margin:0.35rem 0 0; color:#475569; font-size:0.85rem; line-height:1.45; }
+        .evt-cert { margin:0.5rem 0 0; font-size:0.82rem; font-weight:600; }
+        .evt-links { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.6rem; }
+        .evt-link { display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; border-radius:10px; font-size:0.82rem; font-weight:700; text-decoration:none; }
+        .evt-link-wa { background:#dcfce7; color:#15803d; }
+        .evt-link-zoom { background:#dbeafe; color:#1d4ed8; }
+        .evt-note { margin:0.5rem 0 0; font-size:0.78rem; color:#94a3b8; font-style:italic; }
+        @media (max-width: 640px) { .item-row { flex-direction:column; align-items:flex-start; } }
         @media (max-width: 768px) {
             .mobile-toggle { display:block; }
             .header-left { display:flex; align-items:center; width:100%; }
@@ -107,12 +118,22 @@
         }
         function logout() { sessionStorage.clear(); window.location.href = 'login.html'; }
 
+        function esc(s) {
+            return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function fmtDate(iso, withTime) {
+            if (!iso) return '';
+            const opts = { day: 'numeric', month: 'long', year: 'numeric' };
+            if (withTime) { opts.hour = '2-digit'; opts.minute = '2-digit'; }
+            return new Date(iso).toLocaleDateString('fr-FR', opts);
+        }
+
         async function loadEvents() {
             const container = document.getElementById('eventsList');
             try {
                 const { data, error } = await window.supabaseClient
                     .from('inscriptions_evenements')
-                    .select('*, events(titre, start_date, lieu, type_evenement, whatsapp_link)')
+                    .select('*, events(*)')
                     .eq('etudiant_id', currentEtudiant.id)
                     .order('created_at', { ascending: false });
 
@@ -123,17 +144,55 @@
                     return;
                 }
 
+                const typeLabel = { online: 'En ligne', hybrid: 'Hybride', in_person: 'En personne' };
+                const certLabel = {
+                    verifie: '<span style="color:#059669;">✅ Paiement vérifié</span>',
+                    en_attente: '<span style="color:#b45309;">⏳ Paiement à vérifier</span>',
+                    refuse: '<span style="color:#dc2626;">❌ Paiement refusé</span>',
+                    non_requis: '<span style="color:#059669;">✅ Gratuit — confirmé</span>'
+                };
+
                 container.innerHTML = data.map(ins => {
                     const evt = ins.events || {};
-                    const cert = ins.veut_certificat ? ' · <i class="fas fa-certificate" style="color:#f59e0b;"></i> Certificat' : '';
-                    const waBtn = evt.whatsapp_link && ins.statut === 'confirme'
-                        ? `<a href="${evt.whatsapp_link}" target="_blank" style="color:#25d366; font-size:0.85rem; font-weight:600;"><i class="fab fa-whatsapp"></i> Groupe WhatsApp</a>` : '';
+                    const confirmed = ins.statut === 'confirme';
+                    const start = fmtDate(evt.start_date || evt.date_evenement, true);
+                    const end = fmtDate(evt.end_date, true);
+                    const prix = evt.est_payant ? `${evt.prix} ${evt.devise || 'HTG'}` : 'Gratuit';
+
+                    let cert = '';
+                    if (ins.veut_certificat) {
+                        cert = `<p class="evt-cert"><i class="fas fa-certificate" style="color:#f59e0b;"></i> Certificat demandé
+                            — ${Number(ins.certificat_prix) ? ins.certificat_prix + ' HTG' : 'gratuit'}
+                            · ${certLabel[ins.certificat_statut_paiement] || esc(ins.certificat_statut_paiement)}
+                            ${ins.certificat_delivre ? ' · <a href="certificats.html" style="color:#7c3aed;">🎓 Délivré — voir mes certificats</a>' : ''}</p>`;
+                    }
+
+                    let links = '';
+                    if (confirmed && (evt.whatsapp_link || evt.zoom_link)) {
+                        links = '<div class="evt-links">'
+                            + (evt.whatsapp_link ? `<a class="evt-link evt-link-wa" href="${esc(evt.whatsapp_link)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Groupe WhatsApp</a>` : '')
+                            + (evt.zoom_link ? `<a class="evt-link evt-link-zoom" href="${esc(evt.zoom_link)}" target="_blank" rel="noopener"><i class="fas fa-video"></i> Rejoindre sur Zoom</a>` : '')
+                            + '</div>';
+                    } else if (!confirmed && (evt.whatsapp_link || evt.zoom_link)) {
+                        links = '<p class="evt-note">Les liens WhatsApp / Zoom seront visibles une fois votre inscription confirmée.</p>';
+                    }
+
                     return `
                         <div class="item-row">
                             <div class="item-icon"><i class="fas fa-calendar-alt"></i></div>
                             <div class="item-info">
-                                <h4>${evt.titre || 'Événement'}</h4>
-                                <p>${evt.start_date ? new Date(evt.start_date).toLocaleDateString('fr-FR') : 'Date à venir'}${evt.lieu ? ' · ' + evt.lieu : ''}${cert} ${waBtn}</p>
+                                <h4>${esc(evt.titre) || 'Événement'}</h4>
+                                <div class="evt-meta">
+                                    ${start ? `<span><i class="fas fa-calendar"></i> ${start}${end ? ' → ' + end : ''}</span>` : '<span><i class="fas fa-calendar"></i> Date à venir</span>'}
+                                    ${evt.lieu ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(evt.lieu)}</span>` : ''}
+                                    <span><i class="fas fa-${evt.type_evenement === 'online' ? 'video' : evt.type_evenement === 'hybrid' ? 'laptop' : 'users'}"></i> ${typeLabel[evt.type_evenement] || 'En personne'}</span>
+                                    <span><i class="fas fa-tag"></i> ${prix}</span>
+                                    ${ins.created_at ? `<span><i class="fas fa-pen"></i> Inscrit le ${fmtDate(ins.created_at)}</span>` : ''}
+                                    ${ins.quiz_score ? `<span><i class="fas fa-star"></i> Quiz : ${ins.quiz_score} pts</span>` : ''}
+                                </div>
+                                ${evt.description ? `<p class="evt-desc">${esc(evt.description)}</p>` : ''}
+                                ${cert}
+                                ${links}
                             </div>
                             <span class="badge badge-${ins.statut || 'en_attente'}">${(ins.statut || 'en_attente').replace('_', ' ')}</span>
                         </div>
