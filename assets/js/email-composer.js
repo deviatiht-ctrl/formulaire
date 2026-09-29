@@ -200,6 +200,7 @@ RASIN AYITI — Développement Juvénile<br>📞 +509 46807922 · ✉️ rasinay
                 const d = await window.emailDiagnostic(who.trim().toLowerCase());
                 const lines = [];
                 if (d.sender) lines.push(d.sender.active ? `✅ Expéditeur ${d.sender.email} validé dans Brevo.` : `❌ Expéditeur ${d.sender.email} ${d.sender.missing ? 'ABSENT' : 'NON VALIDÉ'} dans Brevo → Senders : ajoutez-le et cliquez le lien de confirmation reçu. Sans cela Brevo accepte l’envoi mais ne livre rien.`);
+                if (d.replyTo && d.replyTo !== d.from) lines.push(`↩️ Réponses dirigées vers : ${d.replyTo}`);
                 if (d.account) lines.push(`Compte Brevo : ${d.account.email || ''}${d.account.plan && d.account.plan.length ? ' · ' + d.account.plan.join(', ') : ''}`);
                 lines.push(d.events && d.events.length ? `Derniers événements pour ${who} :` : `Aucun événement Brevo sur 7 jours pour ${who} : l’email n’a pas été traité (expéditeur non validé ou compte en cours de validation).`);
                 (d.events || []).slice(0, 8).forEach(e => lines.push(`• ${new Date(e.date).toLocaleString('fr-FR')} — ${EVENTS[e.event] || e.event}${e.reason ? ' : ' + e.reason : ''}`));

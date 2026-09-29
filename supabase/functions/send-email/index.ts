@@ -4,12 +4,14 @@
 //   BREVO_API_KEY  clé API v3 Brevo (préfixe xkeysib, PAS la clé SMTP au préfixe xsmtpsib)
 //   FROM_EMAIL     expéditeur validé dans Brevo (Senders & IP)
 //   FROM_NAME      nom affiché (optionnel)
+//   REPLY_TO       adresse qui reçoit les réponses (optionnel, défaut = FROM_EMAIL)
 // SUPABASE_URL et SUPABASE_ANON_KEY sont fournis automatiquement par Supabase.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'rasinayiti.ht@gmail.com';
 const FROM_NAME = Deno.env.get('FROM_NAME') ?? 'Rasin Ayiti';
+const REPLY_TO = Deno.env.get('REPLY_TO') ?? '';
 const MAX_MESSAGES = 50;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -25,7 +27,7 @@ async function sendOne({ to, subject, html }) {
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
-    body: JSON.stringify({ sender: { email: FROM_EMAIL, name: FROM_NAME }, to: [{ email: to }], subject, htmlContent: html }),
+    body: JSON.stringify({ sender: { email: FROM_EMAIL, name: FROM_NAME }, replyTo: REPLY_TO ? { email: REPLY_TO, name: FROM_NAME } : undefined, to: [{ email: to }], subject, htmlContent: html }),
   });
   if (res.ok) return { to, ok: true, messageId: (await res.json().catch(() => ({}))).messageId ?? null };
   const text = await res.text();
@@ -42,7 +44,7 @@ async function brevoGet(path) {
   return data;
 }
 async function diagnostic(email) {
-  const out = { from: FROM_EMAIL, sender: null, account: null, events: [], errors: [] };
+  const out = { from: FROM_EMAIL, replyTo: REPLY_TO || FROM_EMAIL, sender: null, account: null, events: [], errors: [] };
   try {
     const { senders = [] } = await brevoGet('/senders');
     const s = senders.find(x => String(x.email).toLowerCase() === FROM_EMAIL.toLowerCase());
