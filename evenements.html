@@ -1718,12 +1718,13 @@
                     : 'non_requis';
 
                 // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou pa bloke l
+                let isAlready = false;
                 try {
                     const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
                     if (signUpError) {
-                        const isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
-                                          signUpError.status === 422 ||
-                                          signUpError.code === 'user_already_exists';
+                        isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
+                                    signUpError.status === 422 ||
+                                    signUpError.code === 'user_already_exists';
                         if (!isAlready) {
                             console.warn('Auth notice:', signUpError.message);
                         }
@@ -1739,7 +1740,11 @@
                 if (error) throw error;
 
                 closeRegModal();
-                alert('Inscription réussie ! L\'équipe Rasin Ayiti vous contactera par e-mail.');
+                if (isAlready) {
+                    alert('Enskripsyon w reyisi avèk siksè ! Kòm ou te gentan gen yon kont sou Rasin Ayiti, evènman sa a ajoute sou menm kont ou an.');
+                } else {
+                    alert('Inscription réussie ! L\'équipe Rasin Ayiti vous contactera par e-mail.');
+                }
                 document.getElementById('eventRegForm').reset();
             } catch (err) {
                 console.error('Erreur inscription événement:', err);

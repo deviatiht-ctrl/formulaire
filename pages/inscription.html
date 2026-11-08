@@ -170,13 +170,26 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="password">Mot de passe <span style="color:#ef4444;">*</span> <small style="font-weight:400;color:#64748b;">(kreye kont ou)</small></label>
-                        <div class="input-wrapper">
+                    <div class="form-group" id="passwordGroup">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:4px;">
+                            <label for="password" style="margin-bottom:0;">Mot de passe <span id="passwordRequiredStar" style="color:#ef4444;">*</span> <small id="passwordLabelNote" style="font-weight:400;color:#64748b;">(kreye kont ou si w nouvo)</small></label>
+                            <button type="button" id="toggleExistingBtn" onclick="toggleExistingAccountMode()" style="background:none; border:none; color:#2563eb; font-size:0.82rem; cursor:pointer; text-decoration:underline; font-weight:600; padding:0;">
+                                Mwen gen kont deja
+                            </button>
+                        </div>
+                        <div class="input-wrapper" id="passwordWrapper">
                             <i class="fas fa-lock input-icon"></i>
                             <input type="password" id="password" name="password" placeholder="Minimòm 6 karaktè" required minlength="6">
                         </div>
                         <span class="error-message" id="passwordError"></span>
+                        <div id="existingAccountBox" style="display:none; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px 14px; border-radius:10px; font-size:0.85rem; margin-top:6px;">
+                            <div style="display:flex; align-items:flex-start; gap:8px;">
+                                <i class="fas fa-user-check" style="color:#2563eb; font-size:1.1rem; margin-top:2px;"></i>
+                                <div id="existingAccountMsg">
+                                    <strong>Ou gen yon kont deja :</strong> Nou pap mande w modpas. Enskripsyon an ap fèt dirèkteman sou imèl ou an, epi w ap ka itilize ansyen modpas ou pou konekte nan espas etidyan.
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Certificat Section -->
@@ -724,8 +737,8 @@
             }
 
             const password = document.getElementById('password').value;
-            if (!password || password.length < 6) {
-                document.getElementById('passwordError').textContent = 'Modpas la dwe gen omwen 6 karaktè';
+            if (!isExistingAccountMode && (!password || password.length < 6)) {
+                document.getElementById('passwordError').textContent = 'Modpas la dwe gen omwen 6 karaktè pou kreye kont ou. Si w te gen kont deja, klike sou "Mwen gen kont deja".';
                 document.getElementById('password').classList.add('error');
                 isValid = false;
             }
@@ -771,24 +784,31 @@
                     profession: document.getElementById('profession').value.trim(),
                 };
 
+                let isExistingAccount = isExistingAccountMode;
                 const password = document.getElementById('password').value;
 
-                // Kreye kont itilizatè a nan Supabase Auth si nouvo (si email la egziste deja, nou pa bloke l)
-                try {
-                    const { error: signUpError } = await window.supabaseClient.auth.signUp({
-                        email: formData.email,
-                        password: password
-                    });
-                    if (signUpError) {
-                        const isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
-                                          signUpError.status === 422 ||
-                                          signUpError.code === 'user_already_exists';
-                        if (!isAlready) {
-                            console.warn('Supabase Auth signUp notice:', signUpError.message);
+                // Si se pa mòd kont ki egziste deja epi gen yon modpas, eseye kreye kont la nan Auth
+                if (password && !isExistingAccountMode) {
+                    try {
+                        const { error: signUpError } = await window.supabaseClient.auth.signUp({
+                            email: formData.email,
+                            password: password
+                        });
+                        if (signUpError) {
+                            const isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
+                                              signUpError.status === 422 ||
+                                              signUpError.code === 'user_already_exists';
+                            if (isAlready) {
+                                isExistingAccount = true;
+                            } else {
+                                console.warn('Supabase Auth signUp notice:', signUpError.message);
+                            }
                         }
+                    } catch (authErr) {
+                        console.warn('Auth check non-bloquant:', authErr);
                     }
-                } catch (authErr) {
-                    console.warn('Auth check non-bloquant:', authErr);
+                } else {
+                    isExistingAccount = true;
                 }
 
                 // Insert into etudiants table (upsert pou email ki egziste deja)
@@ -840,8 +860,17 @@
 
                 // Show success
                 document.getElementById('successModal').classList.remove('hidden');
-                document.getElementById('successMessage').textContent =
-                    `Votre inscription a été enregistrée. L'équipe Rasin Ayiti vous contactera à ${formData.email}.`;
+                if (isExistingAccount) {
+                    document.getElementById('successMessage').innerHTML =
+                        `<strong>Enskripsyon an reyisi avèk siksè !</strong><br><br>` +
+                        `ℹ️ Nou rekonèt imèl ou an (<strong>${formData.email}</strong>) te gentan gen yon kont sou Rasin Ayiti. ` +
+                        `Nouvo fòmasyon an ajoute dirèkteman sou menm kont ou an san okenn pwoblèm.<br><br>` +
+                        `W ap ka konekte nan Espas Etidyan ou a ak ansyen modpas ou a pou w kòmanse swiv li.`;
+                } else {
+                    document.getElementById('successMessage').innerHTML =
+                        `<strong>Felisitasyon ! Enskripsyon w ak nouvo kont ou kreye avèk siksè.</strong><br><br>` +
+                        `W ap ka konekte nan Espas Etidyan ou a ak imèl <strong>${formData.email}</strong> ak modpas ou te chwazi a.`;
+                }
 
             } catch (error) {
                 console.error('Erreur inscription formation/séminaire:', error);
@@ -862,9 +891,47 @@
             document.getElementById('successModal').classList.add('hidden');
         }
 
+        let isExistingAccountMode = false;
+        function toggleExistingAccountMode(forceState, customMsg) {
+            if (typeof forceState === 'boolean') {
+                isExistingAccountMode = forceState;
+            } else {
+                isExistingAccountMode = !isExistingAccountMode;
+            }
+            const pwdWrapper = document.getElementById('passwordWrapper');
+            const box = document.getElementById('existingAccountBox');
+            const btn = document.getElementById('toggleExistingBtn');
+            const star = document.getElementById('passwordRequiredStar');
+            const note = document.getElementById('passwordLabelNote');
+            const msg = document.getElementById('existingAccountMsg');
+            const pwdInput = document.getElementById('password');
+
+            if (isExistingAccountMode) {
+                if (pwdWrapper) pwdWrapper.style.display = 'none';
+                if (box) box.style.display = 'block';
+                if (star) star.style.display = 'none';
+                if (note) note.textContent = '(kont rekonèt)';
+                if (btn) btn.textContent = 'Mwen se yon nouvo etidyan (kreye modpas)';
+                if (pwdInput) {
+                    pwdInput.required = false;
+                    pwdInput.value = '';
+                }
+                if (customMsg && msg) {
+                    msg.innerHTML = `<strong>Kont rekonèt :</strong> ${customMsg}`;
+                }
+            } else {
+                if (pwdWrapper) pwdWrapper.style.display = 'block';
+                if (box) box.style.display = 'none';
+                if (star) star.style.display = 'inline';
+                if (note) note.textContent = '(kreye kont ou si w nouvo)';
+                if (btn) btn.textContent = 'Mwen gen kont deja';
+                if (pwdInput) pwdInput.required = true;
+            }
+        }
+
         function prefillStudentInfo() {
             try {
-                const saved = localStorage.getItem('etudiant');
+                const saved = localStorage.getItem('etudiant') || sessionStorage.getItem('etudiant');
                 if (!saved) return;
                 const st = JSON.parse(saved);
                 if (st.nom && !document.getElementById('nom').value) document.getElementById('nom').value = st.nom;
@@ -875,6 +942,10 @@
                 if (st.ville && !document.getElementById('ville').value) document.getElementById('ville').value = st.ville;
                 if (st.profession && !document.getElementById('profession').value) document.getElementById('profession').value = st.profession;
                 if (st.tranche_age && !document.getElementById('tranche_age').value) document.getElementById('tranche_age').value = st.tranche_age;
+
+                if (st.email) {
+                    toggleExistingAccountMode(true, `Ou deja gen yon kont sou Rasin Ayiti ak imèl <strong>${st.email}</strong>. Enskripsyon an ap fèt sou menm kont sa a san mande modpas.`);
+                }
             } catch (_) {}
         }
 
@@ -883,6 +954,22 @@
             loadEventDetails();
             prefillStudentInfo();
             document.getElementById('inscriptionForm').addEventListener('submit', handleSubmit);
+
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.addEventListener('input', () => {
+                    const val = emailInput.value.trim().toLowerCase();
+                    try {
+                        const saved = localStorage.getItem('etudiant') || sessionStorage.getItem('etudiant');
+                        if (saved) {
+                            const st = JSON.parse(saved);
+                            if (st.email && st.email.trim().toLowerCase() === val) {
+                                toggleExistingAccountMode(true, `Nou rekonèt imèl ou an (<strong>${st.email}</strong>). Enskripsyon an ap fèt dirèkteman sou kont sa a san mande modpas.`);
+                            }
+                        }
+                    } catch (_) {}
+                });
+            }
         });
     </script>
 </body>
