@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - EventJeunes</title>
-    <link rel="stylesheet" href="admin.css?v=20260930">
+    <link rel="stylesheet" href="admin.css?v=20261108">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
@@ -13,7 +13,7 @@
 <body>
     <!-- Background -->
     <div class="bg-gradient"></div>
-    
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -22,7 +22,7 @@
             </div>
             <span class="brand">EventJeunes</span>
         </div>
-        
+
         <nav class="sidebar-nav">
             <a href="admin/codes-leaders.html" class="nav-item"><i class="fas fa-users"></i><span>Codes leaders</span></a>
             <a href="admin/consolidation.html" class="nav-item"><i class="fas fa-object-group"></i><span>Consolidation</span></a>
@@ -67,7 +67,7 @@
                 <span>Statistiques</span>
             </a>
         </nav>
-        
+
         <div class="sidebar-footer">
             <div class="admin-info" id="adminInfo" style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">
                 <i class="fas fa-user-shield" style="color: var(--primary); margin-right: 8px;"></i>
@@ -79,7 +79,7 @@
             </button>
         </div>
     </aside>
-    
+
     <!-- Main Content -->
     <main class="main-content">
         <!-- Header -->
@@ -100,7 +100,7 @@
                 </button>
             </div>
         </header>
-        
+
         <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card glass">
@@ -112,7 +112,7 @@
                     <span class="stat-label">Participants</span>
                 </div>
             </div>
-            
+
             <div class="stat-card glass">
                 <div class="stat-icon" style="background: #10b981;">
                     <i class="fas fa-calendar-check"></i>
@@ -122,7 +122,7 @@
                     <span class="stat-label">Aujourd'hui</span>
                 </div>
             </div>
-            
+
             <div class="stat-card glass">
                 <div class="stat-icon" style="background: #06b6d4;">
                     <i class="fas fa-qrcode"></i>
@@ -132,7 +132,7 @@
                     <span class="stat-label">QR Générés</span>
                 </div>
             </div>
-            
+
             <div class="stat-card glass">
                 <div class="stat-icon" style="background: #ec4899;">
                     <i class="fas fa-envelope"></i>
@@ -142,7 +142,7 @@
                     <span class="stat-label">Emails Envoyés</span>
                 </div>
             </div>
-            
+
             <div class="stat-card glass">
                 <div class="stat-icon" style="background: #f59e0b;">
                     <i class="fas fa-money-bill-wave"></i>
@@ -153,7 +153,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Confirmés / Triage Section -->
         <section class="section" id="confirmesSection">
             <div class="section-header">
@@ -176,7 +176,7 @@
 
             <!-- ===== ZOOM CONFIG + EMAIL BLAST ===== -->
             <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #3b82f6;border-radius:16px;padding:28px;margin-bottom:28px;">
-                
+
                 <!-- Header -->
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
                     <div style="width:48px;height:48px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -209,7 +209,7 @@
 
                 <!-- Email Blast Buttons -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-                    
+
                     <!-- Envoyer à TOUS -->
                     <div style="background:white;border:2px solid #22c55e;border-radius:12px;padding:20px;text-align:center;">
                         <div style="font-size:2rem;margin-bottom:8px;">📨</div>
@@ -313,7 +313,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Filtres -->
             <div style="padding:12px 16px;margin-bottom:12px;background:#f8fafc;border-radius:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                 <span style="font-size:0.85rem;"><i class="fas fa-filter"></i> <strong>Filtres:</strong></span>
@@ -331,7 +331,7 @@
                     </button>
                 </span>
             </div>
-            
+
             <div class="table-container glass">
                 <table class="data-table">
                     <thead>
@@ -353,19 +353,19 @@
                         <!-- Données injectées par JS -->
                     </tbody>
                 </table>
-                
+
                 <div class="empty-state hidden" id="emptyState">
                     <i class="fas fa-inbox"></i>
                     <p>Aucun participant pour le moment</p>
                 </div>
-                
+
                 <div class="loading-state" id="loadingState">
                     <div class="spinner"></div>
                     <p>Chargement...</p>
                 </div>
             </div>
         </section>
-        
+
         <!-- Emails Section -->
         <section class="section" id="emailsSection">
             <div class="section-header">
@@ -502,7 +502,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Donation Stats -->
             <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
                 <div class="stat-card glass">
@@ -542,7 +542,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="table-container glass">
                 <table class="data-table">
                     <thead>
@@ -560,12 +560,12 @@
                         <!-- Données injectées par JS -->
                     </tbody>
                 </table>
-                
+
                 <div class="empty-state hidden" id="emptyDonationsState">
                     <i class="fas fa-inbox"></i>
                     <p>Aucune donation pour le moment</p>
                 </div>
-                
+
                 <div class="loading-state hidden" id="loadingDonations">
                     <div class="spinner"></div>
                     <p>Chargement...</p>
@@ -664,7 +664,7 @@
             </div>
         </section>
     </main>
-    
+
     <!-- QR Code Modal -->
     <div class="modal hidden" id="qrModal">
         <div class="modal-overlay" onclick="closeQRModal()"></div>
@@ -690,7 +690,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Email Preview Modal -->
     <div class="modal hidden" id="emailModal">
         <div class="modal-overlay" onclick="closeEmailModal()"></div>
@@ -720,7 +720,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Payment Proof Modal -->
     <div class="modal hidden" id="paymentModal">
         <div class="modal-overlay" onclick="closePaymentModal()"></div>
@@ -765,7 +765,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Donation Verification Modal -->
     <div class="modal hidden" id="donationVerifyModal">
         <div class="modal-overlay" onclick="closeDonationVerifyModal()"></div>
@@ -810,7 +810,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Add/Edit Leader Modal (Simplified: Flyer + Commune) -->
     <div class="modal hidden" id="leaderModal">
         <div class="modal-overlay" onclick="closeLeaderModal()"></div>
@@ -868,13 +868,13 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
-    
+
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=20260930"></script>
-    <script src="admin.js?v=20260930"></script>
+    <script src="supabase.js?v=20261108"></script>
+    <script src="admin.js?v=20261108"></script>
 </body>
 </html>

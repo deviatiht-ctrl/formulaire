@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - Rasin Ayiti</title>
-    
+
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260930">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260930">
+    <link rel="stylesheet" href="../style.css?v=20261108">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20261108">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -22,7 +22,7 @@
                     <span class="sidebar-subtitle">Administration</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item active">
                     <i class="fas fa-chart-line"></i>
@@ -604,9 +604,9 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260930"></script>
-    <script src="../assets/js/admin-workflows.js?v=20260930"></script>
-    <script src="../assets/js/leader-tools.js?v=20260930"></script>
+    <script src="../supabase.js?v=20261108"></script>
+    <script src="../assets/js/admin-workflows.js?v=20261108"></script>
+    <script src="../assets/js/leader-tools.js?v=20261108"></script>
 
     <script>
         // Check admin authentication
@@ -626,17 +626,17 @@
                 const { count: formationsCount } = await window.supabaseClient
                     .from('formations')
                     .select('*', { count: 'exact' });
-                
+
                 // Seminaires count
                 const { count: seminairesCount } = await window.supabaseClient
                     .from('seminaires')
                     .select('*', { count: 'exact' });
-                
+
                 // Etudiants count
                 const { count: etudiantsCount } = await window.supabaseClient
                     .from('etudiants')
                     .select('*', { count: 'exact' });
-                
+
                 // Inscriptions count
                 const { count: inscriptionsCount } = await window.supabaseClient
                     .from('inscriptions')

@@ -19,8 +19,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=20260930">
-    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260930">
+    <link rel="stylesheet" href="style.css?v=20261108">
+    <link rel="stylesheet" href="assets/css/landing-2026.css?v=20261108">
     <style>
         /* Events Section Styles */
         .section-events {
@@ -47,8 +47,9 @@
 
         .events-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 380px));
             gap: 2rem;
+            justify-content: center;
         }
 
         .event-card {
@@ -679,6 +680,28 @@
 
         .mobile-menu-handle {
             display: none;
+        }
+
+
+        @media (min-width: 1025px) and (max-width: 1280px) {
+            .nav-2026 {
+                padding: 8px 24px !important;
+                max-width: 96% !important;
+            }
+            .nav-links {
+                gap: 6px !important;
+            }
+            .nav-links a {
+                padding: 6px 10px !important;
+                font-size: 0.85rem !important;
+                gap: 6px !important;
+            }
+            .nav-logo-text {
+                font-size: 1.15rem !important;
+            }
+            .nav-logo-sub {
+                font-size: 0.55rem !important;
+            }
         }
 
         /* Responsive Navbar */
@@ -1513,11 +1536,11 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=20260930"></script>
-    <script src="assets/js/certificate-discount.js?v=20260930"></script>
-    <script src="assets/js/mobile-nav.js?v=20260930"></script>
-    <script src="assets/js/scroll-reveal.js?v=20260930"></script>
-    <script src="assets/js/event-countdown.js?v=20260930"></script>
+    <script src="supabase.js?v=20261108"></script>
+    <script src="assets/js/certificate-discount.js?v=20261108"></script>
+    <script src="assets/js/mobile-nav.js?v=20261108"></script>
+    <script src="assets/js/scroll-reveal.js?v=20261108"></script>
+    <script src="assets/js/event-countdown.js?v=20261108"></script>
 
     <script>
         // Initialize Lucide Icons
@@ -1568,7 +1591,15 @@
                         </div>
                     `}).join('');
                 } else {
-                    container.innerHTML = '<p class="no-data">Aucune formation disponible pour le moment.</p>';
+                    container.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: white; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 550px; margin: 0 auto;">
+                            <div style="width: 56px; height: 56px; background: #eff6ff; color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1rem;">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">Formations en préparation</h3>
+                            <p style="color: #64748b; font-size: 0.9rem; margin: 0; line-height: 1.5;">De nouvelles sessions certifiantes seront bientôt publiées pour la jeunesse haïtienne.</p>
+                        </div>
+                    `;
                 }
             } catch (err) {
                 console.error('Error loading formations:', err);

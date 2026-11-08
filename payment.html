@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paiement - Séminaire Rasin Ayiti</title>
-    <link rel="stylesheet" href="style.css?v=20260930">
+    <link rel="stylesheet" href="style.css?v=20261108">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,7 +15,7 @@
             padding: 20px;
             margin-bottom: 24px;
         }
-        
+
         .payment-amount {
             font-size: 2.5rem;
             font-weight: 700;
@@ -23,14 +23,14 @@
             text-align: center;
             margin: 16px 0;
         }
-        
+
         .payment-methods {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 16px;
             margin-bottom: 24px;
         }
-        
+
         .payment-method {
             background: var(--bg-white);
             border: 2px solid var(--border);
@@ -40,32 +40,32 @@
             cursor: pointer;
             transition: all var(--transition-fast);
         }
-        
+
         .payment-method:hover {
             border-color: var(--primary);
         }
-        
+
         .payment-method.selected {
             border-color: var(--primary);
             background: rgba(79, 70, 229, 0.05);
         }
-        
+
         .payment-method i {
             font-size: 2rem;
             color: var(--primary);
             margin-bottom: 12px;
         }
-        
+
         .payment-method h4 {
             font-size: 1rem;
             margin-bottom: 4px;
         }
-        
+
         .payment-method p {
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
-        
+
         .phone-number {
             background: var(--bg-white);
             border: 2px dashed var(--border);
@@ -74,18 +74,18 @@
             text-align: center;
             margin-bottom: 24px;
         }
-        
+
         .phone-number h3 {
             font-size: 1.5rem;
             color: var(--primary);
             margin-bottom: 8px;
         }
-        
+
         .phone-number p {
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
-        
+
         .file-upload {
             border: 2px dashed var(--border);
             border-radius: var(--radius-md);
@@ -95,80 +95,80 @@
             transition: all var(--transition-fast);
             margin-bottom: 20px;
         }
-        
+
         .file-upload:hover {
             border-color: var(--primary);
             background: rgba(79, 70, 229, 0.02);
         }
-        
+
         .file-upload.has-file {
             border-color: var(--success);
             background: rgba(16, 185, 129, 0.05);
         }
-        
+
         .file-upload i {
             font-size: 3rem;
             color: var(--text-muted);
             margin-bottom: 16px;
         }
-        
+
         .file-upload.has-file i {
             color: var(--success);
         }
-        
+
         .file-upload p {
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
-        
+
         .file-upload .filename {
             font-weight: 600;
             color: var(--text-primary);
         }
-        
+
         .preview-image {
             max-width: 200px;
             max-height: 200px;
             border-radius: var(--radius-md);
             margin-top: 16px;
         }
-        
+
         .waiting-card {
             text-align: center;
             padding: 48px 32px;
         }
-        
+
         .waiting-card i {
             font-size: 64px;
             color: var(--warning);
             margin-bottom: 24px;
         }
-        
+
         .waiting-card h2 {
             font-size: 1.5rem;
             margin-bottom: 12px;
         }
-        
+
         .waiting-card p {
             color: var(--text-secondary);
             max-width: 400px;
             margin: 0 auto 24px;
         }
-        
+
         .steps {
             display: flex;
             justify-content: center;
             gap: 32px;
             margin-bottom: 32px;
         }
-        
+
         .step {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 8px;
         }
-        
+
         .step-number {
             width: 32px;
             height: 32px;
@@ -181,33 +181,33 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
-        
+
         .step.active .step-number {
             background: var(--primary);
             border-color: var(--primary);
             color: white;
         }
-        
+
         .step.completed .step-number {
             background: var(--success);
             border-color: var(--success);
             color: white;
         }
-        
+
         .step-label {
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
-        
+
         .step.active .step-label {
             color: var(--text-primary);
             font-weight: 500;
         }
-        
+
         #paymentForm {
             display: none;
         }
-        
+
         #waitingMessage {
             display: none;
         }
@@ -415,7 +415,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=20260930"></script>
-    <script src="payment.js?v=20260930"></script>
+    <script src="supabase.js?v=20261108"></script>
+    <script src="payment.js?v=20261108"></script>
 </body>
 </html>

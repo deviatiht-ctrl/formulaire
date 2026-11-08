@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscriptions - Admin | Rasin Ayiti</title>
-    
+
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260930">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260930">
+    <link rel="stylesheet" href="../style.css?v=20261108">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20261108">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -22,7 +22,7 @@
                     <span class="sidebar-subtitle">Administration</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item">
                     <i class="fas fa-chart-line"></i>
@@ -511,9 +511,9 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260930"></script>
-    <script src="../assets/js/leader-tools.js?v=20260930"></script>
-    
+    <script src="../supabase.js?v=20261108"></script>
+    <script src="../assets/js/leader-tools.js?v=20261108"></script>
+
     <script>
         let currentAdmin = null;
         let allInscriptions = [];
@@ -538,23 +538,23 @@
                     .from('formations')
                     .select('id, titre')
                     .eq('status', 'publie');
-                
+
                 const { data: seminaires } = await window.supabaseClient
                     .from('seminaires')
                     .select('id, titre, formation_id')
                     .eq('status', 'planifie');
-                
+
                 allFormations = formations || [];
                 allSeminaires = seminaires || [];
-                
+
                 // Populate event filter
                 const eventFilter = document.getElementById('eventFilter');
                 eventFilter.innerHTML = '<option value="">Tous les événements</option>';
-                
+
                 allFormations.forEach(f => {
                     eventFilter.innerHTML += `<option value="formation:${f.id}">${f.titre}</option>`;
                 });
-                
+
                 allSeminaires.forEach(s => {
                     eventFilter.innerHTML += `<option value="seminaire:${s.id}">${s.titre}</option>`;
                 });
@@ -570,7 +570,7 @@
                     .from('inscriptions')
                     .select('*, etudiants(prenom, nom, email, telephone), formations(titre), seminaires(titre)')
                     .order('date_inscription', { ascending: false }).order('id'));
-                
+
                 allInscriptions = data || [];
                 LeaderTools.populateFilter(allInscriptions);
                 filterAndDisplayInscriptions();
@@ -661,7 +661,7 @@
         // Display inscriptions
         function displayInscriptions(inscriptions) {
             const tbody = document.getElementById('inscriptionsList');
-            
+
             if (!inscriptions || inscriptions.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="no-data">Aucune inscription trouvée</td></tr>';
                 return;
@@ -671,7 +671,7 @@
                 const student = LeaderTools.contact(ins);
                 const event = ins.formations || ins.seminaires || {};
                 const eventType = ins.formation_id ? 'Formation' : 'Séminaire';
-                
+
                 return `
                     <tr>
                         <td>
@@ -720,13 +720,13 @@
         // Confirm inscription
         async function confirmInscription(id) {
             if (!confirm('Confirmer cette inscription?')) return;
-            
+
             try {
                 const { error } = await window.supabaseClient
                     .from('inscriptions')
                     .update({ status_inscription: 'confirme', date_confirmation: new Date().toISOString() })
                     .eq('id', id);
-                
+
                 if (error) throw error;
                 loadInscriptions();
             } catch (err) {
@@ -752,13 +752,13 @@
 
             // Create CSV header
             const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Événement', 'Type', 'Date Inscription', 'Statut', 'Statut Paiement', 'Montant Payé', 'Date Confirmation', 'Leader', 'Code leader', 'Prix certificat initial', 'Rabais %', 'Réduction HTG', 'Prix certificat final', 'Paiement certificat'];
-            
+
             // Create CSV rows
             const rows = filtered.map(ins => {
                 const student = LeaderTools.contact(ins);
                 const event = ins.formations || ins.seminaires || {};
                 const eventType = ins.formation_id ? 'Formation' : 'Séminaire';
-                
+
                 return [
                     student.prenom || '',
                     student.nom || '',

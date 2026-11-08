@@ -6,7 +6,7 @@
     <title>Séminaire en Direct — Rasin Ayiti × UNITECH</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="room.css?v=20260930">
+    <link rel="stylesheet" href="room.css?v=20261108">
     <style>
         /* ===== PLATFORM SELECTOR ===== */
         .platform-selector {
@@ -52,7 +52,7 @@
         .platform-btn.facebook:hover { background: #1877f2; border-color: #1877f2; }
         .platform-btn.instagram:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
         .platform-btn.zoom:hover { background: #2d8cff; border-color: #2d8cff; }
-        
+
         /* ===== VIDEO AREA ===== */
         .video-area {
             position: fixed;
@@ -90,7 +90,7 @@
             margin-bottom: 10px;
             color: #fff;
         }
-        
+
         /* External link button for platforms that block iframe */
         .external-link-btn {
             margin-top: 20px;
@@ -106,7 +106,7 @@
             gap: 8px;
             text-decoration: none;
         }
-        
+
         /* ===== REACTIONS BAR ===== */
         .reactions-bar {
             position: fixed;
@@ -183,23 +183,23 @@
 <!-- ===== FACEBOOK LIVE VIDEO AREA ===== -->
 <div class="video-area facebook-area" id="videoArea">
     <!-- Facebook Live iframe - shown after code verified -->
-    <iframe id="facebookFrame" class="video-iframe facebook-iframe" 
-            src="" 
-            allow="fullscreen" 
+    <iframe id="facebookFrame" class="video-iframe facebook-iframe"
+            src=""
+            allow="fullscreen"
             style="display:none;"
             scrolling="no"
             frameborder="0"
             allowfullscreen="true"></iframe>
-    
+
     <!-- External Facebook Link (fallback) -->
-    <a id="externalFacebookLink" href="https://www.facebook.com/rasinayiti/live" 
-       target="_blank" 
+    <a id="externalFacebookLink" href="https://www.facebook.com/rasinayiti/live"
+       target="_blank"
        class="facebook-external-link"
        style="display:none;">
         <i class="fab fa-facebook"></i>
         <span>Voir sur Facebook Live</span>
     </a>
-    
+
     <!-- Waiting message before code entry -->
     <div id="facebookWaiting" class="video-placeholder">
         <i class="fas fa-broadcast-tower"></i>
@@ -323,7 +323,7 @@
 <!-- ===== SCRIPTS ===== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../supabase.js?v=20260930"></script>
-<script src="room.js?v=20260930"></script>
+<script src="../supabase.js?v=20261108"></script>
+<script src="room.js?v=20261108"></script>
 </body>
 </html>

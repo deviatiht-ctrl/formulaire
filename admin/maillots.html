@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion Maillots - Admin | Rasin Ayiti</title>
-    
+
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260930">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260930">
+    <link rel="stylesheet" href="../style.css?v=20261108">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20261108">
     <style>
         :root { --primary: #2563eb; --bg-main: #f8fafc; --sidebar-bg: #0f172a; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); margin: 0; display: flex; }
@@ -150,7 +150,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260930"></script>
+    <script src="../supabase.js?v=20261108"></script>
     <script>
         let allMaillots = [];
 
@@ -178,13 +178,13 @@
             const { data, error } = await window.supabaseClient.storage
                 .from('maillots')
                 .upload(fileName, file);
-            
+
             if (error) throw error;
-            
+
             const { data: { publicUrl } } = window.supabaseClient.storage
                 .from('maillots')
                 .getPublicUrl(data.path);
-            
+
             return publicUrl;
         }
 
@@ -205,13 +205,13 @@
             `).join('');
         }
 
-        function openModal() { 
-            document.getElementById('maillotForm').reset(); 
-            document.getElementById('maillotId').value = ''; 
+        function openModal() {
+            document.getElementById('maillotForm').reset();
+            document.getElementById('maillotId').value = '';
             document.getElementById('preview1').style.display = 'none';
             document.getElementById('preview2').style.display = 'none';
             document.getElementById('preview3').style.display = 'none';
-            document.getElementById('maillotModal').classList.remove('hidden'); 
+            document.getElementById('maillotModal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('maillotModal').classList.add('hidden'); }
 
@@ -225,7 +225,7 @@
             document.getElementById('mImg1').value = m.image_url_1;
             document.getElementById('mImg2').value = m.image_url_2 || '';
             document.getElementById('mImg3').value = m.image_url_3 || '';
-            
+
             if (m.image_url_1) {
                 document.getElementById('preview1').src = m.image_url_1;
                 document.getElementById('preview1').style.display = 'block';
@@ -238,7 +238,7 @@
                 document.getElementById('preview3').src = m.image_url_3;
                 document.getElementById('preview3').style.display = 'block';
             }
-            
+
             document.getElementById('maillotModal').classList.remove('hidden');
         }
 

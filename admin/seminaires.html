@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gérer les Séminaires - Admin | Rasin Ayiti</title>
-    
+
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260930">
-    <link rel="stylesheet" href="responsiveadmin.css?v=20260930">
+    <link rel="stylesheet" href="../style.css?v=20261108">
+    <link rel="stylesheet" href="responsiveadmin.css?v=20261108">
 </head>
 <body>
     <div class="admin-dashboard">
@@ -22,7 +22,7 @@
                     <span class="sidebar-subtitle">Administration</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <a href="dashboard.html" class="nav-item">
                     <i class="fas fa-chart-line"></i>
@@ -127,7 +127,7 @@
             </div>
             <form id="seminaireForm" class="modal-body">
                 <input type="hidden" id="seminaireId">
-                
+
                 <div class="form-group">
                     <label>Titre *</label>
                     <input type="text" id="titre" required>
@@ -592,16 +592,16 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260930"></script>
-    <script src="../assets/js/admin-workflows.js?v=20260930"></script>
-    
+    <script src="../supabase.js?v=20261108"></script>
+    <script src="../assets/js/admin-workflows.js?v=20261108"></script>
+
     <script>
         // Load formations
         async function loadFormations() {
             try {
                 const { data, error } = await window.supabaseClient.from('formations').select('*').eq('status', 'publie');
                 if (error) throw error;
-                
+
                 const select = document.getElementById('formation');
                 select.innerHTML = '<option value="">Choisir...</option>';
                 if (data) {
@@ -660,7 +660,7 @@
             document.getElementById('seminaireModal').classList.remove('hidden');
             document.getElementById('modalTitle').textContent = id ? 'Modifier Séminaire' : 'Nouveau Séminaire';
             loadFormations();
-            
+
             if (id) {
                 loadSeminaireData(id);
             } else {
@@ -682,7 +682,7 @@
             try {
                 const { data, error } = await window.supabaseClient.from('seminaires').select('*').eq('id', id).single();
                 if (error) throw error;
-                
+
                 document.getElementById('seminaireId').value = data.id;
                 document.getElementById('titre').value = data.titre;
                 document.getElementById('description').value = data.description || '';
@@ -739,12 +739,12 @@
 
             try {
                 let currentImages = JSON.parse(document.getElementById('imagesData').value || "[]");
-                
+
                 for (const file of files) {
                     const url = await uploadImage(file);
                     currentImages.push(url);
                 }
-                
+
                 document.getElementById('imagesData').value = JSON.stringify(currentImages);
                 renderImagesPreview(currentImages);
             } catch (err) {
@@ -760,7 +760,7 @@
             const { data, error } = await window.supabaseClient.storage
                 .from('maillots')
                 .upload(fileName, file);
-            
+
             if (error) throw error;
             const { data: { publicUrl } } = window.supabaseClient.storage.from('maillots').getPublicUrl(fileName);
             return publicUrl;

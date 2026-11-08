@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - Espace Étudiant | Rasin Ayiti</title>
-    
+
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css?v=20260930">
+    <link rel="stylesheet" href="../style.css?v=20261108">
 </head>
 <body>
     <div class="login-container">
@@ -287,8 +287,8 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase.js?v=20260930"></script>
-    
+    <script src="../supabase.js?v=20261108"></script>
+
     <script>
         function validateForm() {
             const email = document.getElementById('email').value.trim();
@@ -371,7 +371,7 @@
                 // Store student info in session
                 sessionStorage.setItem('etudiant', JSON.stringify(etudiant));
                 sessionStorage.removeItem('admin');
-                
+
                 // Redirect to student dashboard
                 window.location.href = 'dashboard.html';
 

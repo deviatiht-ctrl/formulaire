@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donateurs - EventJeunes</title>
-    <link rel="stylesheet" href="style.css?v=20260930">
+    <link rel="stylesheet" href="style.css?v=20261108">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .donation-page {
             max-width: 800px;
         }
-        
+
         .donation-hero {
             text-align: center;
             padding: 48px 32px;
@@ -20,25 +20,25 @@
             border-radius: var(--radius-xl);
             margin-bottom: 32px;
         }
-        
+
         .donation-hero i {
             font-size: 64px;
             color: #ec4899;
             margin-bottom: 20px;
         }
-        
+
         .donation-hero h1 {
             font-size: 2rem;
             margin-bottom: 12px;
         }
-        
+
         .donation-hero p {
             color: var(--text-secondary);
             font-size: 1.1rem;
             max-width: 500px;
             margin: 0 auto 24px;
         }
-        
+
         .total-donations {
             display: inline-flex;
             align-items: center;
@@ -51,18 +51,18 @@
             border: 2px solid #ec4899;
             box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1);
         }
-        
+
         .total-donations .label {
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
-        
+
         .total-donations .amount {
             font-size: 1.75rem;
             font-weight: 700;
             color: #ec4899;
         }
-        
+
         .donors-section {
             background: var(--bg-white);
             border: 1px solid var(--border);
@@ -70,7 +70,7 @@
             padding: 32px;
             box-shadow: var(--shadow-lg);
         }
-        
+
         .donors-header {
             display: flex;
             justify-content: space-between;
@@ -79,23 +79,23 @@
             flex-wrap: wrap;
             gap: 16px;
         }
-        
+
         .donors-header h2 {
             font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        
+
         .donors-header h2 i {
             color: #ec4899;
         }
-        
+
         .donor-tabs {
             display: flex;
             gap: 8px;
         }
-        
+
         .donor-tab {
             padding: 8px 16px;
             background: var(--bg-light);
@@ -105,24 +105,24 @@
             font-size: 0.9rem;
             transition: all var(--transition-fast);
         }
-        
+
         .donor-tab:hover {
             border-color: #ec4899;
             color: #ec4899;
         }
-        
+
         .donor-tab.active {
             background: #ec4899;
             border-color: #ec4899;
             color: white;
         }
-        
+
         .donors-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 16px;
         }
-        
+
         .donor-card {
             background: var(--bg-light);
             border: 1px solid var(--border);
@@ -130,24 +130,24 @@
             padding: 20px;
             transition: all var(--transition-fast);
         }
-        
+
         .donor-card:hover {
             border-color: #ec4899;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(236, 72, 153, 0.1);
         }
-        
+
         .donor-card.anonymous {
             background: #f8fafc;
         }
-        
+
         .donor-header {
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 12px;
         }
-        
+
         .donor-avatar {
             width: 48px;
             height: 48px;
@@ -160,28 +160,28 @@
             font-size: 1.25rem;
             font-weight: 600;
         }
-        
+
         .donor-card.anonymous .donor-avatar {
             background: #94a3b8;
         }
-        
+
         .donor-info h4 {
             font-size: 1rem;
             margin-bottom: 4px;
         }
-        
+
         .donor-info p {
             font-size: 0.85rem;
             color: var(--text-muted);
         }
-        
+
         .donor-amount {
             font-size: 1.25rem;
             font-weight: 700;
             color: #ec4899;
             margin-top: 12px;
         }
-        
+
         .donor-badge {
             display: inline-flex;
             align-items: center;
@@ -194,19 +194,19 @@
             font-weight: 500;
             margin-top: 8px;
         }
-        
+
         .empty-donors {
             text-align: center;
             padding: 48px 20px;
             color: var(--text-secondary);
         }
-        
+
         .empty-donors i {
             font-size: 48px;
             margin-bottom: 16px;
             opacity: 0.5;
         }
-        
+
         .btn-back {
             display: inline-flex;
             align-items: center;
@@ -221,17 +221,17 @@
             transition: all var(--transition-fast);
             margin-bottom: 24px;
         }
-        
+
         .btn-back:hover {
             border-color: var(--primary);
             color: var(--primary);
         }
-        
+
         @media (max-width: 640px) {
             .donation-hero {
                 padding: 24px 16px;
             }
-            
+
             .donation-hero h1 {
                 font-size: 1.4rem;
             }
@@ -247,11 +247,11 @@
             .donors-section {
                 padding: 18px 14px;
             }
-            
+
             .donors-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .donor-tabs {
                 width: 100%;
                 flex-wrap: wrap;
@@ -277,7 +277,7 @@
             <i class="fas fa-heart"></i>
             <h1>Nos Généreux Donateurs</h1>
             <p>Merci à tous ceux qui contribuent à la réussite de EventJeunes 2026. Votre soutien fait la différence !</p>
-            
+
             <div class="total-donations">
                 <span class="label">Total des dons:</span>
                 <span class="amount" id="totalAmount">0 Gds</span>
@@ -296,11 +296,11 @@
                     <button class="donor-tab" onclick="filterDonors('anonymous')">Anonymes</button>
                 </div>
             </div>
-            
+
             <div class="donors-grid" id="donorsGrid">
                 <!-- Donateurs injectés par JS -->
             </div>
-            
+
             <div class="empty-donors hidden" id="emptyDonors">
                 <i class="fas fa-inbox"></i>
                 <p>Aucun donateur pour le moment</p>
@@ -320,7 +320,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=20260930"></script>
-    <script src="donation.js?v=20260930"></script>
+    <script src="supabase.js?v=20261108"></script>
+    <script src="donation.js?v=20261108"></script>
 </body>
 </html>
