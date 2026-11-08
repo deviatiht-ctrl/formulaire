@@ -411,7 +411,7 @@
                 <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
                 <div style="display:flex; flex-direction:column;">
                     <span class="nav-logo-text">RASIN AYITI</span>
-                    <span class="nav-logo-sub">Développement Juvénile/RASINAYITI</span>
+                    <span class="nav-logo-sub">Développement Juvénile</span>
                 </div>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
@@ -420,13 +420,20 @@
             </button>
             <ul class="nav-links" id="navLinks">
                 <div class="mobile-menu-handle"></div>
-                <li><a href="index.html#hero" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="index.html" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
                 <li><a href="evenements.html" onclick="closeMenu()"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
-                <li><a href="index.html#formations" onclick="closeMenu()"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
-                <li><a href="index.html#boutique" onclick="closeMenu()"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
-                <li><a href="index.html#donations" onclick="closeMenu()"><i data-lucide="heart"></i> <span>Dons</span></a></li>
-                <li><a href="index.html#galerie" onclick="closeMenu()"><i data-lucide="image"></i> <span>Galerie</span></a></li>
+                <li><a href="pages/formations.html" onclick="closeMenu()"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
                 <li><a href="leaders.html" onclick="closeMenu()" class="active nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
+                <li class="nav-dropdown">
+                    <button class="nav-dropdown-btn" type="button" aria-label="Plus d'options">
+                        <i data-lucide="more-horizontal"></i> <span>Plus</span> <i class="fas fa-chevron-down" style="font-size:0.65rem;margin-left:2px;transition:transform 0.2s;"></i>
+                    </button>
+                    <ul class="nav-dropdown-menu">
+                        <li><a href="index.html#boutique" onclick="closeMenu()"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
+                        <li><a href="index.html#donations" onclick="closeMenu()"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                        <li><a href="index.html#galerie" onclick="closeMenu()"><i data-lucide="image"></i> <span>Galerie</span></a></li>
+                    </ul>
+                </li>
                 <li id="authContainer">
                     <a href="espace-etudiant/login.html" class="btn-login">Connexion</a>
                 </li>
