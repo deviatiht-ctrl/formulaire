@@ -956,15 +956,15 @@
 
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <span class="stat-number" id="stat-members">0</span>
+                        <span class="stat-number" id="stat-members">5000+</span>
                         <span class="stat-label">Membres</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" id="stat-courses">0</span>
+                        <span class="stat-number" id="stat-courses">20+</span>
                         <span class="stat-label">Formations</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number" id="stat-events">0</span>
+                        <span class="stat-number" id="stat-events">30</span>
                         <span class="stat-label">Événements</span>
                     </div>
                 </div>
@@ -2385,22 +2385,9 @@
         // --- DYNAMIC STATS LOGIC ---
         async function loadHeroStats() {
             try {
-                // Count Students
-                const { count: studentCount } = await window.supabaseClient
-                    .from('etudiants').select('*', { count: 'exact', head: true });
-
-                // Count Formations
-                const { count: courseCount } = await window.supabaseClient
-                    .from('formations').select('*', { count: 'exact', head: true });
-
-                // Count Events
-                const { count: eventCount } = await window.supabaseClient
-                    .from('events').select('*', { count: 'exact', head: true });
-
-                // Members hardcoded to 5000+
                 document.getElementById('stat-members').textContent = '5000+';
-                document.getElementById('stat-courses').textContent = (courseCount || 0);
-                document.getElementById('stat-events').textContent = (eventCount || 0);
+                document.getElementById('stat-courses').textContent = '20+';
+                document.getElementById('stat-events').textContent = '30';
             } catch (err) {
                 console.error("Error loading stats:", err);
             }
