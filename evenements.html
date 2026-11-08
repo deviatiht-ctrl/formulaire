@@ -1717,9 +1717,20 @@
                     ? (certificateDiscount.price() > 0 ? 'en_attente' : 'verifie')
                     : 'non_requis';
 
-                // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou kontinye
-                const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
-                if (signUpError && !/already|registered|existe/i.test(signUpError.message)) throw signUpError;
+                // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou pa bloke l
+                try {
+                    const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
+                    if (signUpError) {
+                        const isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
+                                          signUpError.status === 422 ||
+                                          signUpError.code === 'user_already_exists';
+                        if (!isAlready) {
+                            console.warn('Auth notice:', signUpError.message);
+                        }
+                    }
+                } catch (authErr) {
+                    console.warn('Auth non-bloquant:', authErr);
+                }
 
                 const { data: registrationId, error } = await window.supabaseClient.rpc('rasinayiti_register', {
                     p_type: 'event', p_id: payload.event_id, p_data: payload

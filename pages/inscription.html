@@ -773,13 +773,22 @@
 
                 const password = document.getElementById('password').value;
 
-                // Kreye kont itilizatè a nan Supabase Auth (si email la egziste deja, nou kontinye)
-                const { error: signUpError } = await window.supabaseClient.auth.signUp({
-                    email: formData.email,
-                    password: password
-                });
-                if (signUpError && !/already|registered|existe/i.test(signUpError.message)) {
-                    throw signUpError;
+                // Kreye kont itilizatè a nan Supabase Auth si nouvo (si email la egziste deja, nou pa bloke l)
+                try {
+                    const { error: signUpError } = await window.supabaseClient.auth.signUp({
+                        email: formData.email,
+                        password: password
+                    });
+                    if (signUpError) {
+                        const isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
+                                          signUpError.status === 422 ||
+                                          signUpError.code === 'user_already_exists';
+                        if (!isAlready) {
+                            console.warn('Supabase Auth signUp notice:', signUpError.message);
+                        }
+                    }
+                } catch (authErr) {
+                    console.warn('Auth check non-bloquant:', authErr);
                 }
 
                 // Insert into etudiants table (upsert pou email ki egziste deja)
@@ -837,8 +846,11 @@
             } catch (error) {
                 console.error('Erreur inscription formation/séminaire:', error);
                 console.error('Message erreur:', error.message);
-                console.error('Détails erreur:', error);
-                alert('Erreur lors de l\'inscription: ' + (error.message || 'Une erreur est survenue. Veuillez réessayer.'));
+                if (/existe déjà pour cet email et cette activité/i.test(error.message || '')) {
+                    alert('Ou deja enskri nan aktivite sa a! Ou ka konekte nan espas etidyan ou pou w wè detay yo.');
+                } else {
+                    alert('Erreur lors de l\'inscription: ' + (error.message || 'Une erreur est survenue. Veuillez réessayer.'));
+                }
             } finally {
                 unlockForm();
                 btn.classList.remove('loading');
@@ -850,9 +862,26 @@
             document.getElementById('successModal').classList.add('hidden');
         }
 
+        function prefillStudentInfo() {
+            try {
+                const saved = localStorage.getItem('etudiant');
+                if (!saved) return;
+                const st = JSON.parse(saved);
+                if (st.nom && !document.getElementById('nom').value) document.getElementById('nom').value = st.nom;
+                if (st.prenom && !document.getElementById('prenom').value) document.getElementById('prenom').value = st.prenom;
+                if (st.email && !document.getElementById('email').value) document.getElementById('email').value = st.email;
+                if (st.telephone && !document.getElementById('telephone').value) document.getElementById('telephone').value = st.telephone;
+                if (st.whatsapp && !document.getElementById('whatsapp').value) document.getElementById('whatsapp').value = st.whatsapp;
+                if (st.ville && !document.getElementById('ville').value) document.getElementById('ville').value = st.ville;
+                if (st.profession && !document.getElementById('profession').value) document.getElementById('profession').value = st.profession;
+                if (st.tranche_age && !document.getElementById('tranche_age').value) document.getElementById('tranche_age').value = st.tranche_age;
+            } catch (_) {}
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadEventDetails();
+            prefillStudentInfo();
             document.getElementById('inscriptionForm').addEventListener('submit', handleSubmit);
         });
     </script>

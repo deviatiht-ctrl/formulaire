@@ -854,32 +854,58 @@
 
         .formation-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.06);
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            max-width: 380px;
+            max-width: 340px;
             width: 100%;
             margin: 0 auto;
         }
 
         .formation-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 16px 36px rgba(37, 99, 235, 0.14);
         }
 
         .formation-card .card-image {
-            height: 240px;
+            height: 230px;
             position: relative;
             overflow: hidden;
-            background: #f8fafc;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .formation-card .card-image-backdrop {
+            position: absolute;
+            inset: -15px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(16px) brightness(0.45);
+            transform: scale(1.1);
+        }
+
+        .formation-card .card-image img.formation-flyer-img {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            transition: transform 0.3s ease;
+        }
+
+        .formation-card:hover .card-image img.formation-flyer-img {
+            transform: scale(1.03);
         }
 
         .formation-card .card-content {
-            padding: 1.5rem;
+            padding: 1.25rem;
             display: flex;
             flex-direction: column;
             flex: 1;
@@ -1639,22 +1665,19 @@
                 if (data && data.length > 0) {
                     container.innerHTML = data.map(f => {
                         const images = f.images && f.images.length > 0 ? f.images : (f.image_principale ? [f.image_principale] : []);
+                        const mainImg = images[0] || f.image_principale;
                         return `
                         <div class="formation-card" data-aos="fade-up">
                             <div class="card-image">
-                                <div class="card-image-carousel">
-                                    ${images.length > 0 ? images.map(img => `<img src="${img}" class="carousel-item" alt="${f.titre}">`).join('') : `
-                                        <div class="carousel-item" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'}); display:flex; align-items:center; justify-content:center;">
-                                            <i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>
-                                        </div>
-                                    `}
-                                </div>
-                                ${images.length > 1 ? `
-                                    <div class="carousel-dots">
-                                        ${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                                ${mainImg ? `
+                                    <div class="card-image-backdrop" style="background-image:url('${mainImg}');"></div>
+                                    <img src="${mainImg}" class="formation-flyer-img" alt="${f.titre}">
+                                ` : `
+                                    <div class="carousel-item" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'}); display:flex; align-items:center; justify-content:center;">
+                                        <i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>
                                     </div>
-                                ` : ''}
-                                <span class="card-type">${f.type_formation}</span>
+                                `}
+                                <span class="card-type">${f.type_formation || 'Formation'}</span>
                             </div>
                             <div class="card-content">
                                 <h3>${f.titre}</h3>
@@ -1915,15 +1938,31 @@
                     .order('date_evenement', { ascending: true });
 
                 if (error) throw error;
-                allEventsData = data || [];
+                const now = new Date();
+                const upcomingEvents = (data || []).filter(event => {
+                    if (event.status === 'archive' || event.status === 'termine') return false;
+                    const eventEnd = event.end_date ? new Date(event.end_date) : (event.start_date ? new Date(event.start_date) : (event.date_evenement ? new Date(event.date_evenement) : null));
+                    if (eventEnd && eventEnd < now) return false;
+                    return true;
+                });
+                allEventsData = upcomingEvents;
 
                 const eventsGrid = document.getElementById('eventsGrid');
-                if (!data || data.length === 0) {
-                    eventsGrid.innerHTML = '<div class="events-empty">Aucun événement à venir</div>';
+                if (!upcomingEvents || upcomingEvents.length === 0) {
+                    eventsGrid.innerHTML = `
+                        <div class="events-empty" style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1.5rem; background: white; border-radius: 18px; border: 1px solid #e2e8f0; max-width: 520px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+                            <div style="width: 56px; height: 56px; background: rgba(37, 99, 235, 0.1); color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1rem;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 0.35rem;">Aucun événement en cours</h3>
+                            <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 1.25rem;">Les sessions récentes ont été complétées avec succès. De nouveaux séminaires seront annoncés sous peu.</p>
+                            <a href="evenements.html" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.65rem 1.25rem; background: #2563eb; color: white; border-radius: 10px; font-weight: 700; font-size: 0.85rem; text-decoration: none;">Voir l'historique des séminaires</a>
+                        </div>
+                    `;
                     return;
                 }
 
-                eventsGrid.innerHTML = data.map(event => {
+                eventsGrid.innerHTML = upcomingEvents.map(event => {
                     const startDate = event.start_date ? new Date(event.start_date).toLocaleDateString('fr-FR', {
                         weekday: 'long',
                         year: 'numeric',
@@ -2404,9 +2443,20 @@
                     ? (certificateDiscount.price() > 0 ? 'en_attente' : 'verifie')
                     : 'non_requis';
 
-                // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou kontinye
-                const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
-                if (signUpError && !/already|registered|existe/i.test(signUpError.message)) throw signUpError;
+                // Kreye kont itilizatè a (Auth + etudiant) — si email la egziste deja, nou pa bloke l
+                try {
+                    const { error: signUpError } = await window.supabaseClient.auth.signUp({ email: payload.email.trim().toLowerCase(), password });
+                    if (signUpError) {
+                        const isAlready = /already|registered|existe|exists|in use/i.test(signUpError.message || '') ||
+                                          signUpError.status === 422 ||
+                                          signUpError.code === 'user_already_exists';
+                        if (!isAlready) {
+                            console.warn('Auth notice:', signUpError.message);
+                        }
+                    }
+                } catch (authErr) {
+                    console.warn('Auth non-bloquant:', authErr);
+                }
 
                 const { data: registrationId, error } = await window.supabaseClient.rpc('rasinayiti_register', {
                     p_type: 'event', p_id: payload.event_id, p_data: payload

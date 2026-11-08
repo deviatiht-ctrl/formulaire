@@ -292,42 +292,61 @@
 
         .formations-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 380px));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 340px));
             gap: 2rem;
             justify-content: center;
         }
 
         .formation-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.06);
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            max-width: 380px;
+            max-width: 340px;
             width: 100%;
             margin: 0 auto;
         }
 
         .formation-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            box-shadow: 0 16px 36px rgba(37,99,235,0.14);
         }
 
         .formation-card .card-image {
-            height: 240px;
+            height: 230px;
             position: relative;
             overflow: hidden;
-            background: #f8fafc;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .formation-card .card-image img {
+        .formation-card .card-image-backdrop {
+            position: absolute;
+            inset: -15px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(16px) brightness(0.45);
+            transform: scale(1.1);
+        }
+
+        .formation-card .card-image img.formation-flyer-img {
+            position: relative;
+            z-index: 2;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            object-position: center top;
+            object-fit: contain;
+            object-position: center;
+            transition: transform 0.3s ease;
+        }
+
+        .formation-card:hover .card-image img.formation-flyer-img {
+            transform: scale(1.03);
         }
 
         .load-more-container {
@@ -580,6 +599,20 @@
         </div>
     </section>
 
+    <!-- PAST FORMATIONS (ARCHIVES) -->
+    <section class="past-formations-section" style="background:#f1f5f9; padding:4rem 20px;">
+        <div class="section-container">
+            <div class="section-header" style="text-align:center; margin-bottom:3rem;">
+                <span class="section-badge" style="background:#e2e8f0; color:#475569;">Archives</span>
+                <h2 style="font-size:2.2rem; font-weight:800; color:#0f172a; margin:0.5rem 0;">Formations déjà réalisées</h2>
+                <p style="color:#64748b; font-size:1.05rem;">Découvrez les sessions de formation que nous avons déjà organisées</p>
+            </div>
+            <div class="formations-grid" id="pastFormationsList">
+                <!-- Past formations load dynamically -->
+            </div>
+        </div>
+    </section>
+
     <!-- FOOTER MODERNE -->
     <footer class="footer-2026">
         <div class="footer-container">
@@ -707,13 +740,20 @@
                 const img = f.image_principale || (f.images && f.images[0]);
                 return `
                 <div class="formation-card" data-aos="fade-up">
-                    <div class="card-image" style="height: 200px; position: relative; overflow: hidden; background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'}); display:flex; align-items:center; justify-content:center;">
-                        ${img ? `<img src="${img}" alt="${f.titre}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>`}
-                        <span class="card-type" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;">${f.type_formation || 'En ligne'}</span>
+                    <div class="card-image">
+                        ${img ? `
+                            <div class="card-image-backdrop" style="background-image:url('${img}');"></div>
+                            <img src="${img}" class="formation-flyer-img" alt="${f.titre}">
+                        ` : `
+                            <div style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'}); width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>
+                            </div>
+                        `}
+                        <span class="card-type" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.65); backdrop-filter:blur(6px); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; z-index:3;">${f.type_formation || 'En ligne'}</span>
                     </div>
-                    <div class="card-content" style="padding:1.5rem; display:flex; flex-direction:column; flex:1;">
-                        <h3 style="font-size:1.2rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem; line-height:1.4;">${f.titre}</h3>
-                        <p style="font-size:0.9rem; color:#64748b; line-height:1.5; margin-bottom:1rem; flex:1;">${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
+                    <div class="card-content" style="padding:1.25rem; display:flex; flex-direction:column; flex:1;">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem; line-height:1.4;">${f.titre}</h3>
+                        <p style="font-size:0.875rem; color:#64748b; line-height:1.5; margin-bottom:1rem; flex:1;">${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
                         <div class="card-meta" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-size:0.85rem; color:#64748b;">
                             <span><i class="fas fa-clock" style="color:#2563eb;"></i> ${f.duree || 'N/A'}</span>
                             <span class="card-price" style="font-weight:700; color:#1e40af; background:#dbeafe; padding:4px 10px; border-radius:8px;">${f.prix > 0 ? f.prix + ' HTG' : 'Gratuit'}</span>
@@ -797,6 +837,58 @@
         document.getElementById('priceFilter').addEventListener('change', filterFormations);
         document.getElementById('typeFilter').addEventListener('change', filterFormations);
 
+        async function loadPastFormations() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('formations')
+                    .select('*')
+                    .in('status', ['archive', 'termine'])
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading past formations:', error);
+                    return;
+                }
+
+                const container = document.getElementById('pastFormationsList');
+                if (!container) return;
+
+                if (data && data.length > 0) {
+                    container.innerHTML = data.map(f => {
+                        const img = f.image_principale || (f.images && f.images[0]);
+                        return `
+                        <div class="formation-card past" style="opacity: 0.95;">
+                            <div class="card-image">
+                                ${img ? `
+                                    <div class="card-image-backdrop" style="background-image:url('${img}');"></div>
+                                    <img src="${img}" class="formation-flyer-img" alt="${f.titre}" style="filter: grayscale(15%);">
+                                ` : `
+                                    <div style="background: linear-gradient(135deg, #475569, #334155); width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                        <i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>
+                                    </div>
+                                `}
+                                <span class="card-type" style="position:absolute; top:12px; right:12px; background:rgba(15,23,42,0.8); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; z-index:3;">Terminée</span>
+                            </div>
+                            <div class="card-content" style="padding:1.25rem; display:flex; flex-direction:column; flex:1;">
+                                <h3 style="font-size:1.15rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem; line-height:1.4;">${f.titre}</h3>
+                                <p style="font-size:0.875rem; color:#64748b; line-height:1.5; margin-bottom:1rem; flex:1;">${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
+                                <div class="card-meta" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-size:0.85rem; color:#64748b;">
+                                    <span><i class="fas fa-check-circle" style="color:#10b981;"></i> Session terminée</span>
+                                    <span class="card-price" style="font-weight:700; color:#475569; background:#e2e8f0; padding:4px 10px; border-radius:8px;">Archivée</span>
+                                </div>
+                                <span class="btn-card" style="display:block; text-align:center; padding:0.75rem; background:#94a3b8; color:white; border-radius:10px; font-weight:700; text-decoration:none; cursor:default;">Session terminée</span>
+                            </div>
+                        </div>
+                    `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:#94a3b8;padding:2rem;">Aucune formation passée archivée.</p>';
+                }
+            } catch (err) {
+                console.error('Error loading past formations:', err);
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) {
@@ -817,6 +909,7 @@
             });
             loadCategories();
             loadFormations();
+            loadPastFormations();
         });
     </script>
 </body>
