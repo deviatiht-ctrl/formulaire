@@ -580,8 +580,9 @@
 
 .formations-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 380px));
     gap: 2rem;
+    justify-content: center;
 }
 
 .formation-card {
@@ -591,21 +592,28 @@
     box-shadow: var(--shadow);
     transition: var(--transition);
     border: 1px solid var(--gray-100);
+    max-width: 380px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .formation-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     box-shadow: var(--shadow-xl);
 }
 
 .card-image {
-    height: 200px;
+    height: 240px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: var(--white);
     position: relative;
+    background: #f1f5f9;
+    overflow: hidden;
 }
 
 .card-image i {
