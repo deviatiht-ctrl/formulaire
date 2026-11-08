@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - Rasin Ayiti</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="../style.css?v=20260930">
     <link rel="stylesheet" href="../assets/css/landing-2026.css?v=20260930">
@@ -36,7 +36,7 @@
             </ul>
             <div class="nav-actions">
                 <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
-                    <i class="fas fa-user"></i> Connexion
+                    <i class="fas fa-user"></i> <span>Connexion</span>
                 </a>
             </div>
             <button class="nav-toggle" id="navToggle" aria-label="Menu">
@@ -563,6 +563,15 @@
                 margin: 0 auto;
             }
         }
+
+        @media (max-width: 480px) {
+            .inscription-section { padding: 85px 12px 30px; }
+            .inscription-header h1 { font-size: 1.6rem; }
+            .form-container { padding: 1.25rem 1rem; border-radius: 14px; }
+            .input-wrapper input, .input-wrapper select { padding: 12px 14px 12px 40px; font-size: 0.95rem; }
+            .success-modal { padding: 2rem 1.25rem; width: 92%; max-width: 400px; }
+            .success-modal h2 { font-size: 1.4rem; }
+        }
     </style>
 
     <!-- SCRIPTS -->
@@ -570,7 +579,7 @@
     <script src="../supabase.js?v=20260930"></script>
     <script src="../assets/js/mobile-nav.js?v=20260930"></script>
     <script src="../assets/js/certificate-discount.js?v=20260930"></script>
-    
+
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -619,14 +628,14 @@
         async function loadEventDetails() {
             try {
                 let data, error;
-                
+
                 if (itemType === 'formation') {
                     ({ data, error } = await window.supabaseClient
                         .from('formations')
                         .select('*')
                         .eq('id', itemId)
                         .single());
-                    
+
                     if (data) {
                         document.getElementById('pageTitle').textContent = 'Inscription à la Formation';
                         document.getElementById('pageSubtitle').textContent = 'Rejoignez cette formation pour développer vos compétences';
@@ -641,7 +650,7 @@
                         .select('*, formations(titre)')
                         .eq('id', itemId)
                         .single());
-                    
+
                     if (data) {
                         document.getElementById('pageTitle').textContent = 'Inscription au Séminaire';
                         document.getElementById('pageSubtitle').textContent = 'Participez à ce séminaire en direct';

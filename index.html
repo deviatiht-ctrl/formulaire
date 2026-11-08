@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rasin Ayiti - Mobilisation pour le Développement Juvénile | Haïti</title>
     <meta name="description" content="Une grande mobilisation pour la jeunesse haïtienne. Développement Juvénile à travers le leadership, l'engagement et l'excellence.">
-    
+
     <!-- Favicon -->
     <link rel="icon" href="assets/logorasin.PNG" type="image/png">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="style.css?v=20260930">
     <link rel="stylesheet" href="assets/css/landing-2026.css?v=20260930">
@@ -350,8 +350,8 @@
 
         .modal-header h2 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; }
 
-        .modal-body { 
-            padding: 1.5rem; 
+        .modal-body {
+            padding: 1.5rem;
             overflow-y: auto;
             flex: 1;
         }
@@ -848,9 +848,26 @@
             .event-card { min-height: auto; }
             .event-flyer { height: 260px; }
             .event-design-placeholder { height: 260px; padding: 1.25rem; }
-            .modal-content { width: 95%; max-height: 94vh; border-radius: 16px; }
+            .modal-content { width: 95%; max-height: 94vh; border-radius: 16px; margin: auto; }
             .modal-header { padding: 1rem 1.25rem; }
             .modal-body { padding: 1.25rem; }
+        }
+
+        @media (max-width: 580px) {
+            .form-row {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-events { padding: 30px 0; }
+            .donation-card-box { padding: 1.25rem 1rem !important; border-radius: 16px !important; }
+            .donation-amount-btn { padding: 0.6rem 0.25rem; font-size: 0.85rem; }
+            .modal-content { width: 96%; max-height: 94vh; }
+            .modal-header { padding: 0.875rem 1rem; }
+            .modal-body { padding: 1rem 0.875rem; }
+            .hero-title .title-line.accent { letter-spacing: 1px !important; font-size: 0.45em !important; }
         }
     </style>
 </head>
@@ -861,15 +878,15 @@
             <a href="index.html" class="nav-logo" style="text-decoration: none;">
                 <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
                 <div style="display:flex; flex-direction:column;">
-                    <span style="font-weight:900; font-size:1.4rem; line-height:1; color:#0f172a;">RASIN AYITI</span>
-                    <span style="font-size:0.65rem; color:var(--primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Développement Juvénile/RASINAYITI</span>
+                    <span class="nav-logo-text">RASIN AYITI</span>
+                    <span class="nav-logo-sub">Développement Juvénile/RASINAYITI</span>
                 </div>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
                 <span class="hamburger-line line-1"></span>
                 <span class="hamburger-line line-2"></span>
             </button>
-            
+
             <ul class="nav-links" id="navLinks">
                 <div class="mobile-menu-handle"></div>
                 <li><a href="#hero" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
@@ -894,24 +911,24 @@
             <div class="gradient-orb orb-2"></div>
             <div class="gradient-orb orb-3"></div>
         </div>
-        
+
         <div class="hero-container">
             <div class="hero-content">
                 <div class="hero-badge">
                     <span class="badge-pulse"></span>
                     <span>Formation En Ligne 2026</span>
                 </div>
-                
+
                 <h1 class="hero-title">
                     <span class="title-line">RASIN AYITI</span>
                     <span class="title-line accent" style="font-size:0.4em; display:block; margin-top:0.5rem; letter-spacing:2px;">DÉPARTEMENT DE DÉVELOPPEMENT JUVÉNILE</span>
                 </h1>
-                
+
                 <p class="hero-description">
                     Rejoignez <strong>RASIN AYITI</strong>, une grande mobilisation pour la jeunesse haïtienne.
                     Nous œuvrons pou le <strong>Développement Juvénile</strong> à travers le leadership, l'engagement et l'excellence.
                 </p>
-                
+
                 <div class="hero-stats">
                     <div class="stat-item">
                         <span class="stat-number" id="stat-members">0</span>
@@ -926,7 +943,7 @@
                         <span class="stat-label">Événements</span>
                     </div>
                 </div>
-                
+
                 <div class="hero-cta">
                     <a href="pages/formations.html" class="btn-hero-primary">
                         <i class="fas fa-rocket"></i>
@@ -938,7 +955,7 @@
                     </a>
                 </div>
             </div>
-            
+
             <div class="hero-visual">
                 <div class="hero-images">
                     <div class="hero-img img-1">
@@ -987,7 +1004,7 @@
                 <h2 class="section-title">Apprenez avec les <span class="accent">meilleurs</span></h2>
                 <p class="section-desc">Des formations pratiques et certifiantes pour booster votre carrière</p>
             </div>
-            
+
             <div class="formations-grid" id="formationsGrid">
                 <!-- Formations yo pral load dinamikman -->
                 <div class="formation-card skeleton">
@@ -1012,7 +1029,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="section-footer">
                 <a href="pages/formations.html" class="btn-section">
                     Voir toutes les formations <i class="fas fa-arrow-right"></i>
@@ -1029,7 +1046,7 @@
                 <h2 class="section-title">Événements à <span class="accent">venir</span></h2>
                 <p class="section-desc">Participez à nos séminaires en direct et interagissez avec nos formateurs</p>
             </div>
-            
+
             <div class="seminaires-list" id="seminairesList">
                 <!-- Seminaires yo pral load dinamikman -->
             </div>
@@ -1044,8 +1061,8 @@
                 <h2 class="section-title" style="color:#fff;">Faire un <span class="accent">Don</span></h2>
                 <p class="section-desc" style="color:#e0e7ff;">Votre soutien aide le Département de Développement Juvénile à former la jeunesse haïtienne</p>
             </div>
-            
-            <div style="background:white; border-radius:20px; padding:2rem; max-width:600px; margin:0 auto; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+
+            <div class="donation-card-box" style="background:white; border-radius:20px; padding:2rem; max-width:600px; margin:0 auto; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
                 <form id="donationForm">
                     <!-- Montant -->
                     <div style="margin-bottom:1.5rem;">
@@ -1168,7 +1185,7 @@
                 <h2 class="section-title">Moments <span class="accent">forts</span></h2>
                 <p class="section-desc">Retour en images sur nos formations et séminaires passés</p>
             </div>
-            
+
             <div class="galerie-grid" id="galerieGrid">
                 <!-- Galerie pral load dinamikman -->
             </div>
@@ -1334,7 +1351,7 @@
             <form id="orderForm" class="modal-body">
                 <input type="hidden" id="orderMaillotId">
                 <input type="hidden" id="orderPrice">
-                
+
                 <div id="maillotImagesPreview" style="display:flex; gap:10px; overflow-x:auto; margin-bottom:1.5rem; padding-bottom:10px;">
                     <!-- Images go here -->
                 </div>
@@ -1404,7 +1421,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Image Viewer Modal -->
     <div class="modal-overlay hidden" id="imageModal">
         <div class="modal-content" style="max-width:90%; max-height:90vh; background:transparent; box-shadow:none;">
@@ -1501,11 +1518,11 @@
     <script src="assets/js/mobile-nav.js?v=20260930"></script>
     <script src="assets/js/scroll-reveal.js?v=20260930"></script>
     <script src="assets/js/event-countdown.js?v=20260930"></script>
-    
+
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
-        
+
         // Load dynamic content
         async function loadFormations() {
             try {
@@ -1515,9 +1532,9 @@
                     .eq('status', 'publie')
                     .order('created_at', { ascending: false })
                     .limit(6);
-                
+
                 if (error) throw error;
-                
+
                 const container = document.getElementById('formationsGrid');
                 if (data && data.length > 0) {
                     container.innerHTML = data.map(f => {
@@ -1566,9 +1583,9 @@
                     .in('status', ['planifie', 'en_cours'])
                     .order('date_seminaire', { ascending: true })
                     .limit(5);
-                
+
                 if (error) throw error;
-                
+
                 const container = document.getElementById('seminairesList');
                 if (data && data.length > 0) {
                     container.innerHTML = data.map(s => {
@@ -1862,7 +1879,7 @@
                                 ` : ''}
 
                                 ${EventCountdown.badge(event)}
-                                <button class="btn-event-reg" 
+                                <button class="btn-event-reg"
                                     id="btn-reg-${event.id}"
                                     onclick="openRegModal('${event.id}', '${event.titre.replace(/'/g, "\\'")}', '${event.whatsapp_link || ''}', '${event.has_quiz}')"
                                     ${EventCountdown.buttonAttrs(event)}>
@@ -1899,11 +1916,11 @@
                 if (!textEl || !fillEl) return;
 
                 textEl.textContent = `👥 ${current} inscrit(s)`;
-                
+
                 // Fill bar based on count (just for visual effect, max 100% at 50+ registrations)
                 const percent = Math.min(Math.round((current / 50) * 100), 100);
                 fillEl.style.width = `${percent}%`;
-                
+
                 console.log(`Event ${event.id}: ${current} registered`);
             } catch (err) {
                 console.error('Error updating progress:', err);
@@ -1983,16 +2000,16 @@
             document.getElementById('certificatPaymentInfo').classList.add('hidden');
             document.getElementById('regCertificatProof').value = '';
             document.getElementById('certificatProofPreview').classList.add('hidden');
-            
-            
+
+
             certificateDiscount.reset({ type: 'event', id, price: evt?.prix_certificat || 0, available: currentEventCertificat.dispo });
             const quizDiv = document.getElementById('quizSection');
             const questionsDiv = document.getElementById('quizQuestions');
-            
+
             if (currentEventQuiz) {
                 quizDiv.classList.remove('hidden');
                 questionsDiv.innerHTML = '<p style="text-align:center; padding:1rem; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Chargement des questions...</p>';
-                
+
                 try {
                     const { data, error } = await window.supabaseClient
                         .from('event_questions')
@@ -2000,14 +2017,14 @@
                         .eq('is_active', true)
                         .or(`event_id.is.null,event_id.eq.${id}`)
                         .limit(3);
-                    
+
                     if (error) {
                         console.error('Quiz error:', error);
                         questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#ef4444;">Erreur de chargement des questions: ${error.message}. Assurez-vous que la table event_questions existe et que les RLS policies sont configurées.</p>`;
                         quizQuestionsData = [];
                     } else {
                         quizQuestionsData = data || [];
-                        
+
                         if (quizQuestionsData.length > 0) {
                             questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
                                 <div class="quiz-q-item">
@@ -2050,19 +2067,19 @@
             const images = allImages || [imageUrl];
             currentModalImages = images;
             currentModalIndex = images.indexOf(imageUrl);
-            
+
             const modal = document.getElementById('imageModal');
             const track = document.getElementById('modalCarouselTrack');
             const dotsContainer = document.getElementById('modalDots');
             const prevBtn = document.getElementById('modalPrevBtn');
             const nextBtn = document.getElementById('modalNextBtn');
-            
+
             // Build carousel
             track.innerHTML = images.map(img => `<img src="${img}" alt="Full image" style="max-width:100%; max-height:90vh; object-fit:contain; border-radius:12px; flex:0 0 100%;">`).join('');
-            
+
             // Add dots
             dotsContainer.innerHTML = images.map((_, i) => `<span class="modal-dot ${i === 0 ? 'active' : ''}" style="width:10px; height:10px; border-radius:50%; background:${i === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer; transition:all 0.3s;" data-index="${i}"></span>`).join('');
-            
+
             // Add click handlers to dots
             dotsContainer.querySelectorAll('.modal-dot').forEach(dot => {
                 dot.addEventListener('click', (e) => {
@@ -2070,7 +2087,7 @@
                     updateModalCarousel();
                 });
             });
-            
+
             // Show/hide navigation buttons
             if (images.length > 1) {
                 prevBtn.style.display = 'block';
@@ -2079,9 +2096,9 @@
                 prevBtn.style.display = 'none';
                 nextBtn.style.display = 'none';
             }
-            
+
             updateModalCarousel();
-            
+
             // Start auto-rotation
             if (modalCarouselInterval) clearInterval(modalCarouselInterval);
             if (images.length > 1) {
@@ -2090,7 +2107,7 @@
                     updateModalCarousel();
                 }, 3000);
             }
-            
+
             modal.classList.remove('hidden');
         }
 
@@ -2111,7 +2128,7 @@
             const dots = document.querySelectorAll('.modal-dot');
             const offset = currentModalIndex * -100;
             track.style.transform = `translateX(${offset}%)`;
-            
+
             dots.forEach((dot, index) => {
                 dot.style.background = index === currentModalIndex ? 'white' : 'rgba(255,255,255,0.5)';
             });
@@ -2189,7 +2206,7 @@
             const carousel = eventCarousels[carouselId];
             const offset = carousel.currentIndex * -100;
             carousel.track.style.transform = `translateX(${offset}%)`;
-            
+
             carousel.dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === carousel.currentIndex);
             });
@@ -2308,7 +2325,7 @@
 
                 // Show success modal
                 document.getElementById('successModal').classList.remove('hidden');
-                
+
                 document.getElementById('eventRegForm').reset();
             } catch (err) {
                 console.error('Erreur inscription événement:', err);
@@ -2338,11 +2355,11 @@
                 // Count Students
                 const { count: studentCount } = await window.supabaseClient
                     .from('etudiants').select('*', { count: 'exact', head: true });
-                
+
                 // Count Formations
                 const { count: courseCount } = await window.supabaseClient
                     .from('formations').select('*', { count: 'exact', head: true });
-                
+
                 // Count Events
                 const { count: eventCount } = await window.supabaseClient
                     .from('events').select('*', { count: 'exact', head: true });
@@ -2417,12 +2434,12 @@
                     .eq('afficher_sur_site', true)
                     .eq('status', 'actif')
                     .order('created_at', { ascending: false });
-                
+
                 if (error) throw error;
-                
+
                 const eventSelect = document.getElementById('donationEvent');
                 eventSelect.innerHTML = '<option value="">Sélectionnez un événement</option>';
-                
+
                 if (data && data.length > 0) {
                     data.forEach(event => {
                         const option = document.createElement('option');
@@ -2466,7 +2483,7 @@
             const purpose = document.getElementById('donationPurpose').value;
             const eventField = document.getElementById('eventField');
             const activityField = document.getElementById('activityField');
-            
+
             eventField.style.display = purpose === 'evenement' ? 'block' : 'none';
             activityField.style.display = purpose === 'activite' ? 'block' : 'none';
         }
@@ -2476,9 +2493,9 @@
             const proofField = document.getElementById('proofField');
             const instructionsDiv = document.getElementById('paymentInstructions');
             const paymentDetails = document.getElementById('paymentDetails');
-            
+
             proofField.style.display = 'block'; // Always show proof field (mandatory)
-            
+
             if (method === 'monacash') {
                 instructionsDiv.style.display = 'block';
                 paymentDetails.innerHTML = `
@@ -2503,13 +2520,13 @@
             const { data, error } = await window.supabaseClient.storage
                 .from('donations')
                 .upload(fileName, file);
-            
+
             if (error) throw error;
-            
+
             const { data: { publicUrl } } = window.supabaseClient.storage
                 .from('donations')
                 .getPublicUrl(data.path);
-            
+
             return publicUrl;
         }
 
@@ -2523,14 +2540,14 @@
             try {
                 const donatorType = document.querySelector('input[name="donatorType"]:checked').value;
                 const proofFile = document.getElementById('paymentProof').files[0];
-                
+
                 if (!proofFile) {
                     alert('Veuillez fournir une preuve de paiement (photo du reçu).');
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                     return;
                 }
-                
+
                 const proofUrl = await uploadPaymentProof(proofFile);
 
                 const donationData = {
@@ -2582,7 +2599,7 @@
                     .from('maillots')
                     .select('*')
                     .eq('est_disponible', true);
-                
+
                 if (error) throw error;
                 const grid = document.getElementById('maillotsGrid');
                 if (!data || data.length === 0) {
@@ -2620,7 +2637,7 @@
             document.getElementById('orderMaillotId').value = id;
             document.getElementById('orderPrice').value = prix;
             document.getElementById('orderTitle').textContent = `Commander : ${nom}`;
-            
+
             const preview = document.getElementById('maillotImagesPreview');
             preview.innerHTML = [img1, img2, img3].filter(i => i).map(i => `
                 <img src="${i}" style="height:80px; border-radius:8px; border:2px solid #e2e8f0; cursor:pointer;" onclick="window.open('${i}', '_blank')">
@@ -2674,7 +2691,7 @@
                     const { data, error: uploadError } = await window.supabaseClient.storage
                         .from('maillots')
                         .upload(fileName, file);
-                    
+
                     if (uploadError) throw uploadError;
                     const { data: { publicUrl } } = window.supabaseClient.storage.from('maillots').getPublicUrl(fileName);
                     proofUrl = publicUrl;

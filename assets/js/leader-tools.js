@@ -164,9 +164,9 @@ window.LeaderTools = {
             container.innerHTML = data.length ? data.map((row, index) => {
                 if (row.inscriptions !== previous) rank = index + 1;
                 previous = row.inscriptions;
-                return `<div style="background:white;padding:16px;border-radius:12px;border:1px solid #e2e8f0;margin:8px 0;">
-                    <strong>#${rank} ${this.escape(row.nom)}</strong> — ${this.escape(row.commune)}
-                    <span style="float:right;font-weight:700;">${this.escape(row.inscriptions)} inscription(s)</span></div>`;
+                return `<div style="background:white;padding:14px 16px;border-radius:12px;border:1px solid #e2e8f0;margin:8px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <span><strong>#${rank} ${this.escape(row.nom)}</strong> — ${this.escape(row.commune)}</span>
+                    <span style="font-weight:700;color:var(--primary,#2563eb);">${this.escape(row.inscriptions)} inscription(s)</span></div>`;
             }).join('') : '<p>Aucun leader disponible.</p>';
         } catch (error) { container.textContent = 'Classement indisponible pour le moment. Réessayez plus tard.'; }
     },

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tous les Événements | Rasin Ayiti</title>
-    
+
     <link rel="icon" href="assets/logorasin.PNG" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -815,7 +815,21 @@
                 width: 95%;
                 padding: 1.25rem;
                 max-height: 94vh;
+                margin: auto;
             }
+        }
+
+        @media (max-width: 480px) {
+            .events-page { padding: 80px 12px 30px; }
+            .events-header h1 { font-size: 1.65rem; }
+            .events-header p { font-size: 0.95rem; }
+            .event-image,
+            .event-image-container,
+            .event-design-placeholder { height: 210px; }
+            .design-title { font-size: 1.2rem; }
+            .modal-content { width: 96%; padding: 1rem; max-height: 94vh; }
+            .event-content { padding: 1.15rem 1rem; }
+            .event-title { font-size: 1.15rem; }
         }
     </style>
 </head>
@@ -826,15 +840,15 @@
             <a href="index.html" class="nav-logo" style="text-decoration: none;">
                 <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
                 <div style="display:flex; flex-direction:column;">
-                    <span style="font-weight:900; font-size:1.4rem; line-height:1; color:#0f172a;">RASIN AYITI</span>
-                    <span style="font-size:0.65rem; color:var(--primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Développement Juvénile/RASINAYITI</span>
+                    <span class="nav-logo-text">RASIN AYITI</span>
+                    <span class="nav-logo-sub">Développement Juvénile/RASINAYITI</span>
                 </div>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
                 <span class="hamburger-line line-1"></span>
                 <span class="hamburger-line line-2"></span>
             </button>
-            
+
             <ul class="nav-links" id="navLinks">
                 <div class="mobile-menu-handle"></div>
                 <li><a href="index.html#hero" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
@@ -858,7 +872,7 @@
                 <h1>Tous les Événements</h1>
                 <p>Découvrez toutes nos formations, séminaires et événements à venir</p>
             </div>
-            
+
             <div class="events-grid" id="eventsGrid">
                 <div class="loading">
                     <i class="fas fa-spinner fa-spin fa-2x"></i>
@@ -1023,7 +1037,7 @@
                 allEventsData = data || [];
 
                 const grid = document.getElementById('eventsGrid');
-                
+
                 if (!data || data.length === 0) {
                     grid.innerHTML = `
                         <div class="no-events">
@@ -1250,24 +1264,24 @@
                 const images = allImages || [imageUrl];
                 currentModalImages = images;
                 currentModalIndex = images.indexOf(imageUrl);
-                
+
                 const modal = document.getElementById('imageModal');
                 const track = document.getElementById('modalCarouselTrack');
                 const dotsContainer = document.getElementById('modalDots');
                 const prevBtn = document.getElementById('modalPrevBtn');
                 const nextBtn = document.getElementById('modalNextBtn');
-                
+
                 if (!modal || !track || !dotsContainer) {
                     console.error('Modal elements not found:', { modal, track, dotsContainer });
                     return;
                 }
-                
+
                 // Build carousel
                 track.innerHTML = images.map(img => `<img src="${img}" alt="Full image" style="max-width:100%; max-height:85vh; object-fit:contain; border-radius:12px; flex:0 0 100%;">`).join('');
-                
+
                 // Add dots
                 dotsContainer.innerHTML = images.map((_, i) => `<span class="modal-dot ${i === 0 ? 'active' : ''}" style="width:10px; height:10px; border-radius:50%; background:${i === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer; transition:all 0.3s;" data-index="${i}"></span>`).join('');
-                
+
                 // Add click handlers to dots
                 dotsContainer.querySelectorAll('.modal-dot').forEach(dot => {
                     dot.addEventListener('click', (e) => {
@@ -1275,7 +1289,7 @@
                         updateModalCarousel();
                     });
                 });
-                
+
                 // Show/hide navigation buttons
                 if (images.length > 1) {
                     prevBtn.style.display = 'block';
@@ -1284,9 +1298,9 @@
                     prevBtn.style.display = 'none';
                     nextBtn.style.display = 'none';
                 }
-                
+
                 updateModalCarousel();
-                
+
                 // Start auto-rotation
                 if (modalCarouselInterval) clearInterval(modalCarouselInterval);
                 if (images.length > 1) {
@@ -1295,7 +1309,7 @@
                         updateModalCarousel();
                     }, 3000);
                 }
-                
+
                 modal.classList.remove('hidden');
                 console.log('Modal opened with images:', images);
             } catch (err) {
@@ -1320,7 +1334,7 @@
             const dots = document.querySelectorAll('.modal-dot');
             const offset = currentModalIndex * -100;
             track.style.transform = `translateX(${offset}%)`;
-            
+
             dots.forEach((dot, index) => {
                 dot.style.background = index === currentModalIndex ? 'white' : 'rgba(255,255,255,0.5)';
             });
@@ -1397,7 +1411,7 @@
             const carousel = carousels[carouselId];
             const offset = carousel.currentIndex * -100;
             carousel.track.style.transform = `translateX(${offset}%)`;
-            
+
             carousel.dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === carousel.currentIndex);
             });
@@ -1485,11 +1499,11 @@
             certificateDiscount.reset({ type: 'event', id, price: evt?.prix_certificat || 0, available: currentEventCertificat.dispo });
             const quizDiv = document.getElementById('quizSection');
             const questionsDiv = document.getElementById('quizQuestions');
-            
+
             if (currentEventQuiz) {
                 quizDiv.classList.remove('hidden');
                 questionsDiv.innerHTML = '<p style="text-align:center; padding:1rem; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Chargement des questions...</p>';
-                
+
                 try {
                     const { data, error } = await window.supabaseClient
                         .from('event_questions')
@@ -1497,14 +1511,14 @@
                         .eq('is_active', true)
                         .or(`event_id.is.null,event_id.eq.${id}`)
                         .limit(3);
-                    
+
                     if (error) {
                         console.error('Quiz error:', error);
                         questionsDiv.innerHTML = `<p style="text-align:center; padding:1rem; color:#ef4444;">Erreur de chargement des questions: ${error.message}. Assurez-vous que la table event_questions existe et que les RLS policies sont configurées.</p>`;
                         quizQuestionsData = [];
                     } else {
                         quizQuestionsData = data || [];
-                        
+
                         if (quizQuestionsData.length > 0) {
                             questionsDiv.innerHTML = quizQuestionsData.map((q, idx) => `
                                 <div class="quiz-q-item">
@@ -1640,19 +1654,19 @@
         async function loadEventProgress(eventId, maxPlaces) {
             try {
                 const { data: count, error } = await window.supabaseClient.rpc('rasinayiti_event_registration_count', { p_id: eventId });
-                
+
                 if (error) throw error;
-                
+
                 const registered = count || 0;
                 const percentage = Math.min((registered / maxPlaces) * 100, 100);
-                
+
                 const progText = document.getElementById(`prog-text-${eventId}`);
                 const progFill = document.getElementById(`prog-fill-${eventId}`);
-                
+
                 if (progText && progFill) {
                     progText.textContent = `${registered}/${maxPlaces} inscrits`;
                     progFill.style.width = `${percentage}%`;
-                    
+
                     if (percentage >= 100) {
                         progFill.style.background = '#22c55e';
                     } else if (percentage >= 75) {

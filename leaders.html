@@ -396,8 +396,10 @@
 
         @media (max-width: 480px) {
             .leaders-grid { grid-template-columns: 1fr; }
-            .filter-wrapper { flex-direction: column; align-items: stretch; }
+            .filter-wrapper { flex-direction: column; align-items: stretch; gap: 0.5rem; }
             .commune-select { min-width: 100%; }
+            .leaders-container { padding: 1rem 0.75rem; }
+            .hero-2026 { padding-top: 100px !important; }
         }
     </style>
 </head>
@@ -408,8 +410,8 @@
             <a href="index.html" class="nav-logo" style="text-decoration: none;">
                 <img src="assets/logorasin.PNG" alt="Rasin Ayiti">
                 <div style="display:flex; flex-direction:column;">
-                    <span style="font-weight:900; font-size:1.4rem; line-height:1; color:#0f172a;">RASIN AYITI</span>
-                    <span style="font-size:0.65rem; color:var(--primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Développement Juvénile/RASINAYITI</span>
+                    <span class="nav-logo-text">RASIN AYITI</span>
+                    <span class="nav-logo-sub">Développement Juvénile/RASINAYITI</span>
                 </div>
             </a>
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">

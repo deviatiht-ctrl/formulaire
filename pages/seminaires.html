@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Séminaires - Rasin Ayiti</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" href="../assets/logorasin.PNG" type="image/png">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="../style.css?v=20260930">
     <link rel="stylesheet" href="../assets/css/landing-2026.css?v=20260930">
@@ -36,7 +36,7 @@
             </ul>
             <div class="nav-actions">
                 <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
-                    <i class="fas fa-user"></i> Connexion
+                    <i class="fas fa-user"></i> <span>Connexion</span>
                 </a>
             </div>
             <button class="nav-toggle" id="navToggle" aria-label="Menu">
@@ -312,6 +312,19 @@
             .btn-seminaire {
                 width: 100%;
             }
+            .section-hero { padding: 95px 16px 36px; }
+            .seminaires-full-section { padding: 2.5rem 14px; }
+            .past-seminaires-section { padding: 2.5rem 14px !important; }
+        }
+
+        @media (max-width: 480px) {
+            .section-hero { padding: 85px 12px 28px; }
+            .hero-content h1 { font-size: 1.5rem; }
+            .hero-content p { font-size: 0.95rem; }
+            .seminaires-full-section { padding: 2rem 10px; }
+            .past-seminaires-section { padding: 2rem 10px !important; }
+            .seminaire-item { padding: 1.15rem 0.875rem; gap: 0.875rem; }
+            .seminaire-info h4 { font-size: 1.1rem; }
         }
     </style>
 
@@ -319,7 +332,7 @@
     <script src="../supabase.js?v=20260930"></script>
     <script src="../assets/js/mobile-nav.js?v=20260930"></script>
     <script src="../assets/js/scroll-reveal.js?v=20260930"></script>
-    
+
     <script>
         // Load upcoming seminaires
         async function loadSeminaires() {
@@ -329,9 +342,9 @@
                     .select('*, formations(titre, couleur)')
                     .in('status', ['planifie', 'en_cours'])
                     .order('date_seminaire', { ascending: true });
-                
+
                 if (error) throw error;
-                
+
                 const container = document.getElementById('seminairesList');
                 if (data && data.length > 0) {
                     container.innerHTML = data.map(s => `
@@ -369,9 +382,9 @@
                     .in('status', ['termine', 'annule'])
                     .order('date_seminaire', { ascending: false })
                     .limit(5);
-                
+
                 if (error) throw error;
-                
+
                 const container = document.getElementById('pastSeminairesList');
                 if (data && data.length > 0) {
                     container.innerHTML = data.map(s => `
