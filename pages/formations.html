@@ -15,34 +15,475 @@
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="../style.css?v=20261108">
     <link rel="stylesheet" href="../assets/css/landing-2026.css?v=20261108">
+    <style>
+        body {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* Navbar Styles */
+        .nav-2026 {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1400px;
+            padding: 10px 40px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-2026.scrolled {
+            top: 10px;
+            padding: 8px 30px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 40px rgba(0, 32, 159, 0.12);
+        }
+
+        .nav-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: #0f172a;
+        }
+
+        .nav-logo img {
+            height: 45px;
+            width: auto;
+        }
+
+        .nav-logo-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .nav-logo-sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            z-index: 1001;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.05);
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .nav-toggle:hover {
+            background: rgba(37, 99, 235, 0.1);
+            transform: scale(1.05);
+        }
+
+        .hamburger-line {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background-color: #0f172a;
+            position: absolute;
+            left: 10px;
+            transition: transform 0.4s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .line-1 { top: 16px; }
+        .line-2 { bottom: 16px; width: 14px; }
+
+        .nav-toggle.active .line-1 {
+            transform: rotate(45deg);
+            top: 19px;
+            width: 20px;
+        }
+
+        .nav-toggle.active .line-2 {
+            transform: rotate(-45deg);
+            bottom: 19px;
+            width: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .nav-links a {
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary, #2563eb);
+        }
+
+        .nav-links a.active {
+            background: var(--primary, #2563eb);
+            color: white;
+        }
+
+        .nav-leaders-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+            color: #0f172a !important;
+            padding: 8px 16px !important;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .btn-login {
+            background: var(--primary, #2563eb);
+            color: white !important;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* Hero Section */
+        .section-hero {
+            padding: 130px 20px 30px;
+            background: #f8fafc;
+            text-align: center;
+        }
+
+        .section-hero .section-badge {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary, #2563eb);
+            padding: 0.4rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            color: #64748b;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Filters */
+        .filters-section {
+            padding: 1.5rem 20px 2rem;
+            background: transparent;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: white;
+            padding: 1.25rem 2rem;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filter-group label {
+            font-weight: 700;
+            color: #475569;
+            font-size: 0.88rem;
+        }
+
+        .filter-group select {
+            padding: 0.6rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            cursor: pointer;
+            background: #f8fafc;
+            min-width: 160px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Formations Section */
+        .formations-full-section {
+            padding: 1rem 20px 5rem;
+        }
+
+        .section-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .formations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 380px));
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .formation-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .formation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        .load-more-container {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .btn-load-more {
+            padding: 0.875rem 2.5rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-load-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+        }
+
+        @media (max-width: 1024px) {
+            .nav-2026 {
+                width: 95% !important;
+                padding: 8px 16px !important;
+                border-radius: 50px !important;
+                top: 15px !important;
+                z-index: 2001 !important;
+            }
+
+            .nav-toggle {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-links {
+                position: fixed !important;
+                left: 50% !important;
+                top: 75px !important;
+                bottom: auto !important;
+                transform: translateX(-50%) translateY(-15px) scale(0.96) !important;
+                width: 92% !important;
+                max-width: 380px !important;
+                max-height: calc(100vh - 100px) !important;
+                overflow-y: auto !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(25px) !important;
+                -webkit-backdrop-filter: blur(25px) !important;
+                flex-direction: column !important;
+                padding: 20px 16px !important;
+                gap: 8px !important;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25) !important;
+                z-index: 2000 !important;
+                display: flex !important;
+                border-radius: 24px !important;
+                border: 1px solid rgba(255, 255, 255, 0.6) !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            .nav-links.active {
+                transform: translateX(-50%) translateY(0) scale(1) !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+
+            .nav-links li {
+                width: 100% !important;
+            }
+
+            .nav-links a {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 12px !important;
+                padding: 12px 16px !important;
+                font-size: 0.95rem !important;
+                border-radius: 12px !important;
+                color: #0f172a !important;
+                font-weight: 600 !important;
+                transition: all 0.25s ease !important;
+                border: 1px solid transparent !important;
+            }
+
+            .nav-links a:hover {
+                background: rgba(37, 99, 235, 0.08) !important;
+                border-color: rgba(37, 99, 235, 0.15) !important;
+                transform: translateX(4px) !important;
+            }
+
+            .nav-links a.active {
+                background: linear-gradient(135deg, var(--primary, #2563eb) 0%, #2563eb 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1.25rem 1rem;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group select {
+                width: 100%;
+            }
+            .section-hero { padding: 110px 16px 25px; }
+            .formations-full-section { padding: 1.5rem 14px 4rem; }
+        }
+
+        @media (max-width: 480px) {
+            .section-hero { padding: 95px 12px 20px; }
+            .hero-content h1 { font-size: 1.6rem; }
+            .hero-content p { font-size: 0.95rem; }
+            .filters-section { padding: 1rem 12px 1.5rem; }
+            .formations-full-section { padding: 1rem 10px 3rem; }
+        }
+    </style>
 </head>
 <body>
-    <!-- NAVIGATION -->
+    <!-- NAVIGATION MODERNE -->
     <nav class="nav-2026">
         <div class="nav-container">
-            <div class="nav-logo">
+            <a href="../index.html" class="nav-logo" style="text-decoration: none;">
                 <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
-                <span>Rasin Ayiti</span>
-            </div>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="../index.html">Accueil</a></li>
-                <li><a href="../evenements.html">Événements</a></li>
-                <li><a href="formations.html" class="active">Formations</a></li>
-                <li><a href="../leaders.html">Leaders</a></li>
-            </ul>
-            <div class="nav-actions">
-                <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
-                    <i class="fas fa-user"></i> <span>Connexion</span>
-                </a>
-            </div>
-            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <div style="display:flex; flex-direction:column;">
+                    <span class="nav-logo-text">RASIN AYITI</span>
+                    <span class="nav-logo-sub">Développement Juvénile</span>
+                </div>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
                 <span class="hamburger-line line-1"></span>
                 <span class="hamburger-line line-2"></span>
             </button>
+
+            <ul class="nav-links" id="navLinks">
+                <div class="mobile-menu-handle"></div>
+                <li><a href="../index.html" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="../evenements.html" onclick="closeMenu()"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
+                <li><a href="formations.html" onclick="closeMenu()" class="active"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
+                <li><a href="../leaders.html" onclick="closeMenu()" class="nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
+                <li class="nav-dropdown">
+                    <button class="nav-dropdown-btn" type="button" aria-label="Plus d'options">
+                        <i data-lucide="more-horizontal"></i> <span>Plus</span> <i class="fas fa-chevron-down" style="font-size:0.65rem;margin-left:2px;transition:transform 0.2s;"></i>
+                    </button>
+                    <ul class="nav-dropdown-menu">
+                        <li><a href="../index.html#boutique" onclick="closeMenu()"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
+                        <li><a href="../index.html#donations" onclick="closeMenu()"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                        <li><a href="../index.html#galerie" onclick="closeMenu()"><i data-lucide="image"></i> <span>Galerie</span></a></li>
+                    </ul>
+                </li>
+                <!-- Dynamic Auth Buttons -->
+                <li id="authContainer">
+                    <a href="../espace-etudiant/login.html" class="btn-login">Connexion</a>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -122,7 +563,7 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
+    <!-- FOOTER MODERNE -->
     <footer class="footer-2026">
         <div class="footer-container">
             <div class="footer-grid">
@@ -131,21 +572,31 @@
                         <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
                         <span>Rasin Ayiti</span>
                     </div>
-                    <p>La première école de formation en ligne en Haïti.</p>
+                    <p style="font-weight:700; color:var(--primary, #2563eb); margin-top:-0.5rem; margin-bottom:1rem; font-size:0.8rem;">Département de développement Juvénile</p>
+                    <p>Développement Juvénile/RASINAYITI - Une grande mobilisation pour la jeunesse haïtienne.</p>
+                    <div class="footer-social">
+                        <p style="margin-bottom:0.5rem; font-weight:700; color:#0f172a;">Suivez-nous sur les réseaux sociaux:</p>
+                        <a href="https://www.instagram.com/rasinayiti2026?igsh=NHNwZjlpcW81Nmd3&utm_source=qr" target="_blank" style="background:#E1306C;"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@rasinayiti0?_r=1&_t=ZT-96Cet7oAEH7" target="_blank" style="background:#000000;"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://wa.me/50946807922" target="_blank" style="background:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
                 </div>
                 <div class="footer-links">
                     <h4>Navigation</h4>
                     <ul>
                         <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="../evenements.html">Événements</a></li>
                         <li><a href="formations.html">Formations</a></li>
                         <li><a href="seminaires.html">Séminaires</a></li>
-                        <li><a href="../index.html#galerie">Galerie</a></li>
+                        <li><a href="../espace-etudiant/login.html">Espace Étudiant</a></li>
                     </ul>
                 </div>
-                <div class="footer-contact">
-                    <h4>Contact</h4>
-                    <p><i class="fas fa-phone"></i> +509 46807922</p>
-                    <p><i class="fas fa-envelope"></i> contact@rasinayiti.com</p>
+                <div class="footer-links">
+                    <h4>Administration</h4>
+                    <ul>
+                        <li><a href="../admin/dashboard.html">Dashboard</a></li>
+                        <li><a href="../admin/formations.html">Gestion Formations</a></li>
+                    </ul>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -153,125 +604,6 @@
             </div>
         </div>
     </footer>
-
-    <style>
-        .section-hero {
-            padding: 140px 20px 60px;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            text-align: center;
-        }
-
-        .hero-content h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 1rem;
-        }
-
-        .hero-content p {
-            font-size: 1.125rem;
-            color: #64748b;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .filters-section {
-            padding: 2rem 0;
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .filters-container {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .filter-group label {
-            font-weight: 600;
-            color: #475569;
-            font-size: 0.9rem;
-        }
-
-        .filter-group select {
-            padding: 0.5rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            min-width: 150px;
-        }
-
-        .formations-full-section {
-            padding: 4rem 20px;
-        }
-
-        .formations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
-            gap: 2rem;
-        }
-
-        .load-more-container {
-            text-align: center;
-            margin-top: 3rem;
-        }
-
-        .btn-load-more {
-            padding: 1rem 2.5rem;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-load-more:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-        }
-
-        @media (max-width: 768px) {
-            .hero-content h1 {
-                font-size: 1.75rem;
-            }
-
-            .filters-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filter-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filter-group select {
-                width: 100%;
-            }
-            .section-hero { padding: 95px 16px 36px; }
-            .formations-full-section { padding: 2.5rem 14px; }
-        }
-
-        @media (max-width: 480px) {
-            .section-hero { padding: 85px 12px 28px; }
-            .hero-content h1 { font-size: 1.5rem; }
-            .hero-content p { font-size: 0.95rem; }
-            .filters-section { padding: 1.25rem 0; }
-            .filters-container { gap: 0.75rem; }
-            .formations-full-section { padding: 2rem 10px; }
-        }
-    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js?v=20261108"></script>
@@ -311,17 +643,20 @@
             try {
                 const { data, error } = await window.supabaseClient
                     .from('formations')
-                    .select('*, categories(nom)')
+                    .select('*')
                     .eq('status', 'publie')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error loading formations:', error);
+                }
 
                 allFormations = data || [];
                 filteredFormations = [...allFormations];
                 displayFormations();
             } catch (err) {
                 console.error('Error loading formations:', err);
+                displayFormations();
             }
         }
 
@@ -335,31 +670,42 @@
             const formationsToShow = filteredFormations.slice(startIndex, endIndex);
 
             if (formationsToShow.length === 0) {
-                container.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:3rem;color:#64748b;">Aucune formation trouvée.</p>';
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1.5rem; background: white; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); max-width: 580px; margin: 2rem auto;">
+                        <div style="width: 64px; height: 64px; background: rgba(37, 99, 235, 0.1); color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">Formations en préparation</h3>
+                        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">De nouvelles sessions certifiantes sont en cours de finalisation pour la communauté Rasin Ayiti.</p>
+                        <a href="../evenements.html" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, box-shadow 0.2s;">
+                            <i class="fas fa-calendar-alt"></i> <span>Découvrir nos Événements</span>
+                        </a>
+                    </div>
+                `;
                 loadMoreContainer.style.display = 'none';
                 return;
             }
 
-            container.innerHTML = formationsToShow.map(f => `
+            container.innerHTML = formationsToShow.map(f => {
+                const img = f.image_principale || (f.images && f.images[0]);
+                return `
                 <div class="formation-card" data-aos="fade-up">
-                    <div class="card-image" style="background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'});">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span class="card-type">${f.type_formation || 'En ligne'}</span>
+                    <div class="card-image" style="height: 200px; position: relative; overflow: hidden; background: linear-gradient(135deg, ${f.couleur || '#2563eb'}, ${f.couleur || '#1d4ed8'}); display:flex; align-items:center; justify-content:center;">
+                        ${img ? `<img src="${img}" alt="${f.titre}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-graduation-cap" style="font-size:3rem; color:white;"></i>`}
+                        <span class="card-type" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;">${f.type_formation || 'En ligne'}</span>
                     </div>
-                    <div class="card-content">
-                        <h3>${f.titre}</h3>
-                        <p>${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
-                        <div class="card-meta">
-                            <span><i class="fas fa-clock"></i> ${f.duree || 'N/A'}</span>
-                            <span class="card-price">${f.prix > 0 ? f.prix + ' HTG' : 'Gratuit'}</span>
+                    <div class="card-content" style="padding:1.5rem; display:flex; flex-direction:column; flex:1;">
+                        <h3 style="font-size:1.2rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem; line-height:1.4;">${f.titre}</h3>
+                        <p style="font-size:0.9rem; color:#64748b; line-height:1.5; margin-bottom:1rem; flex:1;">${f.description?.substring(0, 100) || 'Formation professionnelle'}...</p>
+                        <div class="card-meta" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-size:0.85rem; color:#64748b;">
+                            <span><i class="fas fa-clock" style="color:#2563eb;"></i> ${f.duree || 'N/A'}</span>
+                            <span class="card-price" style="font-weight:700; color:#1e40af; background:#dbeafe; padding:4px 10px; border-radius:8px;">${f.prix > 0 ? f.prix + ' HTG' : 'Gratuit'}</span>
                         </div>
-                        <div class="card-category">
-                            <i class="fas fa-folder"></i> ${f.categories?.nom || 'Général'}
-                        </div>
-                        <a href="inscription.html?id=${f.id}&type=formation" class="btn-card">S'inscrire</a>
+                        <a href="inscription.html?id=${f.id}&type=formation" class="btn-card" style="display:block; text-align:center; padding:0.75rem; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; border-radius:10px; font-weight:700; text-decoration:none; transition:all 0.2s;">S'inscrire</a>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             // Show/hide load more button
             if (endIndex < filteredFormations.length) {
@@ -387,6 +733,42 @@
             displayFormations();
         }
 
+        // Auth Logic
+        function updateNavbarAuth() {
+            const authContainer = document.getElementById('authContainer');
+            if (!authContainer) return;
+            const studentData = localStorage.getItem('etudiant');
+            const adminData = sessionStorage.getItem('admin');
+
+            let html = '';
+
+            if (adminData) {
+                html = `
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="../admin/dashboard.html" class="btn-login" style="background:#0f172a; color:white; padding:8px 15px; border-radius:10px; font-size:0.85rem;"><i class="fas fa-lock"></i> Admin</a>
+                        <a href="#" onclick="logout()" style="color:#ef4444; font-weight:700; font-size:0.9rem;">Déconnexion</a>
+                    </div>
+                `;
+            } else if (studentData) {
+                html = `
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <a href="../espace-etudiant/dashboard.html" style="color:var(--primary, #2563eb); font-weight:700;">Mon Profil</a>
+                        <a href="#" onclick="logout()" style="color:#ef4444; font-weight:700;">Déconnexion</a>
+                    </div>
+                `;
+            } else {
+                html = `<a href="../espace-etudiant/login.html" class="btn-login" style="background:var(--primary, #2563eb); color:white; padding:8px 18px; border-radius:20px; font-weight:700;">Connexion</a>`;
+            }
+
+            authContainer.innerHTML = html;
+        }
+
+        function logout() {
+            localStorage.removeItem('etudiant');
+            sessionStorage.removeItem('admin');
+            window.location.reload();
+        }
+
         // Load more
         document.getElementById('loadMoreBtn').addEventListener('click', () => {
             currentPage++;
@@ -400,6 +782,22 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            if (window.initMobileNav) {
+                window.initMobileNav();
+            }
+            updateNavbarAuth();
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('.nav-2026');
+                if (!nav) return;
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            });
             loadCategories();
             loadFormations();
         });

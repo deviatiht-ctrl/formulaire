@@ -15,145 +15,230 @@
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- CSS -->
     <link rel="stylesheet" href="../style.css?v=20261108">
     <link rel="stylesheet" href="../assets/css/landing-2026.css?v=20261108">
-</head>
-<body>
-    <!-- NAVIGATION -->
-    <nav class="nav-2026">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
-                <span>Rasin Ayiti</span>
-            </div>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="../index.html">Accueil</a></li>
-                <li><a href="../evenements.html">Événements</a></li>
-                <li><a href="formations.html">Formations</a></li>
-                <li><a href="../leaders.html">Leaders</a></li>
-            </ul>
-            <div class="nav-actions">
-                <a href="../espace-etudiant/login.html" class="btn-nav-secondary">
-                    <i class="fas fa-user"></i> <span>Connexion</span>
-                </a>
-            </div>
-            <button class="nav-toggle" id="navToggle" aria-label="Menu">
-                <span class="hamburger-line line-1"></span>
-                <span class="hamburger-line line-2"></span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- HERO SECTION -->
-    <section class="section-hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <span class="section-badge">Séminaires</span>
-                <h1>Participez à nos événements en direct</h1>
-                <p>Rejoignez nos séminaires interactifs avec des experts</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- SEMINAIRES LIST -->
-    <section class="seminaires-full-section">
-        <div class="section-container">
-            <div class="seminaires-list" id="seminairesList">
-                <!-- Seminaires yo pral load dinamikman -->
-                <div class="seminaire-item skeleton">
-                    <div class="seminaire-date skeleton-bg"></div>
-                    <div class="seminaire-info">
-                        <div class="skeleton-line"></div>
-                        <div class="skeleton-line short"></div>
-                    </div>
-                </div>
-                <div class="seminaire-item skeleton">
-                    <div class="seminaire-date skeleton-bg"></div>
-                    <div class="seminaire-info">
-                        <div class="skeleton-line"></div>
-                        <div class="skeleton-line short"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PAST SEMINAIRES -->
-    <section class="past-seminaires-section" style="background:#f8fafc;padding:4rem 20px;">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-badge">Archives</span>
-                <h2 class="section-title">Séminaires <span class="accent">passés</span></h2>
-                <p class="section-desc">Revenez sur nos événements précédents</p>
-            </div>
-            <div class="seminaires-list" id="pastSeminairesList">
-                <!-- Past seminaires yo pral load dinamikman -->
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="footer-2026">
-        <div class="footer-container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="footer-logo">
-                        <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
-                        <span>Rasin Ayiti</span>
-                    </div>
-                    <p>La première école de formation en ligne en Haïti.</p>
-                </div>
-                <div class="footer-links">
-                    <h4>Navigation</h4>
-                    <ul>
-                        <li><a href="../index.html">Accueil</a></li>
-                        <li><a href="formations.html">Formations</a></li>
-                        <li><a href="seminaires.html">Séminaires</a></li>
-                        <li><a href="../index.html#galerie">Galerie</a></li>
-                    </ul>
-                </div>
-                <div class="footer-contact">
-                    <h4>Contact</h4>
-                    <p><i class="fas fa-phone"></i> +509 46807922</p>
-                    <p><i class="fas fa-envelope"></i> contact@rasinayiti.com</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Rasin Ayiti. Tous droits réservés.</p>
-            </div>
-        </div>
-    </footer>
-
     <style>
+        body {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* Navbar Styles */
+        .nav-2026 {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1400px;
+            padding: 10px 40px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-2026.scrolled {
+            top: 10px;
+            padding: 8px 30px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 40px rgba(0, 32, 159, 0.12);
+        }
+
+        .nav-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: #0f172a;
+        }
+
+        .nav-logo img {
+            height: 45px;
+            width: auto;
+        }
+
+        .nav-logo-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .nav-logo-sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            z-index: 1001;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.05);
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .nav-toggle:hover {
+            background: rgba(37, 99, 235, 0.1);
+            transform: scale(1.05);
+        }
+
+        .hamburger-line {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background-color: #0f172a;
+            position: absolute;
+            left: 10px;
+            transition: transform 0.4s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .line-1 { top: 16px; }
+        .line-2 { bottom: 16px; width: 14px; }
+
+        .nav-toggle.active .line-1 {
+            transform: rotate(45deg);
+            top: 19px;
+            width: 20px;
+        }
+
+        .nav-toggle.active .line-2 {
+            transform: rotate(-45deg);
+            bottom: 19px;
+            width: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .nav-links a {
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary, #2563eb);
+        }
+
+        .nav-links a.active {
+            background: var(--primary, #2563eb);
+            color: white;
+        }
+
+        .nav-leaders-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+            color: #0f172a !important;
+            padding: 8px 16px !important;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .btn-login {
+            background: var(--primary, #2563eb);
+            color: white !important;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* Hero Section */
         .section-hero {
-            padding: 140px 20px 60px;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 130px 20px 40px;
+            background: #f8fafc;
             text-align: center;
         }
 
-        .hero-content h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #0f172a;
+        .section-hero .section-badge {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary, #2563eb);
+            padding: 0.4rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 1rem;
         }
 
+        .hero-content h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
         .hero-content p {
-            font-size: 1.125rem;
+            font-size: 1.15rem;
             color: #64748b;
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
+            line-height: 1.6;
         }
 
         .seminaires-full-section {
-            padding: 4rem 20px;
+            padding: 2rem 20px 4rem;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .seminaires-list {
-            max-width: 900px;
-            margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -162,18 +247,18 @@
         .seminaire-item {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 2rem;
             background: white;
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
 
         .seminaire-item:hover {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            transform: translateX(5px);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
         .seminaire-date {
@@ -181,11 +266,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 80px;
+            width: 80px;
             height: 80px;
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            border-radius: 16px;
             color: white;
+            border-radius: 16px;
             flex-shrink: 0;
         }
 
@@ -196,10 +281,10 @@
         }
 
         .date-month {
-            font-size: 0.75rem;
-            text-transform: uppercase;
+            font-size: 0.8rem;
             font-weight: 600;
-            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .seminaire-info {
@@ -210,84 +295,47 @@
             font-size: 1.25rem;
             font-weight: 700;
             color: #0f172a;
-            margin-bottom: 0.5rem;
+            margin: 0 0 0.5rem 0;
         }
 
         .seminaire-info p {
             color: #64748b;
             font-size: 0.95rem;
-            margin-bottom: 0.5rem;
+            margin: 0 0 0.5rem 0;
         }
 
         .seminaire-time {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #94a3b8;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
+            color: #64748b;
         }
 
         .btn-seminaire {
-            padding: 0.875rem 1.75rem;
+            padding: 0.75rem 1.75rem;
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: white;
-            text-decoration: none;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            text-decoration: none;
             transition: all 0.3s;
             white-space: nowrap;
         }
 
         .btn-seminaire:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
         }
 
         .live-badge {
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
-
-        .past-seminaires-section .seminaire-item {
-            opacity: 0.8;
-        }
-
-        .past-seminaires-section .seminaire-item:hover {
-            opacity: 1;
-        }
-
-        .past-seminaires-section .btn-seminaire {
-            background: linear-gradient(135deg, #64748b, #475569);
-            pointer-events: none;
-        }
-
-        .skeleton .seminaire-date,
-        .skeleton .seminaire-info h4,
-        .skeleton .seminaire-info p {
-            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
-            background-size: 200% 100%;
-            animation: skeletonShimmer 1.5s infinite;
+            background: #ef4444;
+            color: white;
+            padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            min-height: 20px;
-        }
-
-        .skeleton .seminaire-date {
-            min-height: 80px;
-            min-width: 80px;
-        }
-
-        .skeleton .seminaire-info h4 {
-            min-height: 28px;
-            margin-bottom: 0.5rem;
-        }
-
-        .skeleton .seminaire-info p {
-            min-height: 20px;
-        }
-
-        @keyframes skeletonShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            font-size: 0.75rem;
+            font-weight: 700;
+            animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
@@ -295,10 +343,104 @@
             50% { opacity: 0.5; }
         }
 
+        .past-seminaires-section {
+            background: #f1f5f9;
+            padding: 4rem 20px;
+        }
+
+        .past-seminaires-section .seminaire-item {
+            opacity: 0.85;
+        }
+
+        .past-seminaires-section .seminaire-item:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-2026 {
+                width: 95% !important;
+                padding: 8px 16px !important;
+                border-radius: 50px !important;
+                top: 15px !important;
+                z-index: 2001 !important;
+            }
+
+            .nav-toggle {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-links {
+                position: fixed !important;
+                left: 50% !important;
+                top: 75px !important;
+                bottom: auto !important;
+                transform: translateX(-50%) translateY(-15px) scale(0.96) !important;
+                width: 92% !important;
+                max-width: 380px !important;
+                max-height: calc(100vh - 100px) !important;
+                overflow-y: auto !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(25px) !important;
+                -webkit-backdrop-filter: blur(25px) !important;
+                flex-direction: column !important;
+                padding: 20px 16px !important;
+                gap: 8px !important;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25) !important;
+                z-index: 2000 !important;
+                display: flex !important;
+                border-radius: 24px !important;
+                border: 1px solid rgba(255, 255, 255, 0.6) !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            .nav-links.active {
+                transform: translateX(-50%) translateY(0) scale(1) !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+
+            .nav-links li {
+                width: 100% !important;
+            }
+
+            .nav-links a {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 12px !important;
+                padding: 12px 16px !important;
+                font-size: 0.95rem !important;
+                border-radius: 12px !important;
+                color: #0f172a !important;
+                font-weight: 600 !important;
+                transition: all 0.25s ease !important;
+                border: 1px solid transparent !important;
+            }
+
+            .nav-links a:hover {
+                background: rgba(37, 99, 235, 0.08) !important;
+                border-color: rgba(37, 99, 235, 0.15) !important;
+                transform: translateX(4px) !important;
+            }
+
+            .nav-links a.active {
+                background: linear-gradient(135deg, var(--primary, #2563eb) 0%, #2563eb 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+            }
+        }
+
         @media (max-width: 768px) {
             .seminaire-item {
                 flex-direction: column;
                 text-align: center;
+                padding: 1.5rem 1rem;
             }
 
             .seminaire-info {
@@ -312,21 +454,124 @@
             .btn-seminaire {
                 width: 100%;
             }
-            .section-hero { padding: 95px 16px 36px; }
-            .seminaires-full-section { padding: 2.5rem 14px; }
-            .past-seminaires-section { padding: 2.5rem 14px !important; }
+
+            .section-hero { padding: 110px 16px 25px; }
+            .hero-content h1 { font-size: 2rem; }
         }
 
         @media (max-width: 480px) {
-            .section-hero { padding: 85px 12px 28px; }
-            .hero-content h1 { font-size: 1.5rem; }
+            .section-hero { padding: 95px 12px 20px; }
+            .hero-content h1 { font-size: 1.6rem; }
             .hero-content p { font-size: 0.95rem; }
-            .seminaires-full-section { padding: 2rem 10px; }
-            .past-seminaires-section { padding: 2rem 10px !important; }
-            .seminaire-item { padding: 1.15rem 0.875rem; gap: 0.875rem; }
-            .seminaire-info h4 { font-size: 1.1rem; }
         }
     </style>
+</head>
+<body>
+    <!-- NAVIGATION MODERNE -->
+    <nav class="nav-2026">
+        <div class="nav-container">
+            <a href="../index.html" class="nav-logo" style="text-decoration: none;">
+                <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                <div style="display:flex; flex-direction:column;">
+                    <span class="nav-logo-text">RASIN AYITI</span>
+                    <span class="nav-logo-sub">Développement Juvénile</span>
+                </div>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span class="hamburger-line line-1"></span>
+                <span class="hamburger-line line-2"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+                <div class="mobile-menu-handle"></div>
+                <li><a href="../index.html" onclick="closeMenu()"><i data-lucide="home"></i> <span>Accueil</span></a></li>
+                <li><a href="../evenements.html" onclick="closeMenu()"><i data-lucide="calendar"></i> <span>Événements</span></a></li>
+                <li><a href="formations.html" onclick="closeMenu()"><i data-lucide="graduation-cap"></i> <span>Formations</span></a></li>
+                <li><a href="../leaders.html" onclick="closeMenu()" class="nav-leaders-btn"><i data-lucide="users"></i> <span>Leaders</span></a></li>
+                <li class="nav-dropdown">
+                    <button class="nav-dropdown-btn" type="button" aria-label="Plus d'options">
+                        <i data-lucide="more-horizontal"></i> <span>Plus</span> <i class="fas fa-chevron-down" style="font-size:0.65rem;margin-left:2px;transition:transform 0.2s;"></i>
+                    </button>
+                    <ul class="nav-dropdown-menu">
+                        <li><a href="../index.html#boutique" onclick="closeMenu()"><i data-lucide="shopping-bag"></i> <span>Boutique</span></a></li>
+                        <li><a href="../index.html#donations" onclick="closeMenu()"><i data-lucide="heart"></i> <span>Dons</span></a></li>
+                        <li><a href="../index.html#galerie" onclick="closeMenu()"><i data-lucide="image"></i> <span>Galerie</span></a></li>
+                    </ul>
+                </li>
+                <!-- Dynamic Auth Buttons -->
+                <li id="authContainer">
+                    <a href="../espace-etudiant/login.html" class="btn-login">Connexion</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="section-hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <span class="section-badge">Séminaires</span>
+                <h1>Participez à nos événements en direct</h1>
+                <p>Rejoignez nos séminaires interactifs animés par des experts</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEMINAIRES LIST -->
+    <section class="seminaires-full-section">
+        <div class="section-container">
+            <div class="seminaires-list" id="seminairesList">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: white; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); max-width: 580px; margin: 0 auto;">
+                    <div style="width: 56px; height: 56px; background: rgba(37, 99, 235, 0.1); color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1rem;">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">Chargement des séminaires...</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER MODERNE -->
+    <footer class="footer-2026">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/logorasin.PNG" alt="Rasin Ayiti">
+                        <span>Rasin Ayiti</span>
+                    </div>
+                    <p style="font-weight:700; color:var(--primary, #2563eb); margin-top:-0.5rem; margin-bottom:1rem; font-size:0.8rem;">Département de développement Juvénile</p>
+                    <p>Développement Juvénile/RASINAYITI - Une grande mobilisation pour la jeunesse haïtienne.</p>
+                    <div class="footer-social">
+                        <p style="margin-bottom:0.5rem; font-weight:700; color:#0f172a;">Suivez-nous sur les réseaux sociaux:</p>
+                        <a href="https://www.instagram.com/rasinayiti2026?igsh=NHNwZjlpcW81Nmd3&utm_source=qr" target="_blank" style="background:#E1306C;"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@rasinayiti0?_r=1&_t=ZT-96Cet7oAEH7" target="_blank" style="background:#000000;"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://wa.me/50946807922" target="_blank" style="background:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="../evenements.html">Événements</a></li>
+                        <li><a href="formations.html">Formations</a></li>
+                        <li><a href="seminaires.html">Séminaires</a></li>
+                        <li><a href="../espace-etudiant/login.html">Espace Étudiant</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Administration</h4>
+                    <ul>
+                        <li><a href="../admin/dashboard.html">Dashboard</a></li>
+                        <li><a href="../admin/seminaires.html">Gestion Séminaires</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Rasin Ayiti. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase.js?v=20261108"></script>
@@ -366,55 +611,79 @@
                         </div>
                     `).join('');
                 } else {
-                    container.innerHTML = '<p style="text-align:center;padding:3rem;color:#64748b;">Aucun séminaire planifié pour le moment.</p>';
+                    container.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1.5rem; background: white; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); max-width: 580px; margin: 2rem auto;">
+                            <div style="width: 64px; height: 64px; background: rgba(37, 99, 235, 0.1); color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <h3 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">Séminaires en préparation</h3>
+                            <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">De nouveaux séminaires interactifs seront programmés très prochainement.</p>
+                            <a href="../evenements.html" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 0.9rem;">
+                                <i class="fas fa-calendar-alt"></i> <span>Consulter nos Événements</span>
+                            </a>
+                        </div>
+                    `;
                 }
             } catch (err) {
                 console.error('Error loading seminaires:', err);
             }
         }
 
-        // Load past seminaires
-        async function loadPastSeminaires() {
-            try {
-                const { data, error } = await window.supabaseClient
-                    .from('seminaires')
-                    .select('*, formations(titre)')
-                    .in('status', ['termine', 'annule'])
-                    .order('date_seminaire', { ascending: false })
-                    .limit(5);
+        // Auth Logic
+        function updateNavbarAuth() {
+            const authContainer = document.getElementById('authContainer');
+            if (!authContainer) return;
+            const studentData = localStorage.getItem('etudiant');
+            const adminData = sessionStorage.getItem('admin');
 
-                if (error) throw error;
+            let html = '';
 
-                const container = document.getElementById('pastSeminairesList');
-                if (data && data.length > 0) {
-                    container.innerHTML = data.map(s => `
-                        <div class="seminaire-item">
-                            <div class="seminaire-date" style="background: linear-gradient(135deg, #64748b, #475569);">
-                                <span class="date-day">${new Date(s.date_seminaire).getDate()}</span>
-                                <span class="date-month">${new Date(s.date_seminaire).toLocaleDateString('fr-FR', {month: 'short'})}</span>
-                            </div>
-                            <div class="seminaire-info">
-                                <h4>${s.titre}</h4>
-                                <p>${s.formations?.titre || 'Formation'}</p>
-                                <span class="seminaire-time">
-                                    <i class="fas fa-check-circle"></i> ${s.status === 'termine' ? 'Terminé' : 'Annulé'}
-                                </span>
-                            </div>
-                            <a href="#" class="btn-seminaire">Voir détails</a>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = '<p style="text-align:center;color:#94a3b8;">Aucun séminaire passé.</p>';
-                }
-            } catch (err) {
-                console.error('Error loading past seminaires:', err);
+            if (adminData) {
+                html = `
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="../admin/dashboard.html" class="btn-login" style="background:#0f172a; color:white; padding:8px 15px; border-radius:10px; font-size:0.85rem;"><i class="fas fa-lock"></i> Admin</a>
+                        <a href="#" onclick="logout()" style="color:#ef4444; font-weight:700; font-size:0.9rem;">Déconnexion</a>
+                    </div>
+                `;
+            } else if (studentData) {
+                html = `
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <a href="../espace-etudiant/dashboard.html" style="color:var(--primary, #2563eb); font-weight:700;">Mon Profil</a>
+                        <a href="#" onclick="logout()" style="color:#ef4444; font-weight:700;">Déconnexion</a>
+                    </div>
+                `;
+            } else {
+                html = `<a href="../espace-etudiant/login.html" class="btn-login" style="background:var(--primary, #2563eb); color:white; padding:8px 18px; border-radius:20px; font-weight:700;">Connexion</a>`;
             }
+
+            authContainer.innerHTML = html;
+        }
+
+        function logout() {
+            localStorage.removeItem('etudiant');
+            sessionStorage.removeItem('admin');
+            window.location.reload();
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            if (window.initMobileNav) {
+                window.initMobileNav();
+            }
+            updateNavbarAuth();
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('.nav-2026');
+                if (!nav) return;
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            });
             loadSeminaires();
-            loadPastSeminaires();
         });
     </script>
 </body>
