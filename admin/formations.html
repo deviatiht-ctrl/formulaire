@@ -729,14 +729,6 @@
             }
         }
 
-                const imagesArr = data.images || (data.image_principale ? [data.image_principale] : []);
-                document.getElementById('imagesData').value = JSON.stringify(imagesArr);
-                renderImagesPreview(imagesArr);
-            } catch (err) {
-                console.error('Error loading formation:', err);
-            }
-        }
-
         function renderImagesPreview(images) {
             const list = document.getElementById('imagesPreviewList');
             list.innerHTML = images.map((img, index) => `
