@@ -661,6 +661,7 @@
                             <td>${f.duree || '-'}</td>
                             <td><span class="status-badge ${f.status}">${f.status || 'brouillon'}</span></td>
                             <td>
+                                <a href="inscriptions.html?formation=${f.id}" class="action-btn" title="Voir les inscriptions et statistiques" style="background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fas fa-chart-pie"></i></a>
                                 <button class="action-btn edit" onclick="editFormation('${f.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="action-btn delete" title="Archiver sans supprimer les inscriptions" aria-label="Archiver la formation" onclick="deleteFormation('${f.id}')"><i class="fas fa-archive"></i></button>
                             </td>

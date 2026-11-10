@@ -92,6 +92,9 @@
                 </div>
             </header>
 
+            <!-- Quick Formation Chips -->
+            <div id="quickFormationBar" class="quick-chips-bar"></div>
+
             <!-- Filters -->
             <div class="filters-bar">
                 <select id="eventTypeFilter" class="filter-select">
@@ -116,6 +119,12 @@
             <!-- Stats -->
             <div class="card">
                 <div class="card-body">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+                        <h3 style="font-size:1.05rem;font-weight:700;color:#0f172a;margin:0;"><i class="fas fa-chart-line" style="color:#2563eb;"></i> Statistiques des inscriptions</h3>
+                        <button id="toggleOverviewBtn" type="button" class="btn-secondary" onclick="toggleFormationsOverview()" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 0.85rem;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#2563eb;font-weight:600;font-size:0.85rem;cursor:pointer;">
+                            <i class="fas fa-chart-pie"></i> Vue comparative des formations
+                        </button>
+                    </div>
                     <div class="stats-grid">
                         <div class="stat-item">
                             <div class="stat-icon">
@@ -127,7 +136,7 @@
                             </div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-icon">
+                            <div class="stat-icon" style="background:linear-gradient(135deg, #16a34a, #15803d);">
                                 <i class="fas fa-check-circle"></i>
                             </div>
                             <div class="stat-content">
@@ -136,7 +145,7 @@
                             </div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-icon">
+                            <div class="stat-icon" style="background:linear-gradient(135deg, #d97706, #b45309);">
                                 <i class="fas fa-clock"></i>
                             </div>
                             <div class="stat-content">
@@ -145,7 +154,16 @@
                             </div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-icon">
+                            <div class="stat-icon" style="background:linear-gradient(135deg, #7c3aed, #6d28d9);">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Certificats</span>
+                                <span class="stat-value" id="statCertificats">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon" style="background:linear-gradient(135deg, #059669, #047857);">
                                 <i class="fas fa-dollar-sign"></i>
                             </div>
                             <div class="stat-content">
@@ -156,6 +174,25 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Overview Section (Collapsible) -->
+            <div id="formationsOverviewSection" class="card" style="display:none;">
+                <div class="card-body">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+                        <div>
+                            <h3 style="font-size:1.15rem;font-weight:700;color:#0f172a;margin:0 0 0.25rem 0;"><i class="fas fa-graduation-cap" style="color:#2563eb;"></i> Comparatif des Formations</h3>
+                            <p style="margin:0;font-size:0.85rem;color:#64748b;">Cliquez sur une formation pour filtrer ses inscrits et afficher ses statistiques complètes</p>
+                        </div>
+                        <button type="button" class="btn-secondary" onclick="toggleFormationsOverview()" style="padding:0.4rem 0.75rem;font-size:0.8rem;border:1px solid #cbd5e1;background:#fff;border-radius:6px;cursor:pointer;">
+                            <i class="fas fa-times"></i> Fermer
+                        </button>
+                    </div>
+                    <div id="formationsOverviewGrid" class="formations-summary-grid"></div>
+                </div>
+            </div>
+
+            <!-- Detailed Activity / Formation Card -->
+            <div id="activityDetailCard" class="activity-card" style="display:none;"></div>
 
             <!-- Inscriptions Table -->
             <div class="card">
@@ -293,6 +330,7 @@
 
         .main-content {
             flex: 1;
+            min-width: 0;
             margin-left: 280px;
             padding: 2rem;
             overflow-y: auto;
@@ -508,6 +546,221 @@
             .filters-bar { flex-direction: column; }
             .search-input { max-width: 100%; }
         }
+        /* Quick Formation Chips */
+        .quick-chips-bar {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 0.25rem 0 0.75rem 0;
+            margin-bottom: 1.25rem;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .chip-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            font-size: 0.82rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .chip-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            font-weight: 600;
+        }
+
+        .chip-btn .chip-count {
+            display: inline-block;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            background: rgba(0,0,0,0.06);
+            color: inherit;
+        }
+
+        .chip-btn.active .chip-count {
+            background: rgba(255,255,255,0.25);
+            color: #ffffff;
+        }
+
+        /* Activity Detail Card */
+        .activity-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .activity-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .activity-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-type-badge {
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .activity-type-badge.formation { background: #dbeafe; color: #1e40af; }
+        .activity-type-badge.seminaire { background: #ede9fe; color: #6d28d9; }
+
+        .activity-status-badge {
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .activity-mode-badge {
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .activity-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.3;
+        }
+
+        .activity-pricing-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .activity-pricing-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .activity-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .activity-metric {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .activity-metric.highlight {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        .activity-metric-label {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-metric-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #0f172a;
+        }
+
+        .activity-metric-sub {
+            font-size: 0.74rem;
+            color: #64748b;
+            margin-top: 0.35rem;
+        }
+
+        /* Formations Overview Grid */
+        .formations-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .formation-card-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .formation-card-item:hover {
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37,99,235,0.08);
+            background: #ffffff;
+        }
+
+        .formation-card-item.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .activity-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .formations-summary-grid { grid-template-columns: 1fr; }
+        }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -536,28 +789,22 @@
             try {
                 const { data: formations } = await window.supabaseClient
                     .from('formations')
-                    .select('id, titre')
-                    .eq('status', 'publie');
+                    .select('id, code, titre, prix, prix_certificat, status, type_formation, places_total, image_principale')
+                    .neq('status', 'archive')
+                    .order('titre');
 
                 const { data: seminaires } = await window.supabaseClient
                     .from('seminaires')
-                    .select('id, titre, formation_id')
-                    .eq('status', 'planifie');
+                    .select('id, code, titre, formation_id, date_seminaire, status, type_seminaire')
+                    .neq('status', 'archive')
+                    .order('titre');
 
                 allFormations = formations || [];
                 allSeminaires = seminaires || [];
 
-                // Populate event filter
-                const eventFilter = document.getElementById('eventFilter');
-                eventFilter.innerHTML = '<option value="">Tous les événements</option>';
-
-                allFormations.forEach(f => {
-                    eventFilter.innerHTML += `<option value="formation:${f.id}">${f.titre}</option>`;
-                });
-
-                allSeminaires.forEach(s => {
-                    eventFilter.innerHTML += `<option value="seminaire:${s.id}">${s.titre}</option>`;
-                });
+                updateEventOptions();
+                renderQuickChips();
+                checkUrlParams();
             } catch (err) {
                 console.error('Error loading events:', err);
             }
@@ -573,11 +820,122 @@
 
                 allInscriptions = data || [];
                 LeaderTools.populateFilter(allInscriptions);
+                updateEventOptions();
+                renderQuickChips();
                 filterAndDisplayInscriptions();
-                updateStats();
             } catch (err) {
                 console.error('Error loading inscriptions:', err);
                 document.getElementById('inscriptionsList').innerHTML = '<tr><td colspan="8" class="no-data">Erreur de chargement</td></tr>';
+            }
+        }
+
+        // Update event dropdown options with live registration counts
+        function updateEventOptions() {
+            const type = document.getElementById('eventTypeFilter').value;
+            const eventFilter = document.getElementById('eventFilter');
+            const currentValue = eventFilter.value;
+
+            let html = '<option value="">Tous les événements</option>';
+
+            if (type === 'all' || type === 'formation') {
+                if (allFormations.length > 0) {
+                    html += '<optgroup label="Formations">';
+                    allFormations.forEach(f => {
+                        const count = allInscriptions.filter(i => String(i.formation_id) === String(f.id)).length;
+                        const countLabel = allInscriptions.length > 0 ? ` (${count} inscrit${count > 1 ? 's' : ''})` : '';
+                        html += `<option value="formation:${f.id}">${LeaderTools.escape(f.titre)}${countLabel}</option>`;
+                    });
+                    html += '</optgroup>';
+                }
+            }
+
+            if (type === 'all' || type === 'seminaire') {
+                if (allSeminaires.length > 0) {
+                    html += '<optgroup label="Séminaires">';
+                    allSeminaires.forEach(s => {
+                        const count = allInscriptions.filter(i => String(i.seminaire_id) === String(s.id)).length;
+                        const countLabel = allInscriptions.length > 0 ? ` (${count} inscrit${count > 1 ? 's' : ''})` : '';
+                        html += `<option value="seminaire:${s.id}">${LeaderTools.escape(s.titre)}${countLabel}</option>`;
+                    });
+                    html += '</optgroup>';
+                }
+            }
+
+            eventFilter.innerHTML = html;
+            if ([...eventFilter.options].some(o => o.value === currentValue)) {
+                eventFilter.value = currentValue;
+            }
+        }
+
+        // Render quick filter chips for fast selection
+        function renderQuickChips() {
+            const container = document.getElementById('quickFormationBar');
+            if (!container) return;
+
+            const selectedValue = document.getElementById('eventFilter').value;
+            const totalCount = allInscriptions.length;
+
+            let html = `
+                <button type="button" class="chip-btn ${!selectedValue ? 'active' : ''}" onclick="clearEventFilter()">
+                    <i class="fas fa-layer-group"></i> Tout voir <span class="chip-count">${totalCount}</span>
+                </button>
+            `;
+
+            allFormations.forEach(f => {
+                const count = allInscriptions.filter(i => String(i.formation_id) === String(f.id)).length;
+                const isSelected = selectedValue === `formation:${f.id}`;
+                html += `
+                    <button type="button" class="chip-btn ${isSelected ? 'active' : ''}" onclick="selectActivity('formation', '${f.id}')" title="${LeaderTools.escape(f.titre)}">
+                        <i class="fas fa-graduation-cap"></i> ${LeaderTools.escape(f.titre)} <span class="chip-count">${count}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Select an activity directly (from chips or overview)
+        function selectActivity(type, id) {
+            const eventTypeFilter = document.getElementById('eventTypeFilter');
+            const eventFilter = document.getElementById('eventFilter');
+
+            if (!type || !id) {
+                eventTypeFilter.value = 'all';
+                updateEventOptions();
+                eventFilter.value = '';
+            } else {
+                eventTypeFilter.value = type;
+                updateEventOptions();
+                eventFilter.value = `${type}:${id}`;
+            }
+
+            renderQuickChips();
+            filterAndDisplayInscriptions();
+
+            const card = document.getElementById('activityDetailCard');
+            if (card && card.style.display !== 'none') {
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function clearEventFilter() {
+            selectActivity(null, null);
+        }
+
+        // Check URL parameters for direct link from formations/seminaires pages
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const formationId = params.get('formation') || params.get('formation_id');
+            const seminaireId = params.get('seminaire') || params.get('seminaire_id');
+            const eventParam = params.get('event');
+
+            if (formationId) {
+                selectActivity('formation', formationId);
+            } else if (seminaireId) {
+                selectActivity('seminaire', seminaireId);
+            } else if (eventParam) {
+                const [t, id] = eventParam.split(':');
+                selectActivity(t, id);
             }
         }
 
@@ -618,7 +976,248 @@
 
         // Filter and display
         function filterAndDisplayInscriptions() {
-            displayInscriptions(getFilteredInscriptions());
+            const filtered = getFilteredInscriptions();
+            displayInscriptions(filtered);
+            updateStats(filtered);
+            updateSelectedActivityStats();
+        }
+
+        // Update selected activity statistics card
+        function updateSelectedActivityStats() {
+            const eventFilterVal = document.getElementById('eventFilter').value;
+            const panel = document.getElementById('activityDetailCard');
+            if (!panel) return;
+
+            if (!eventFilterVal) {
+                panel.style.display = 'none';
+                panel.innerHTML = '';
+                return;
+            }
+
+            const [type, id] = eventFilterVal.split(':');
+            let item = null;
+            if (type === 'formation') {
+                item = allFormations.find(f => String(f.id) === String(id));
+            } else if (type === 'seminaire') {
+                item = allSeminaires.find(s => String(s.id) === String(id));
+            }
+
+            if (!item) {
+                panel.style.display = 'none';
+                panel.innerHTML = '';
+                return;
+            }
+
+            panel.style.display = 'block';
+
+            // All registrations specifically for this activity
+            const activityInscriptions = allInscriptions.filter(i => {
+                if (type === 'formation') return String(i.formation_id) === String(id);
+                if (type === 'seminaire') return String(i.seminaire_id) === String(id);
+                return false;
+            });
+
+            const total = activityInscriptions.length;
+            const confirmes = activityInscriptions.filter(i => i.status_inscription === 'confirme').length;
+            const attente = activityInscriptions.filter(i => i.status_inscription === 'en_attente').length;
+            const annules = activityInscriptions.filter(i => i.status_inscription === 'annule').length;
+            const termines = activityInscriptions.filter(i => i.status_inscription === 'termine').length;
+
+            const tauxConfirmation = total > 0 ? Math.round((confirmes / total) * 100) : 0;
+
+            let revenusInscriptions = 0;
+            let certDemandes = 0;
+            let certVerifies = 0;
+            let certAttente = 0;
+            let revenusCert = 0;
+
+            activityInscriptions.forEach(i => {
+                revenusInscriptions += Number(i.montant_paye) || 0;
+                if (i.veut_certificat) {
+                    certDemandes++;
+                    if (i.certificat_statut_paiement === 'verifie') {
+                        certVerifies++;
+                        revenusCert += Number(i.certificat_prix) || 0;
+                    } else {
+                        certAttente++;
+                    }
+                }
+            });
+
+            const totalRevenus = revenusInscriptions + revenusCert;
+            const placesMax = Number(item.places_total) || 0;
+            const tauxRemplissage = placesMax > 0 ? Math.min(100, Math.round((total / placesMax) * 100)) : null;
+
+            const isFormation = type === 'formation';
+            const typeLabel = isFormation ? 'Formation' : 'Séminaire';
+            const prixCours = item.prix !== undefined ? (Number(item.prix) > 0 ? `${Number(item.prix).toLocaleString('fr-FR')} HTG` : 'Gratuit') : '-';
+            const prixCert = item.prix_certificat !== undefined ? (Number(item.prix_certificat) > 0 ? `${Number(item.prix_certificat).toLocaleString('fr-FR')} HTG` : 'Gratuit / Inclus') : '-';
+            const editUrl = isFormation ? `formations.html` : `seminaires.html`;
+
+            panel.innerHTML = `
+                <div class="activity-card-header">
+                    <div>
+                        <div class="activity-badges">
+                            <span class="activity-type-badge ${type}">${typeLabel}</span>
+                            <span class="activity-status-badge ${item.status || 'publie'}">${item.status || 'publie'}</span>
+                            ${item.type_formation ? `<span class="activity-mode-badge"><i class="fas fa-laptop"></i> ${LeaderTools.escape(item.type_formation)}</span>` : ''}
+                        </div>
+                        <h2 class="activity-title">${LeaderTools.escape(item.titre)}</h2>
+                        <div class="activity-pricing-info">
+                            <span><i class="fas fa-tag" style="color:#2563eb;"></i> Prix cours : <strong>${prixCours}</strong></span>
+                            <span><i class="fas fa-certificate" style="color:#7c3aed;"></i> Prix certificat : <strong>${prixCert}</strong></span>
+                            ${placesMax > 0 ? `<span><i class="fas fa-users" style="color:#059669;"></i> Capacité : <strong>${total}/${placesMax} places (${tauxRemplissage}%)</strong></span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <a href="${editUrl}" class="btn-secondary" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;padding:0.5rem 0.9rem;font-size:0.85rem;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#1e293b;">
+                            <i class="fas fa-pen"></i> Modifier ${typeLabel}
+                        </a>
+                        <button type="button" class="btn-secondary" onclick="clearEventFilter()" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 0.9rem;font-size:0.85rem;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#64748b;cursor:pointer;">
+                            <i class="fas fa-times"></i> Voir tout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="activity-metrics-grid">
+                    <div class="activity-metric">
+                        <div class="activity-metric-label">Total Inscrits</div>
+                        <div class="activity-metric-value" style="color:#2563eb;">${total}</div>
+                        <div class="activity-metric-sub">Taux confirmation : ${tauxConfirmation}%</div>
+                    </div>
+                    <div class="activity-metric">
+                        <div class="activity-metric-label">Confirmés</div>
+                        <div class="activity-metric-value" style="color:#16a34a;">${confirmes}</div>
+                        <div class="activity-metric-sub">${termines > 0 ? `${termines} terminé(s)` : 'Inscriptions actives'}</div>
+                    </div>
+                    <div class="activity-metric">
+                        <div class="activity-metric-label">En attente</div>
+                        <div class="activity-metric-value" style="color:#d97706;">${attente}</div>
+                        <div class="activity-metric-sub">${annules > 0 ? `${annules} annulé(s)` : 'À valider'}</div>
+                    </div>
+                    <div class="activity-metric">
+                        <div class="activity-metric-label">Certificats demandés</div>
+                        <div class="activity-metric-value" style="color:#7c3aed;">${certDemandes}</div>
+                        <div class="activity-metric-sub">${certVerifies} validé(s) · ${certAttente} en attente</div>
+                    </div>
+                    <div class="activity-metric">
+                        <div class="activity-metric-label">Revenus Cours</div>
+                        <div class="activity-metric-value" style="color:#0f172a;">${revenusInscriptions.toLocaleString('fr-FR')} <small style="font-size:0.75rem;">HTG</small></div>
+                        <div class="activity-metric-sub">Paiements cours</div>
+                    </div>
+                    <div class="activity-metric">
+                        <div class="activity-metric-label">Revenus Certificats</div>
+                        <div class="activity-metric-value" style="color:#7c3aed;">${revenusCert.toLocaleString('fr-FR')} <small style="font-size:0.75rem;">HTG</small></div>
+                        <div class="activity-metric-sub">Certificats vérifiés</div>
+                    </div>
+                    <div class="activity-metric highlight">
+                        <div class="activity-metric-label">Total Revenus</div>
+                        <div class="activity-metric-value" style="color:#059669;">${totalRevenus.toLocaleString('fr-FR')} <small style="font-size:0.75rem;">HTG</small></div>
+                        <div class="activity-metric-sub">Cours + Certificats</div>
+                    </div>
+                </div>
+
+                <!-- Visual progress bar -->
+                <div style="background:#f1f5f9;border-radius:999px;height:8px;overflow:hidden;display:flex;margin-top:0.5rem;">
+                    <div style="background:#16a34a;width:${total > 0 ? (confirmes / total) * 100 : 0}%;height:100%;" title="Confirmés: ${confirmes}"></div>
+                    <div style="background:#f59e0b;width:${total > 0 ? (attente / total) * 100 : 0}%;height:100%;" title="En attente: ${attente}"></div>
+                    <div style="background:#ef4444;width:${total > 0 ? (annules / total) * 100 : 0}%;height:100%;" title="Annulés: ${annules}"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#64748b;margin-top:0.35rem;flex-wrap:wrap;gap:0.5rem;">
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:4px;"></span>Confirmés (${confirmes})</span>
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;"></span>En attente (${attente})</span>
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px;"></span>Annulés (${annules})</span>
+                    ${placesMax > 0 ? `<span>Remplissage : ${tauxRemplissage}%</span>` : ''}
+                </div>
+            `;
+        }
+
+        // Toggle formations overview section
+        function toggleFormationsOverview() {
+            const section = document.getElementById('formationsOverviewSection');
+            const btn = document.getElementById('toggleOverviewBtn');
+            if (!section) return;
+
+            const isHidden = section.style.display === 'none' || !section.style.display;
+            if (isHidden) {
+                renderFormationsOverview();
+                section.style.display = 'block';
+                if (btn) btn.innerHTML = '<i class="fas fa-compress-alt"></i> Masquer le comparatif';
+            } else {
+                section.style.display = 'none';
+                if (btn) btn.innerHTML = '<i class="fas fa-chart-pie"></i> Vue comparative des formations';
+            }
+        }
+
+        // Render comparative overview cards of all formations
+        function renderFormationsOverview() {
+            const container = document.getElementById('formationsOverviewGrid');
+            if (!container) return;
+
+            if (allFormations.length === 0) {
+                container.innerHTML = '<div style="color:#94a3b8;grid-column:1/-1;text-align:center;padding:1.5rem;">Aucune formation enregistrée.</div>';
+                return;
+            }
+
+            const currentVal = document.getElementById('eventFilter').value;
+
+            container.innerHTML = allFormations.map(f => {
+                const fInscr = allInscriptions.filter(i => String(i.formation_id) === String(f.id));
+                const total = fInscr.length;
+                const confirmes = fInscr.filter(i => i.status_inscription === 'confirme').length;
+                const attente = fInscr.filter(i => i.status_inscription === 'en_attente').length;
+                let certDemandes = 0, revCert = 0, revCours = 0;
+
+                fInscr.forEach(i => {
+                    revCours += Number(i.montant_paye) || 0;
+                    if (i.veut_certificat) {
+                        certDemandes++;
+                        if (i.certificat_statut_paiement === 'verifie') {
+                            revCert += Number(i.certificat_prix) || 0;
+                        }
+                    }
+                });
+
+                const totalRev = revCours + revCert;
+                const prixLabel = f.prix > 0 ? `${Number(f.prix).toLocaleString('fr-FR')} HTG` : 'Gratuit';
+                const certPrixLabel = f.prix_certificat > 0 ? `${Number(f.prix_certificat).toLocaleString('fr-FR')} HTG` : 'Inclus';
+                const isSelected = currentVal === `formation:${f.id}`;
+
+                return `
+                    <div class="formation-card-item ${isSelected ? 'active' : ''}" onclick="selectActivity('formation', '${f.id}')">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.5rem;">
+                            <span class="activity-type-badge formation">Formation</span>
+                            <span class="activity-status-badge ${f.status || 'publie'}">${f.status || 'publie'}</span>
+                        </div>
+                        <h4 style="font-size:1.05rem;font-weight:700;color:#0f172a;margin:0 0 0.5rem 0;">${LeaderTools.escape(f.titre)}</h4>
+                        <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.75rem;">
+                            <span>Prix : <strong>${prixLabel}</strong></span> · <span>Certificat : <strong>${certPrixLabel}</strong></span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:0.5rem;text-align:center;background:#fff;border-radius:8px;padding:0.6rem;margin-bottom:0.75rem;border:1px solid #e2e8f0;">
+                            <div>
+                                <div style="font-size:1.15rem;font-weight:800;color:#2563eb;">${total}</div>
+                                <div style="font-size:0.7rem;color:#64748b;">Inscrits</div>
+                            </div>
+                            <div>
+                                <div style="font-size:1.15rem;font-weight:800;color:#16a34a;">${confirmes}</div>
+                                <div style="font-size:0.7rem;color:#64748b;">Confirmés</div>
+                            </div>
+                            <div>
+                                <div style="font-size:1.15rem;font-weight:800;color:#d97706;">${attente}</div>
+                                <div style="font-size:0.7rem;color:#64748b;">En attente</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:#475569;border-top:1px dashed #e2e8f0;padding-top:0.6rem;">
+                            <span><i class="fas fa-certificate" style="color:#7c3aed;"></i> ${certDemandes} cert.</span>
+                            <span style="font-weight:700;color:#059669;">${totalRev.toLocaleString('fr-FR')} HTG</span>
+                        </div>
+                        <button type="button" class="btn-action" style="margin-top:0.75rem;width:100%;padding:0.5rem;border-radius:8px;background:#2563eb;color:#fff;font-size:0.8rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:0.4rem;border:none;cursor:pointer;">
+                            <i class="fas fa-filter"></i> Afficher les inscrits
+                        </button>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Renvoi manuel de l'email d'inscription (même email que l'envoi automatique)
@@ -705,16 +1304,35 @@
         }
 
         // Update stats
-        function updateStats() {
-            const total = allInscriptions.length;
-            const confirme = allInscriptions.filter(i => i.status_inscription === 'confirme').length;
-            const enAttente = allInscriptions.filter(i => i.status_inscription === 'en_attente').length;
-            const revenus = allInscriptions.reduce((sum, i) => sum + (i.montant_paye || 0), 0);
+        function updateStats(filteredInscriptions) {
+            const list = filteredInscriptions || getFilteredInscriptions();
+            const total = list.length;
+            const confirme = list.filter(i => i.status_inscription === 'confirme').length;
+            const enAttente = list.filter(i => i.status_inscription === 'en_attente').length;
+
+            let revenusCours = 0;
+            let revenusCert = 0;
+            let certDemandes = 0;
+
+            list.forEach(i => {
+                revenusCours += Number(i.montant_paye) || 0;
+                if (i.veut_certificat) {
+                    certDemandes++;
+                    if (i.certificat_statut_paiement === 'verifie') {
+                        revenusCert += Number(i.certificat_prix) || 0;
+                    }
+                }
+            });
+
+            const totalRevenus = revenusCours + revenusCert;
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statConfirme').textContent = confirme;
             document.getElementById('statEnAttente').textContent = enAttente;
-            document.getElementById('statRevenus').textContent = revenus.toLocaleString();
+            document.getElementById('statRevenus').textContent = totalRevenus.toLocaleString('fr-FR');
+
+            const certEl = document.getElementById('statCertificats');
+            if (certEl) certEl.textContent = certDemandes;
         }
 
         // Confirm inscription
@@ -735,7 +1353,7 @@
             }
         }
 
-        // View details (placeholder)
+        // View details
         function viewDetails(id) {
             LeaderTools.review(allInscriptions.find(i => i.id === id)?.formation_id ? 'formation' : 'seminaire', id);
         }
@@ -782,18 +1400,25 @@
         }
 
         // Event listeners
-        document.getElementById('eventTypeFilter').addEventListener('change', filterAndDisplayInscriptions);
-        document.getElementById('eventFilter').addEventListener('change', filterAndDisplayInscriptions);
+        document.getElementById('eventTypeFilter').addEventListener('change', () => {
+            updateEventOptions();
+            filterAndDisplayInscriptions();
+            renderQuickChips();
+        });
+        document.getElementById('eventFilter').addEventListener('change', () => {
+            filterAndDisplayInscriptions();
+            renderQuickChips();
+        });
         document.getElementById('statusFilter').addEventListener('change', filterAndDisplayInscriptions);
         document.getElementById('searchInput').addEventListener('input', filterAndDisplayInscriptions);
         document.getElementById('leaderFilter').addEventListener('change', filterAndDisplayInscriptions);
         document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             if (checkAuth()) {
-                loadEvents();
-                loadInscriptions();
+                await loadEvents();
+                await loadInscriptions();
             }
         });
 

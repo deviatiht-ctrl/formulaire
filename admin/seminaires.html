@@ -657,6 +657,7 @@
                             <td>${s.prix > 0 ? s.prix + ' HTG' : 'Gratuit'}</td>
                             <td><span class="status-badge ${s.status}">${s.status || 'planifie'}</span></td>
                             <td>
+                                <a href="inscriptions.html?seminaire=${s.id}" class="action-btn" title="Voir les inscriptions et statistiques" style="background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fas fa-chart-pie"></i></a>
                                 <button class="action-btn edit" onclick="editSeminaire('${s.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="action-btn delete" title="Archiver sans supprimer les inscriptions" aria-label="Archiver le séminaire" onclick="deleteSeminaire('${s.id}')"><i class="fas fa-archive"></i></button>
                             </td>
