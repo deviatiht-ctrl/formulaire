@@ -196,6 +196,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label><i class="fab fa-whatsapp" style="color:#22c55e;"></i> Lien du groupe WhatsApp</label>
+                    <input type="url" id="whatsappLink" placeholder="https://chat.whatsapp.com/...">
+                    <small style="color:#64748b; font-size:0.8rem; display:block; margin-top:4px;">
+                        Lien d'invitation au groupe WhatsApp (affiché directement aux étudiants après inscription).
+                    </small>
+                </div>
+
+                <div class="form-group">
                     <label>Images de la formation (Plusieurs possibles) *</label>
                     <input type="file" id="imageFiles" accept="image/*" class="form-input" multiple>
                     <div id="imagesPreviewList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
@@ -618,6 +626,8 @@
             }
         }
 
+        let whatsappColumn = false;
+
         // Load formations
         async function loadFormations() {
             try {
@@ -628,17 +638,22 @@
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
+                whatsappColumn = (data || []).some(f => 'whatsapp_link' in f);
 
                 const tbody = document.getElementById('formationsList');
                 if (data && data.length > 0) {
-                    tbody.innerHTML = data.map(f => `
+                    tbody.innerHTML = data.map(f => {
+                        const wa = f.whatsapp_link || (f.description && f.description.match(/<!--wa:(.*?)-->/)?.[1]);
+                        const cleanDesc = (f.description || '').replace(/<!--wa:.*?-->/g, '').trim();
+                        return `
                         <tr>
                             <td>
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <img src="${f.image_principale || 'https://via.placeholder.com/50'}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">
                                     <div style="font-weight:600;color:#0f172a;">${f.titre}</div>
                                 </div>
-                                <div style="font-size:0.85rem;color:#64748b;">${f.description?.substring(0, 50) || ''}...</div>
+                                <div style="font-size:0.85rem;color:#64748b;">${cleanDesc.substring(0, 50)}...</div>
+                                ${wa ? '<div style="font-size:0.75rem;color:#128c4b;font-weight:600;margin-top:2px;"><i class="fab fa-whatsapp"></i> WhatsApp configuré</div>' : ''}
                             </td>
                             <td>${f.categories?.nom || '-'}</td>
                             <td>${f.type_formation || '-'}</td>
@@ -650,7 +665,7 @@
                                 <button class="action-btn delete" title="Archiver sans supprimer les inscriptions" aria-label="Archiver la formation" onclick="deleteFormation('${f.id}')"><i class="fas fa-archive"></i></button>
                             </td>
                         </tr>
-                    `).join('');
+                    `;}).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="7" class="no-data">Aucune formation</td></tr>';
                 }
@@ -663,6 +678,7 @@
         function openModal(id = null) {
             document.getElementById('formationModal').classList.remove('hidden');
             document.getElementById('modalTitle').textContent = id ? 'Modifier Formation' : 'Nouvelle Formation';
+            document.getElementById('whatsappLink').value = '';
             loadCategories();
 
             if (id) {
@@ -672,6 +688,7 @@
                 // Reset form
                 document.getElementById('formationForm').reset();
                 document.getElementById('formationId').value = '';
+                document.getElementById('whatsappLink').value = '';
             }
         }
 
@@ -691,7 +708,9 @@
 
                 document.getElementById('formationId').value = data.id;
                 document.getElementById('titre').value = data.titre;
-                document.getElementById('description').value = data.description || '';
+                const cleanDesc = (data.description || '').replace(/<!--wa:.*?-->/g, '').trim();
+                document.getElementById('description').value = cleanDesc;
+                document.getElementById('whatsappLink').value = data.whatsapp_link || (data.description && data.description.match(/<!--wa:(.*?)-->/)?.[1]) || '';
                 document.getElementById('categorie').value = data.categorie_id || '';
                 document.getElementById('typeFormation').value = data.type_formation || 'en_ligne';
                 document.getElementById('prix').value = data.prix || 0;
@@ -701,6 +720,14 @@
                 document.getElementById('avecCertificat').value = String(data.avec_certificat === true);
                 document.getElementById('prixCertificat').value = data.prix_certificat || 0;
                 toggleCertificatField();
+
+                const imagesArr = data.images || (data.image_principale ? [data.image_principale] : []);
+                document.getElementById('imagesData').value = JSON.stringify(imagesArr);
+                renderImagesPreview(imagesArr);
+            } catch (err) {
+                console.error('Error loading formation:', err);
+            }
+        }
 
                 const imagesArr = data.images || (data.image_principale ? [data.image_principale] : []);
                 document.getElementById('imagesData').value = JSON.stringify(imagesArr);
@@ -781,10 +808,12 @@
             try {
                 const id = document.getElementById('formationId').value;
                 const imagesArr = JSON.parse(document.getElementById('imagesData').value || "[]");
+                const waLink = document.getElementById('whatsappLink').value.trim();
+                let cleanDesc = document.getElementById('description').value.replace(/<!--wa:.*?-->/g, '').trim();
 
                 const formData = {
                     titre: document.getElementById('titre').value,
-                    description: document.getElementById('description').value,
+                    description: cleanDesc,
                     categorie_id: document.getElementById('categorie').value,
                     type_formation: document.getElementById('typeFormation').value,
                     prix: parseFloat(document.getElementById('prix').value),
@@ -796,6 +825,12 @@
                     image_principale: imagesArr[0] || '', // First image as main
                     images: imagesArr
                 };
+
+                if (waLink && whatsappColumn) {
+                    formData.whatsapp_link = waLink;
+                } else if (waLink) {
+                    formData.description = cleanDesc + `\n<!--wa:${waLink}-->`;
+                }
 
                 let error;
                 if (id) {

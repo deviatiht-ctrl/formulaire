@@ -252,6 +252,19 @@
             </div>
             <h2>Inscription réussie !</h2>
             <p id="successMessage">Votre inscription a été enregistrée avec succès.</p>
+            <div id="whatsappSuccessBox" style="display:none; margin:1.25rem 0; padding:1.25rem 1rem; background:#f0fdf4; border:2px solid #86efac; border-radius:14px; text-align:center;">
+                <div style="display:flex; align-items:center; justify-content:center; gap:8px; color:#166534; font-weight:800; font-size:1rem; margin-bottom:0.4rem;">
+                    <i class="fab fa-whatsapp" style="font-size:1.4rem; color:#22c55e;"></i>
+                    Rejoignez le groupe WhatsApp !
+                </div>
+                <p style="font-size:0.88rem; color:#15803d; line-height:1.45; margin-bottom:1rem;">
+                    Klike sou bouton vèt anba a kounye a pou w ka antre dirèkteman nan gwoup WhatsApp fòmasyon an :
+                </p>
+                <a id="whatsappJoinBtn" href="#" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; justify-content:center; gap:10px; background:#22c55e; color:white; padding:0.85rem 1.6rem; border-radius:50px; font-weight:800; font-size:0.95rem; text-decoration:none; box-shadow:0 6px 20px rgba(34,197,94,0.35); transition:transform 0.2s, background 0.2s;">
+                    <i class="fab fa-whatsapp" style="font-size:1.25rem;"></i>
+                    Antre nan Gwoup WhatsApp la
+                </a>
+            </div>
             <div class="success-actions">
                 <a href="../espace-etudiant/login.html" class="btn-primary">
                     <i class="fas fa-user"></i> Accéder à mon espace
@@ -613,6 +626,14 @@
             natcash: { numero: '+509 43331145', nom: 'Jude Joseph' }
         };
 
+        function extractWhatsAppLink(item) {
+            if (!item) return '';
+            if (item.whatsapp_link) return item.whatsapp_link;
+            const text = (item.description || '') + ' ' + (item.objectifs || '') + ' ' + (item.lieu || '');
+            const m = text.match(/<!--wa:(.*?)-->/) || text.match(/(https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9_-]+)/);
+            return m ? m[1].trim() : '';
+        }
+
         function setupCertificatSection() {
             if (!currentItem || !currentItem.avec_certificat) return;
             document.getElementById('certificatSection').style.display = 'block';
@@ -858,18 +879,30 @@
                 });
                 if (registrationError) throw registrationError;
 
+                // WhatsApp Link handling
+                const waLink = extractWhatsAppLink(currentItem);
+                const waBox = document.getElementById('whatsappSuccessBox');
+                const waBtn = document.getElementById('whatsappJoinBtn');
+                if (waLink && waBox && waBtn) {
+                    waBtn.href = waLink;
+                    waBox.style.display = 'block';
+                } else if (waBox) {
+                    waBox.style.display = 'none';
+                }
+
                 // Show success
                 document.getElementById('successModal').classList.remove('hidden');
+                const waNotice = waLink ? `<br><br><span style="color:#166534;font-weight:600;">👉 Klike sou bouton vèt anba a pou w antre nan gwoup WhatsApp la touswit !</span>` : '';
                 if (isExistingAccount) {
                     document.getElementById('successMessage').innerHTML =
                         `<strong>Enskripsyon an reyisi avèk siksè !</strong><br><br>` +
                         `ℹ️ Nou rekonèt imèl ou an (<strong>${formData.email}</strong>) te gentan gen yon kont sou Rasin Ayiti. ` +
                         `Nouvo fòmasyon an ajoute dirèkteman sou menm kont ou an san okenn pwoblèm.<br><br>` +
-                        `W ap ka konekte nan Espas Etidyan ou a ak ansyen modpas ou a pou w kòmanse swiv li.`;
+                        `W ap ka konekte nan Espas Etidyan ou a ak ansyen modpas ou a pou w kòmanse swiv li.` + waNotice;
                 } else {
                     document.getElementById('successMessage').innerHTML =
                         `<strong>Felisitasyon ! Enskripsyon w ak nouvo kont ou kreye avèk siksè.</strong><br><br>` +
-                        `W ap ka konekte nan Espas Etidyan ou a ak imèl <strong>${formData.email}</strong> ak modpas ou te chwazi a.`;
+                        `W ap ka konekte nan Espas Etidyan ou a ak imèl <strong>${formData.email}</strong> ak modpas ou te chwazi a.` + waNotice;
                 }
 
             } catch (error) {

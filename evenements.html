@@ -1096,6 +1096,25 @@
         </div>
     </div>
 
+    <!-- Success Modal -->
+    <div class="modal-overlay hidden" id="successModal">
+        <div class="modal-content" style="max-width:500px; text-align:center; padding:2rem 1.5rem; background:white; border-radius:20px;">
+            <div style="width:64px; height:64px; background:#dcfce7; color:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 1.25rem;">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 id="successModalTitle" style="font-size:1.5rem; font-weight:800; color:#0f172a; margin-bottom:0.5rem;">Inscription Réussie ! 🎉</h2>
+            <p id="successModalDesc" style="color:#64748b; font-size:0.95rem; line-height:1.5; margin-bottom:1.5rem;">
+                Votre inscription a été enregistrée avec succès.
+            </p>
+            <div class="success-actions" style="display:flex; flex-direction:column; gap:0.75rem; align-items:center;">
+                <a href="#" id="waGroupBtn" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; justify-content:center; gap:10px; background:#22c55e; color:white; padding:0.85rem 1.75rem; border-radius:50px; font-weight:800; font-size:1rem; text-decoration:none; box-shadow:0 6px 20px rgba(34,197,94,0.35); width:100%; max-width:320px;">
+                    <i class="fab fa-whatsapp" style="font-size:1.3rem;"></i> Rejoindre le groupe WhatsApp
+                </a>
+                <button type="button" onclick="closeSuccessModal()" style="background:#f1f5f9; border:none; color:#475569; padding:0.6rem 1.5rem; border-radius:10px; font-weight:600; cursor:pointer;">Fermer</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=20261108"></script>
     <script src="assets/js/certificate-discount.js?v=20261108"></script>
@@ -1644,6 +1663,10 @@
             document.getElementById('eventRegModal').classList.add('hidden');
         }
 
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
         document.getElementById('eventRegForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (e.target.dataset.submitting) return;
@@ -1740,11 +1763,28 @@
                 if (error) throw error;
 
                 closeRegModal();
-                if (isAlready) {
-                    alert('Enskripsyon w reyisi avèk siksè ! Kòm ou te gentan gen yon kont sou Rasin Ayiti, evènman sa a ajoute sou menm kont ou an.');
+
+                const waBtn = document.getElementById('waGroupBtn');
+                if (currentEventWALink) {
+                    waBtn.href = currentEventWALink;
+                    waBtn.style.display = 'inline-flex';
                 } else {
-                    alert('Inscription réussie ! L\'équipe Rasin Ayiti vous contactera par e-mail.');
+                    try {
+                        waBtn.href = (await getSiteSettings()).waLink;
+                        waBtn.style.display = 'inline-flex';
+                    } catch (_) {
+                        waBtn.style.display = 'none';
+                    }
                 }
+
+                const desc = document.getElementById('successModalDesc');
+                if (isAlready) {
+                    desc.innerHTML = `<strong>Enskripsyon an reyisi avèk siksè !</strong><br><br>Nou rekonèt ou te gentan gen yon kont sou Rasin Ayiti. Evènman sa a ajoute sou menm kont ou an san okenn pwoblèm.<br><br><span style="color:#166534;font-weight:600;">👉 Klike sou bouton vèt anba a pou w antre dirèkteman nan gwoup WhatsApp evènman an :</span>`;
+                } else {
+                    desc.innerHTML = `L'équipe Rasin Ayiti a bien enregistré votre inscription.<br><br><span style="color:#166534;font-weight:600;">👉 Klike sou bouton vèt anba a pou w antre dirèkteman nan gwoup WhatsApp evènman an :</span>`;
+                }
+
+                document.getElementById('successModal').classList.remove('hidden');
                 document.getElementById('eventRegForm').reset();
             } catch (err) {
                 console.error('Erreur inscription événement:', err);

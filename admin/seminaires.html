@@ -173,6 +173,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label><i class="fab fa-whatsapp" style="color:#22c55e;"></i> Lien du groupe WhatsApp</label>
+                    <input type="url" id="whatsappLink" placeholder="https://chat.whatsapp.com/...">
+                    <small style="color:#64748b; font-size:0.8rem; display:block; margin-top:4px;">
+                        Lien d'invitation au groupe WhatsApp (affiché directement aux participants après inscription).
+                    </small>
+                </div>
+
+                <div class="form-group">
                     <label>Images du Séminaire (Plusieurs possibles) *</label>
                     <input type="file" id="imageFiles" accept="image/*" class="form-input" multiple>
                     <div id="imagesPreviewList" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
@@ -614,6 +622,8 @@
             }
         }
 
+        let whatsappColumn = false;
+
         // Load seminaires
         async function loadSeminaires() {
             try {
@@ -624,17 +634,22 @@
                     .order('date_seminaire', { ascending: false });
 
                 if (error) throw error;
+                whatsappColumn = (data || []).some(s => 'whatsapp_link' in s);
 
                 const tbody = document.getElementById('seminairesList');
                 if (data && data.length > 0) {
-                    tbody.innerHTML = data.map(s => `
+                    tbody.innerHTML = data.map(s => {
+                        const wa = s.whatsapp_link || (s.description && s.description.match(/<!--wa:(.*?)-->/)?.[1]);
+                        const cleanDesc = (s.description || '').replace(/<!--wa:.*?-->/g, '').trim();
+                        return `
                         <tr>
                             <td>
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <img src="${s.image_url || 'https://via.placeholder.com/50'}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">
                                     <div style="font-weight:600;color:#0f172a;">${s.titre}</div>
                                 </div>
-                                <div style="font-size:0.85rem;color:#64748b;">${s.description?.substring(0, 50) || ''}...</div>
+                                <div style="font-size:0.85rem;color:#64748b;">${cleanDesc.substring(0, 50)}...</div>
+                                ${wa ? '<div style="font-size:0.75rem;color:#128c4b;font-weight:600;margin-top:2px;"><i class="fab fa-whatsapp"></i> WhatsApp configuré</div>' : ''}
                             </td>
                             <td>${s.formations?.titre || '-'}</td>
                             <td>${s.date_seminaire ? new Date(s.date_seminaire).toLocaleDateString('fr-FR') : '-'}</td>
@@ -646,7 +661,7 @@
                                 <button class="action-btn delete" title="Archiver sans supprimer les inscriptions" aria-label="Archiver le séminaire" onclick="deleteSeminaire('${s.id}')"><i class="fas fa-archive"></i></button>
                             </td>
                         </tr>
-                    `).join('');
+                    `;}).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="7" class="no-data">Aucun séminaire</td></tr>';
                 }
@@ -659,6 +674,7 @@
         function openModal(id = null) {
             document.getElementById('seminaireModal').classList.remove('hidden');
             document.getElementById('modalTitle').textContent = id ? 'Modifier Séminaire' : 'Nouveau Séminaire';
+            document.getElementById('whatsappLink').value = '';
             loadFormations();
 
             if (id) {
@@ -666,6 +682,7 @@
             } else {
                 document.getElementById('seminaireForm').reset();
                 document.getElementById('seminaireId').value = '';
+                document.getElementById('whatsappLink').value = '';
             }
         }
 
@@ -685,7 +702,9 @@
 
                 document.getElementById('seminaireId').value = data.id;
                 document.getElementById('titre').value = data.titre;
-                document.getElementById('description').value = data.description || '';
+                const cleanDesc = (data.description || '').replace(/<!--wa:.*?-->/g, '').trim();
+                document.getElementById('description').value = cleanDesc;
+                document.getElementById('whatsappLink').value = data.whatsapp_link || (data.description && data.description.match(/<!--wa:(.*?)-->/)?.[1]) || '';
                 document.getElementById('formation').value = data.formation_id || '';
                 document.getElementById('date').value = data.date_seminaire || '';
                 document.getElementById('heureDebut').value = data.heure_debut || '';
@@ -776,10 +795,12 @@
             try {
                 const id = document.getElementById('seminaireId').value;
                 const imagesArr = JSON.parse(document.getElementById('imagesData').value || "[]");
+                const waLink = document.getElementById('whatsappLink').value.trim();
+                let cleanDesc = document.getElementById('description').value.replace(/<!--wa:.*?-->/g, '').trim();
 
                 const formData = {
                     titre: document.getElementById('titre').value,
-                    description: document.getElementById('description').value,
+                    description: cleanDesc,
                     formation_id: document.getElementById('formation').value,
                     date_seminaire: document.getElementById('date').value,
                     heure_debut: document.getElementById('heureDebut').value,
@@ -792,6 +813,12 @@
                     image_url: imagesArr[0] || '', // First image as main
                     images: imagesArr
                 };
+
+                if (waLink && whatsappColumn) {
+                    formData.whatsapp_link = waLink;
+                } else if (waLink) {
+                    formData.description = cleanDesc + `\n<!--wa:${waLink}-->`;
+                }
 
                 let error;
                 if (id) {

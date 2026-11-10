@@ -113,7 +113,7 @@
             try {
                 const { data, error } = await window.supabaseClient
                     .from('inscriptions')
-                    .select('*, seminaires(titre, date_seminaire, heure_debut, lien_live, prix)')
+                    .select('*, seminaires(*)')
                     .eq('etudiant_id', currentEtudiant.id)
                     .not('seminaire_id', 'is', null)
                     .order('date_inscription', { ascending: false });
@@ -130,13 +130,21 @@
                     const cert = ins.veut_certificat ? ' · <i class="fas fa-certificate" style="color:#f59e0b;"></i> Certificat demandé' : '';
                     const dateStr = s.date_seminaire ? new Date(s.date_seminaire).toLocaleDateString('fr-FR') : 'Date à venir';
                     const linkBtn = s.lien_live && ins.status_inscription === 'confirme'
-                        ? `<a href="${s.lien_live}" target="_blank" style="color:#2563eb; font-size:0.85rem; font-weight:600;"><i class="fas fa-video"></i> Rejoindre</a>` : '';
+                        ? `<a href="${s.lien_live}" target="_blank" style="color:#2563eb; font-size:0.85rem; font-weight:600;"><i class="fas fa-video"></i> Rejoindre Zoom</a>` : '';
+                    const wa = s.whatsapp_link || (s.description && s.description.match(/<!--wa:(.*?)-->/)?.[1]);
                     return `
                         <div class="item-row">
                             <div class="item-icon"><i class="fas fa-video"></i></div>
                             <div class="item-info">
                                 <h4>${s.titre || 'Séminaire'}</h4>
                                 <p>${dateStr} à ${s.heure_debut || '--:--'} · ${s.prix > 0 ? s.prix + ' HTG' : 'Gratuit'}${cert} ${linkBtn}</p>
+                                ${wa ? `
+                                    <div style="margin-top:0.5rem;">
+                                        <a href="${wa}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#15803d; padding:5px 12px; border-radius:20px; font-weight:700; font-size:0.8rem; text-decoration:none;">
+                                            <i class="fab fa-whatsapp"></i> Groupe WhatsApp
+                                        </a>
+                                    </div>
+                                ` : ''}
                             </div>
                             <span class="badge badge-${ins.status_inscription || 'en_attente'}">${(ins.status_inscription || 'en_attente').replace('_', ' ')}</span>
                         </div>
